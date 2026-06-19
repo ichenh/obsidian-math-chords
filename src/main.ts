@@ -2,7 +2,7 @@ import { EditorView } from "@codemirror/view";
 import { Editor, MarkdownView, Notice, Plugin } from "obsidian";
 import { loadShortcuts, mergeShortcuts, saveShortcuts } from "./config";
 import { DEFAULT_SHORTCUTS } from "./defaults";
-import { DEFAULT_MATH_ENVIRONMENTS, DEFAULT_SETTINGS, type ObsidianMathChordsSettings } from "./settings";
+import { DEFAULT_SETTINGS, normalizeSettings, type ObsidianMathChordsSettings } from "./settings";
 import { buildTrie, shortcutStorageKey, type TrieNode } from "./trie";
 import { LeaderController } from "./leader";
 import { createInlineMathPreviewPlugin } from "./mathPreview";
@@ -10,6 +10,7 @@ import { ObsidianMathChordsSettingTab } from "./settingsTab";
 import { expandSnippet, insertDisplayMath, insertInlineMath } from "./snippet";
 import { isInMath } from "./math";
 import { openEnvironmentPicker, wrapDisplayMathWithEnvironment } from "./mathEnv";
+import { logAndNotice, runWithNotice } from "./errors";
 import type { Shortcut } from "./types";
 
 export default class ObsidianMathChordsPlugin extends Plugin {
@@ -21,7 +22,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
 
   async onload(): Promise<void> {
     await this.loadSettings();
-    await this.reloadShortcuts();
+    await runWithNotice(() => this.reloadShortcuts(), "Math Chords: could not load shortcuts.yaml.");
 
     this.leaderController = new LeaderController({
       isEnabled: () => this.settings.enabled,
@@ -52,14 +53,12 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     this.addCommand({
       id: "insert-inline-math",
       name: "Insert inline math",
-      hotkeys: [{ modifiers: ["Mod"], key: "m" }],
       editorCallback: (editor) => this.insertInlineMath(editor),
     });
 
     this.addCommand({
       id: "insert-display-math",
       name: "Insert display math",
-      hotkeys: [{ modifiers: ["Mod", "Shift"], key: "m" }],
       editorCallback: (editor) => this.insertDisplayMath(editor),
     });
 
@@ -106,15 +105,16 @@ export default class ObsidianMathChordsPlugin extends Plugin {
 
   async loadSettings(): Promise<void> {
     const data = (await this.loadData()) as Record<string, unknown> | null;
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, data ?? {});
-
-    if (!Array.isArray(this.settings.mathEnvironments) || this.settings.mathEnvironments.length === 0) {
-      this.settings.mathEnvironments = DEFAULT_MATH_ENVIRONMENTS.map((env) => ({ ...env }));
-    }
+    this.settings = normalizeSettings(data);
   }
 
   async saveSettings(): Promise<void> {
-    await this.saveData(this.settings);
+    try {
+      await this.saveData(this.settings);
+    } catch (error) {
+      logAndNotice("Math Chords: could not save settings.", error);
+      throw error;
+    }
   }
 
   yamlPath(): string {
@@ -129,7 +129,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     );
 
     if (mergedCount > 0) {
-      new Notice(`已合并 ${mergedCount} 条默认快捷键（保留你的自定义项）`);
+      new Notice(`Merged ${mergedCount} default shortcut(s); your custom bindings were kept.`);
     }
 
     this.shortcuts = new Map(
@@ -144,17 +144,27 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     if (added.length === 0) return 0;
 
     this.shortcuts = new Map(merged.map((shortcut) => [shortcutStorageKey(shortcut), shortcut]));
-    await saveShortcuts(
-      (content) => this.app.vault.adapter.write(this.yamlPath(), content),
-      merged,
-    );
+    try {
+      await saveShortcuts(
+        (content) => this.app.vault.adapter.write(this.yamlPath(), content),
+        merged,
+      );
+    } catch (error) {
+      logAndNotice("Math Chords: could not save shortcuts.yaml.", error);
+      throw error;
+    }
     this.rebuildTrie();
     return added.length;
   }
 
   async persistShortcuts(): Promise<void> {
     const list = [...this.shortcuts.values()];
-    await saveShortcuts((content) => this.app.vault.adapter.write(this.yamlPath(), content), list);
+    try {
+      await saveShortcuts((content) => this.app.vault.adapter.write(this.yamlPath(), content), list);
+    } catch (error) {
+      logAndNotice("Math Chords: could not save shortcuts.yaml.", error);
+      throw error;
+    }
     this.rebuildTrie();
   }
 
@@ -236,6 +246,11 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   }
 
   private openMathEnvironmentPickerForEditor(editor: Editor): void {
+    if (!this.settings.mathEnvWrapEnabled) {
+      new Notice("Enable environment wrap in Math Chords settings.");
+      return;
+    }
+
     openEnvironmentPicker(this.app, editor, this.settings.mathEnvironments, (env, region) => {
       wrapDisplayMathWithEnvironment(editor, region, env);
     });

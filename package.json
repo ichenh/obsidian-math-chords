@@ -1,7 +1,7 @@
 {
   "name": "obsidian-math-chords",
-  "version": "0.1.2",
-  "description": "LaTeX math input for Obsidian via customizable keyboard shortcuts.",
+  "version": "0.1.3",
+  "description": "Insert LaTeX math with customizable keyboard shortcuts, inline MathJax preview, and display-math environments.",
   "main": "main.js",
   "repository": {
     "type": "git",

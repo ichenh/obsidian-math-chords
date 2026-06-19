@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.2-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.1.3-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
@@ -10,7 +10,9 @@
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.1.2。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.1.3。** 见 [CHANGELOG](CHANGELOG.md)。
+
+**需要 Obsidian 1.5.0+。** 以键盘操作为主，建议在桌面端使用。
 
 ---
 
@@ -39,8 +41,8 @@
 | **光标占位符** | 命令模板中的 `$$` 标记光标（或选区）位置，例如 `\frac{$$}{}`。 |
 | **自动 `$…$` 包裹** | 可选：在公式区域外插入时，自动用行内公式定界符包裹。 |
 | **行内实时预览** | 光标位于 `$…$` 内时，在公式上方用 Obsidian 原生 **MathJax** 渲染预览。 |
-| **行间公式环境** | 在 `$$…$$` 内，通过模糊搜索选择 `\begin{…}…\end{…}` 包裹已有内容。 |
-| **内置数学命令** | `Ctrl+M` 插入行内公式、`Ctrl+Shift+M` 插入行间公式（本插件注册的 Obsidian 命令）。 |
+| **行间公式环境** | 通过模糊搜索选择 `\begin{…}…\end{…}` 包裹块内容；必要时先插入 `$$…$$`。 |
+| **内置数学命令** | 插入行内公式、插入行间公式、包裹行间环境（在 Obsidian 快捷键设置中自行绑定）。 |
 | **YAML + 设置界面** | 编辑 `shortcuts.yaml` 或使用设置页；修改后立即重建快捷键查找树。 |
 | **非破坏性合并** | 加载时合并缺失的默认快捷键，不会覆盖你的自定义绑定。 |
 
@@ -50,9 +52,11 @@
 
 ### 手动安装
 
-1. 从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`obsidian-math-chords.zip`**（或本地构建，见 [开发](#开发)）。
-2. 解压到库的 `.obsidian/plugins/` 目录，得到 `.obsidian/plugins/obsidian-math-chords/`，内含 `main.js`、`manifest.json`、`styles.css`、`shortcuts.yaml`。
+1. 从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`math-chords.zip`**（或本地构建，见 [开发](#开发)）。
+2. 解压到库的 `.obsidian/plugins/` 目录，得到 `.obsidian/plugins/math-chords/`，内含 `main.js`、`manifest.json`、`styles.css`、`shortcuts.yaml`。
 3. 在 **设置 → 社区插件** 中启用 **Math Chords** 并重新加载 Obsidian。
+
+从社区插件目录安装时，Obsidian 会自动从 GitHub Release 下载 `main.js`、`manifest.json`、`styles.css`。
 
 ### 从源码构建
 
@@ -63,7 +67,7 @@ npm install
 npm run build
 ```
 
-将 `main.js`、`manifest.json`、`styles.css` 和 `shortcuts.yaml` 复制到库的插件目录。
+将 `main.js`、`manifest.json`、`styles.css` 和 `shortcuts.yaml` 复制到 `.obsidian/plugins/math-chords/`。
 
 ---
 
@@ -74,7 +78,8 @@ npm run build
 3. 继续按快捷键，例如 **`F`** → `\frac{}{}`，光标落在分子处。
 4. 希腊字母：**`G` `A`** → `\alpha`（leader 之后的按键）。
 5. 行间公式：**`D`** → `$$\n\n$$`。
-6. 在 `$$…$$` 内，按 **`Shift+E`**（默认，leader 之后）选择环境并包裹整块内容。
+6. 可选：在 **设置 → 快捷键** 中为 **Insert inline math**、**Insert display math**、**Wrap display math with environment** 绑定热键（插件不注册默认热键）。
+7. 按 leader 之后的 **`Shift+E`**（默认），或运行命令 **Wrap display math with environment** 选择环境；若光标不在 `$$…$$` 内，会先插入行间公式块。
 
 > **说明：** 下文快捷键表只列出 **leader 之后** 的按键。默认 leader 为 `Alt+M`。
 
@@ -187,14 +192,14 @@ npm run build
 
 ## 行间公式环境包裹
 
-在行间公式块 `$$…$$` 内：
+在 `$$…$$` 内，或在笔记任意位置（若尚未有行间块会先自动插入）：
 
-1. 按 leader 之后配置的快捷键（默认 **`Shift+E`**）。
+1. 按 leader 之后配置的快捷键（默认 **`Shift+E`**），或在命令面板运行 **Wrap display math with environment**。
 2. 从模糊搜索列表中选择环境。
 3. 插件会包裹**整个块内容**（不仅是选区），例如  
    `$$\alpha+\beta$$` → `$$\begin{aligned}\alpha+\beta\end{aligned}$$`
 
-在设置的 **行间公式环境包裹** 中配置环境（名称 / `\begin{…}` / `\end{…}`）与触发按键，或在命令面板运行 **Wrap display math with environment**。
+在 **设置 → Math Chords** 的 **Enable environment wrap**（启用环境包裹）中配置环境与触发按键；也可在 **设置 → 快捷键** 中为上述命令绑定热键。
 
 默认环境：`aligned`、`matrix`、`cases`、`gathered`。
 
@@ -236,26 +241,28 @@ npm run build
 
 ## 设置
 
-打开 **设置 → Math Chords**。
+打开 **设置 → Math Chords**。**设置界面为英文**（下表括号内为中文说明，便于对照）。
 
-| 设置项 | 默认值 | 说明 |
+| 设置项（英文界面） | 默认值 | 说明 |
 | :--- | :--- | :--- |
-| 启用插件 | 开 | leader 快捷键总开关。 |
-| 显示快捷键提示 | 关 | leader 后显示 which-key 面板。 |
-| 行内公式实时预览 | 开 | 在 `$…$` 上方 MathJax 预览。 |
-| Leader 键 | `Alt+M` | 快捷键前缀；YAML 中 `keys` 为 leader 之后的部分。 |
-| 公式外自动包裹 | 开 | 非公式区域插入时自动加 `$…$`。 |
-| 行间公式环境包裹 | 开 | 在 `$$…$$` 内打开环境选择器。 |
-| 环境包裹快捷键 | `Shift+E` | leader 之后触发环境选择器的按键。 |
-| 数学环境 | 4 个内置 | 可编辑的环境列表。 |
+| Enable plugin（启用插件） | 开 | leader 快捷键总开关。 |
+| Show shortcut hints（显示快捷键提示） | 关 | leader 后显示 which-key 面板。 |
+| Inline math live preview（行内公式实时预览） | 开 | 在 `$…$` 上方 MathJax 预览。 |
+| Leader key（Leader 键） | `Alt+M` | 快捷键前缀；YAML 中 `keys` 为 leader 之后的部分。 |
+| Auto-wrap outside math（公式外自动包裹） | 开 | 非公式区域插入时自动加 `$…$`。 |
+| Enable environment wrap（启用环境包裹） | 开 | 环境选择器；必要时先插入 `$$…$$`。 |
+| Environment wrap keys（环境包裹快捷键） | `Shift+E` | leader 之后触发环境选择器的按键。 |
+| Math environments（数学环境） | 4 个内置 | 可编辑的环境列表。 |
 
-**快捷键管理：** 搜索、添加、编辑、删除；**Reload** 重新读取 YAML；**合并默认** 追加缺失的内置项，不覆盖已有绑定。
+**内置命令**（在 **设置 → 快捷键** 中自行绑定）：**Insert inline math**、**Insert display math**、**Wrap display math with environment**。
+
+**Shortcut management（快捷键管理）：** 搜索、添加、编辑、删除；**Reload** 重新读取 YAML；**Merge defaults** 追加缺失的内置项，不覆盖已有绑定。
 
 ---
 
 ## 更新快捷键
 
-插件加载时（或点击 **Reload** / **合并默认**）：
+插件加载时（或点击 **Reload** / **Merge defaults**）：
 
 1. 已有 YAML 条目**原样保留**（相同 `keys` → 相同绑定）。
 2. 尚未出现的默认快捷键会**追加**到文件末尾。
@@ -274,7 +281,7 @@ npm run seed
 ## 项目结构
 
 ```
-obsidian-math-chords/
+math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-chords/
 ├── src/                    # TypeScript 源码
 │   ├── main.ts             # 插件入口
 │   ├── leader.ts           # Leader 快捷键状态机
@@ -307,8 +314,8 @@ npm run seed   # 从 src/defaults.ts 重写 shortcuts.yaml
 
 1. 更新 `manifest.json`、`package.json` 中的 `version`，并在 `versions.json` 中添加映射。
 2. 更新 `CHANGELOG.md`。
-3. 提交后打 tag（不要加 `v` 前缀），例如 `git tag 0.1.0 && git push origin 0.1.0`。
-4. [release 工作流](.github/workflows/release.yml) 会自动构建并附上 `main.js`、`manifest.json`、`styles.css`。
+3. 提交后打 tag（不要加 `v` 前缀），例如 `git tag 0.1.3 && git push origin 0.1.3`。
+4. [release 工作流](.github/workflows/release.yml) 会自动构建并附上 `main.js`、`manifest.json`、`styles.css` 和 `math-chords.zip`。
 
 ---
 

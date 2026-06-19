@@ -5,6 +5,25 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-06-20
+
+### Changed
+
+- **Plugin id** renamed to `math-chords` (Obsidian community directory requirement).
+- **minAppVersion** raised to `1.5.0`.
+- Settings UI, notices, and hint text are now in English.
+- Built-in command hotkeys removed; assign them in Obsidian hotkey settings.
+- GitHub Releases attach `main.js`, `manifest.json`, and `styles.css` for community
+  installs, plus `math-chords.zip` for manual install.
+
+### Fixed
+
+- Async file and settings operations show a notice instead of failing silently.
+- MathJax preview flush errors are caught and logged.
+- Inline preview panel sizes to content (inline MathJax, no spurious scrollbars).
+- Settings loaded from disk are normalized (types and math environments validated).
+- Environment picker re-resolves the display-math region when an environment is chosen.
+
 ## [0.1.2] - 2026-06-20
 
 ### Fixed

@@ -1,9 +1,9 @@
 {
-  "id": "obsidian-math-chords",
+  "id": "math-chords",
   "name": "Math Chords",
-  "version": "0.1.2",
-  "minAppVersion": "1.0.0",
-  "description": "Insert LaTeX math in Obsidian with customizable keyboard shortcuts, inline MathJax preview, and display-math environments.",
+  "version": "0.1.3",
+  "minAppVersion": "1.5.0",
+  "description": "Insert LaTeX math with customizable keyboard shortcuts, inline MathJax preview, and display-math environments.",
   "author": "CHEH Hua",
   "authorUrl": "https://github.com/ichenh",
   "isDesktopOnly": false,

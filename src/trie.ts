@@ -61,7 +61,3 @@ export function listHints(node: TrieNode): HintEntry[] {
 export function shortcutStorageKey(shortcut: Shortcut): string {
   return `${shortcut.keys.trim().toLowerCase()}::${shortcut.command}`;
 }
-
-export function shortcutKey(shortcut: Shortcut): string {
-  return shortcut.keys.trim().toLowerCase().replace(/\s+/g, "_");
-}

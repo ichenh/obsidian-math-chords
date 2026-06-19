@@ -36,7 +36,7 @@ export class HintPopup {
     }
 
     if (hints.length === 0 && !pending) {
-      this.listEl.createDiv({ cls: "obsidian-math-chords-hint-empty", text: "无后续快捷键" });
+      this.listEl.createDiv({ cls: "obsidian-math-chords-hint-empty", text: "No further shortcuts" });
     }
 
     for (const hint of hints) {

@@ -2,7 +2,7 @@
 
 [中文文档](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.2-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.1.3-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
@@ -10,7 +10,9 @@
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.1.2.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.1.3.** See [CHANGELOG](CHANGELOG.md).
+
+**Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
 ---
 
@@ -39,8 +41,8 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 | **Caret placeholder** | `$$` in a command template marks where the cursor (or selection) is placed, e.g. `\frac{$$}{}`. |
 | **Auto `$…$` wrap** | Optional: when inserting outside math, wrap the snippet in inline math delimiters. |
 | **Inline live preview** | While the caret is inside `$…$`, a floating panel above the formula renders with Obsidian's native **MathJax**. |
-| **Display-math environments** | Inside `$$…$$`, wrap existing content with `\begin{…}…\end{…}` via a fuzzy-search picker. |
-| **Built-in math commands** | `Ctrl+M` inline math, `Ctrl+Shift+M` display math (Obsidian commands, registered by this plugin). |
+| **Display-math environments** | Wrap block content with `\begin{…}…\end{…}` via a fuzzy-search picker; inserts `$$…$$` when needed. |
+| **Built-in math commands** | Insert inline math, insert display math, wrap display math with environment (assign hotkeys in Obsidian settings). |
 | **YAML + UI config** | Edit `shortcuts.yaml` or use the settings tab; changes rebuild the shortcut trie immediately. |
 | **Non-destructive merge** | On load, missing default shortcuts are merged in; your custom key bindings are never overwritten. |
 
@@ -50,9 +52,11 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 
 ### Manual
 
-1. Download **`obsidian-math-chords.zip`** from [Releases](https://github.com/ichenh/obsidian-math-chords/releases) (or build locally; see [Development](#development)).
-2. Extract into your vault's `.obsidian/plugins/` folder so you have `.obsidian/plugins/obsidian-math-chords/` with `main.js`, `manifest.json`, `styles.css`, and `shortcuts.yaml`.
+1. Download **`math-chords.zip`** from [Releases](https://github.com/ichenh/obsidian-math-chords/releases) (or build locally; see [Development](#development)).
+2. Extract into your vault's `.obsidian/plugins/` folder so you have `.obsidian/plugins/math-chords/` with `main.js`, `manifest.json`, `styles.css`, and `shortcuts.yaml`.
 3. Enable **Math Chords** under **Settings → Community plugins** and reload Obsidian.
+
+When installed from the community directory, Obsidian downloads `main.js`, `manifest.json`, and `styles.css` from the GitHub release automatically.
 
 ### From source
 
@@ -63,7 +67,7 @@ npm install
 npm run build
 ```
 
-Copy `main.js`, `manifest.json`, `styles.css`, and `shortcuts.yaml` into your vault plugin folder.
+Copy `main.js`, `manifest.json`, `styles.css`, and `shortcuts.yaml` into `.obsidian/plugins/math-chords/`.
 
 ---
 
@@ -74,9 +78,9 @@ Copy `main.js`, `manifest.json`, `styles.css`, and `shortcuts.yaml` into your va
 3. Press a shortcut, e.g. **`F`** → `\frac{}{}` with the cursor in the numerator.
 4. For Greek letters: **`G` `A`** → `\alpha` (after the leader).
 5. For display math: **`D`** → `$$\n\n$$`.
-6. Inside `$$…$$`, press **`Shift+E`** (default, after the leader) to pick an environment and wrap the block content.
+7. Press **`Shift+E`** (default, after the leader) or run **Wrap display math with environment** to pick an environment. If the caret is not already inside `$$…$$`, a display block is inserted first.
 
-> **Note:** Shortcut tables list keys **after** the leader. The default leader is `Alt+M`.
+> **Note:** Shortcut tables list keys **after** the leader. The default leader is `Alt+M`. Assign hotkeys for the built-in commands under **Settings → Hotkeys** (no defaults are registered).
 
 ---
 
@@ -187,14 +191,14 @@ The full list lives in [`shortcuts.yaml`](shortcuts.yaml) (101 default shortcuts
 
 ## Display-math environment wrap
 
-Inside a display-math block `$$…$$`:
+With the caret inside `$$…$$`, or anywhere else in the note (a block is created first if needed):
 
-1. Press the configured shortcut after the leader (default **`Shift+E`**).
+1. Press the configured shortcut after the leader (default **`Shift+E`**), or run **Wrap display math with environment** from the command palette.
 2. Choose an environment from the fuzzy-search list.
 3. The plugin wraps the **entire block content** (not only the selection), e.g.  
    `$$\alpha+\beta$$` → `$$\begin{aligned}\alpha+\beta\end{aligned}$$`
 
-Configure environments (name / `\begin{…}` / `\end{…}`) and the trigger keys under **行间公式环境包裹** in settings, or run the command **Wrap display math with environment** from the palette.
+Configure environments (name / `\begin{…}` / `\end{…}`) and the trigger keys under **Display-math environment wrap** in **Settings → Math Chords**, or assign a hotkey to the command in **Settings → Hotkeys**.
 
 Default environments: `aligned`, `matrix`, `cases`, `gathered`.
 
@@ -236,18 +240,20 @@ Special command `__DISPLAY_MATH__` inserts a `$$…$$` block (used by `D`).
 
 ## Settings
 
-Open **Settings → Math Chords**.
+Open **Settings → Math Chords**. The settings UI is in English.
 
 | Setting | Default | Description |
 | :--- | :--- | :--- |
 | Enable plugin | on | Master switch for leader shortcuts. |
-| Show hint popup | off | Which-key panel after the leader. |
-| Inline math preview | on | MathJax preview above `$…$`. |
+| Show shortcut hints | off | Which-key panel after the leader. |
+| Inline math live preview | on | MathJax preview above `$…$`. |
 | Leader key | `Alt+M` | Global prefix before shortcut keys; `keys` in YAML are what follows it. |
-| Wrap outside math | on | Auto-insert `$…$` around snippets when not in math. |
-| Display-math env wrap | on | Environment picker inside `$$…$$`. |
-| Env wrap keys | `Shift+E` | Keys after the leader for the picker. |
+| Auto-wrap outside math | on | Auto-insert `$…$` around snippets when not in math. |
+| Enable environment wrap | on | Environment picker; inserts `$$…$$` first when needed. |
+| Environment wrap keys | `Shift+E` | Keys after the leader for the picker. |
 | Math environments | 4 built-ins | Editable list for the picker. |
+
+**Built-in commands** (assign under **Settings → Hotkeys**): **Insert inline math**, **Insert display math**, **Wrap display math with environment**.
 
 **Shortcut management:** search, add, edit, delete entries; **Reload** re-reads YAML; **Merge defaults** appends any missing built-in shortcuts without overwriting yours.
 
@@ -255,7 +261,7 @@ Open **Settings → Math Chords**.
 
 ## Updating shortcuts
 
-When the plugin loads (or you click **Reload** / **合并默认**):
+When the plugin loads (or you click **Reload** or **Merge defaults**):
 
 1. Your existing YAML entries are kept **as-is** (same `keys` → same binding).
 2. Any default shortcut whose key sequence is **not** yet present is **appended**.
@@ -274,7 +280,7 @@ npm run seed
 ## Project structure
 
 ```
-obsidian-math-chords/
+math-chords/                  # Plugin id; install folder .obsidian/plugins/math-chords/
 ├── src/                    # TypeScript source
 │   ├── main.ts             # Plugin entry
 │   ├── leader.ts           # Leader shortcut state machine
@@ -307,8 +313,8 @@ Pull requests welcome. Run `npm run build` before submitting.
 
 1. Bump `version` in `manifest.json` and `package.json`; add the mapping to `versions.json`.
 2. Update `CHANGELOG.md`.
-3. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.1.0 && git push origin 0.1.0`.
-4. The [release workflow](.github/workflows/release.yml) builds and attaches `obsidian-math-chords.zip`.
+3. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.1.3 && git push origin 0.1.3`.
+4. The [release workflow](.github/workflows/release.yml) builds and attaches `main.js`, `manifest.json`, `styles.css`, and `math-chords.zip`.
 
 ---
 

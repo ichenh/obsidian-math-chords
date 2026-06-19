@@ -34,4 +34,5 @@ jobs:
           gh release delete "$tag" --yes 2>/dev/null || true
           gh release create "$tag" \
             --title="$tag" \
+            main.js manifest.json styles.css \
             "dist/${plugin_id}.zip"

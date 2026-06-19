@@ -76,7 +76,12 @@ export async function loadShortcuts(
     if (shortcuts.length > 0) {
       const { merged, added } = mergeShortcuts(shortcuts, DEFAULT_SHORTCUTS);
       if (added.length > 0) {
-        await write(stringifyShortcutsYaml(merged));
+        try {
+          await write(stringifyShortcutsYaml(merged));
+        } catch (error) {
+          console.error("Math Chords: could not merge shortcuts into shortcuts.yaml.", error);
+          return { shortcuts, mergedCount: 0 };
+        }
         return { shortcuts: merged, mergedCount: added.length };
       }
       return { shortcuts, mergedCount: 0 };
@@ -86,7 +91,12 @@ export async function loadShortcuts(
   }
 
   const seeded = stringifyShortcutsYaml(DEFAULT_SHORTCUTS);
-  await write(seeded);
+  try {
+    await write(seeded);
+  } catch (error) {
+    console.error("Math Chords: could not write default shortcuts.yaml.", error);
+    return { shortcuts: [...DEFAULT_SHORTCUTS], mergedCount: 0 };
+  }
   return { shortcuts: [...DEFAULT_SHORTCUTS], mergedCount: 0 };
 }
 

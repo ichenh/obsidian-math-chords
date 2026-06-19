@@ -6,9 +6,10 @@ import {
   hasUnclosedDisplayMath,
   isValidMathRegion,
 } from "./math";
+import { logAndNotice } from "./errors";
 
 const PREVIEW_GAP = 8;
-const PLACEHOLDER_TEXT = "在此输入 LaTeX，预览将实时显示";
+const PLACEHOLDER_TEXT = "Type LaTeX here; preview updates as you edit.";
 
 export interface InlinePreviewContext {
   isEnabled: () => boolean;
@@ -174,14 +175,16 @@ function getInlineMathAnchorRect(
  */
 class InlinePreviewLayer {
   private readonly host: HTMLElement;
+  private readonly panel: HTMLElement;
   private readonly body: HTMLElement;
   private mathFlushTimer: ReturnType<typeof setTimeout> | null = null;
   private renderGeneration = 0;
+  private lastAnchor: DOMRect | null = null;
 
   constructor(private readonly ownerDocument: Document) {
     this.host = ownerDocument.body.createDiv({ cls: "obsidian-math-chords-inline-preview-host" });
-    const panel = this.host.createDiv({ cls: "obsidian-math-chords-inline-preview-panel" });
-    this.body = panel.createDiv({ cls: "obsidian-math-chords-inline-preview-body" });
+    this.panel = this.host.createDiv({ cls: "obsidian-math-chords-inline-preview-panel" });
+    this.body = this.panel.createDiv({ cls: "obsidian-math-chords-inline-preview-body" });
     this.host.style.display = "none";
   }
 
@@ -199,6 +202,7 @@ class InlinePreviewLayer {
 
   show(latex: string, anchor: DOMRect): void {
     const generation = ++this.renderGeneration;
+    this.lastAnchor = anchor;
     this.body.empty();
 
     const trimmed = latex.trim();
@@ -207,10 +211,19 @@ class InlinePreviewLayer {
         cls: "obsidian-math-chords-inline-preview-placeholder",
         text: PLACEHOLDER_TEXT,
       });
+      this.positionHost();
+      this.adaptSize();
     } else {
       this.appendMath(trimmed);
+      this.positionHost();
+      this.adaptSize();
       this.scheduleMathFlush(generation, trimmed);
     }
+  }
+
+  private positionHost(): void {
+    const anchor = this.lastAnchor;
+    if (!anchor) return;
 
     const left = Math.max(8, Math.min(anchor.left, window.innerWidth - 80));
     const bottom = window.innerHeight - anchor.top + PREVIEW_GAP;
@@ -221,12 +234,35 @@ class InlinePreviewLayer {
     this.host.style.bottom = `${bottom}px`;
     this.host.style.zIndex = "10050";
     this.host.style.pointerEvents = "none";
-    this.host.style.minWidth = `${Math.max(anchor.width, 48)}px`;
-    this.host.style.maxWidth = "min(92vw, 640px)";
+  }
+
+  /** Shrink the panel to rendered math; scroll horizontally only when needed. */
+  private adaptSize(): void {
+    this.host.style.width = "";
+    this.host.style.height = "";
+    this.panel.style.width = "";
+    this.panel.style.height = "";
+    this.panel.style.overflowX = "";
+    this.panel.style.overflowY = "";
+
+    const maxWidth = Math.min(window.innerWidth * 0.92, 640);
+    const contentWidth = Math.ceil(this.panel.scrollWidth);
+    const needsScroll = contentWidth > maxWidth;
+
+    this.panel.style.maxWidth = needsScroll ? `${maxWidth}px` : "";
+    this.panel.style.overflowX = needsScroll ? "auto" : "hidden";
+    this.panel.style.overflowY = "hidden";
+
+    const anchor = this.lastAnchor;
+    if (!anchor) return;
+
+    const panelWidth = Math.min(contentWidth, maxWidth);
+    const left = Math.max(8, Math.min(anchor.left, window.innerWidth - panelWidth - 8));
+    this.host.style.left = `${left}px`;
   }
 
   private appendMath(latex: string): void {
-    const mathEl = renderMath(latex, true);
+    const mathEl = renderMath(latex, false);
     mathEl.addClass("obsidian-math-chords-inline-preview-math");
     this.body.appendChild(mathEl);
   }
@@ -240,7 +276,12 @@ class InlinePreviewLayer {
   }
 
   private async flushAndRetryIfEmpty(generation: number, latex: string): Promise<void> {
-    await finishRenderMath();
+    try {
+      await finishRenderMath();
+    } catch (error) {
+      logAndNotice("Math Chords: could not render inline math preview.", error);
+      return;
+    }
     if (generation !== this.renderGeneration || this.host.style.display === "none") return;
 
     await new Promise<void>((resolve) => {
@@ -251,8 +292,14 @@ class InlinePreviewLayer {
     if (!this.isMathVisible()) {
       this.body.empty();
       this.appendMath(latex);
-      await finishRenderMath();
+      try {
+        await finishRenderMath();
+      } catch (error) {
+        logAndNotice("Math Chords: could not render inline math preview.", error);
+      }
     }
+
+    this.adaptSize();
   }
 
   private isMathVisible(): boolean {

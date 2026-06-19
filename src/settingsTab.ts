@@ -1,5 +1,6 @@
 import { App, Modal, Notice, PluginSettingTab, Setting } from "obsidian";
 import { normalizeCommand } from "./config";
+import { runWithNotice } from "./errors";
 import { validateMathEnvironment } from "./mathEnv";
 import type ObsidianMathChordsPlugin from "./main";
 import type { MathEnvironment, Shortcut } from "./types";
@@ -21,119 +22,127 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
 
     containerEl.createEl("p", {
       cls: "obsidian-math-chords-intro",
-      text: "按 Alt+M（可配置 leader 键）后接按键序列插入 LaTeX。内置默认快捷键参考了 LyX 数学模式的绑定。",
+      text: 'Press a configurable leader key (default Alt+M), then a key sequence to insert LaTeX. Default shortcuts are inspired by LyX math-mode bindings.',
     });
 
     new Setting(containerEl)
-      .setName("启用插件")
-      .setDesc("关闭后禁用 leader 快捷键序列。")
+      .setName("Enable plugin")
+      .setDesc("Turn off to disable leader-key chord sequences.")
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.enabled).onChange(async (value) => {
           this.plugin.settings.enabled = value;
-          await this.plugin.saveSettings();
+          await runWithNotice(() => this.plugin.saveSettings(), "Math Chords: could not save settings.");
         }),
       );
 
     new Setting(containerEl)
-      .setName("显示快捷键提示")
-      .setDesc("按下 leader 后在光标附近显示 which-key 面板。")
+      .setName("Show shortcut hints")
+      .setDesc("Show a which-key panel near the caret after pressing the leader key.")
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.showHintPopup).onChange(async (value) => {
           this.plugin.settings.showHintPopup = value;
-          await this.plugin.saveSettings();
+          await runWithNotice(() => this.plugin.saveSettings(), "Math Chords: could not save settings.");
         }),
       );
 
     new Setting(containerEl)
-      .setName("行内公式实时预览")
-      .setDesc("光标位于 $…$ 内时，在公式上方用 Obsidian 默认 MathJax 渲染预览。")
+      .setName("Inline math live preview")
+      .setDesc("While the caret is inside $…$, show a MathJax preview above the formula.")
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.showInlinePreview).onChange(async (value) => {
           this.plugin.settings.showInlinePreview = value;
-          await this.plugin.saveSettings();
+          await runWithNotice(() => this.plugin.saveSettings(), "Math Chords: could not save settings.");
         }),
       );
 
     new Setting(containerEl)
-      .setName("Leader 键")
-      .setDesc('默认 "Alt+M"。各快捷键的「按键序列」填写 leader 之后按下的键，例如 "F"、"G A"。')
+      .setName("Leader key")
+      .setDesc('Default "Alt+M". Key sequences in shortcuts.yaml are pressed after the leader, e.g. "F" or "G A".')
       .addText((text) =>
         text.setValue(this.plugin.settings.leaderKey).onChange(async (value) => {
           this.plugin.settings.leaderKey = value.trim() || "Alt+M";
-          await this.plugin.saveSettings();
+          await runWithNotice(() => this.plugin.saveSettings(), "Math Chords: could not save settings.");
         }),
       );
 
     new Setting(containerEl)
-      .setName("公式外自动包裹")
-      .setDesc("在公式区域外插入符号时自动用 $...$ 包裹。")
+      .setName("Auto-wrap outside math")
+      .setDesc("When inserting outside a math region, wrap the snippet in $…$.")
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.wrapOutsideMath).onChange(async (value) => {
           this.plugin.settings.wrapOutsideMath = value;
-          await this.plugin.saveSettings();
+          await runWithNotice(() => this.plugin.saveSettings(), "Math Chords: could not save settings.");
         }),
       );
 
     new Setting(containerEl)
-      .setName("重新加载 YAML")
-      .setDesc("从 shortcuts.yaml 重新读取快捷键配置。")
+      .setName("Reload YAML")
+      .setDesc("Reload shortcut bindings from shortcuts.yaml.")
       .addButton((button) =>
         button.setButtonText("Reload").onClick(async () => {
-          await this.plugin.reloadShortcuts();
-          new Notice("已重新加载 shortcuts.yaml");
-          this.display();
+          await runWithNotice(async () => {
+            await this.plugin.reloadShortcuts();
+            new Notice("Reloaded shortcuts.yaml.");
+            this.display();
+          }, "Math Chords: could not reload shortcuts.yaml.");
         }),
       )
       .addButton((button) =>
-        button.setButtonText("合并默认").onClick(async () => {
-          const count = await this.plugin.mergeDefaultShortcuts();
-          new Notice(
-            count > 0 ? `已合并 ${count} 条默认快捷键（保留你的自定义项）` : "没有可合并的新快捷键",
-          );
-          this.display();
+        button.setButtonText("Merge defaults").onClick(async () => {
+          await runWithNotice(async () => {
+            const count = await this.plugin.mergeDefaultShortcuts();
+            new Notice(
+              count > 0
+                ? `Merged ${count} default shortcut(s); your custom bindings were kept.`
+                : "No new default shortcuts to merge.",
+            );
+            this.display();
+          }, "Math Chords: could not merge default shortcuts.");
         }),
       );
 
-    containerEl.createEl("h3", { text: "行间公式环境包裹" });
+    containerEl.createEl("h3", { text: "Display-math environment wrap" });
 
     new Setting(containerEl)
-      .setName("启用环境包裹")
+      .setName("Enable environment wrap")
       .setDesc(
-        "通过 leader 快捷键或命令面板「Wrap display math with environment」（可在 Obsidian 快捷键设置中绑定）弹出环境列表。光标不在 $$…$$ 内时会先插入行间公式块。",
+        'Use the leader shortcut or the command "Wrap display math with environment" (assign a hotkey in Obsidian settings). If the caret is not inside $$…$$, a display block is inserted first.',
       )
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.mathEnvWrapEnabled).onChange(async (value) => {
           this.plugin.settings.mathEnvWrapEnabled = value;
-          await this.plugin.saveSettings();
+          await runWithNotice(() => this.plugin.saveSettings(), "Math Chords: could not save settings.");
         }),
       );
 
     new Setting(containerEl)
-      .setName("环境包裹快捷键")
-      .setDesc('leader 之后的按键序列，例如 "Shift+E"。')
+      .setName("Environment wrap keys")
+      .setDesc('Key sequence after the leader, e.g. "Shift+E".')
       .addText((text) =>
         text.setValue(this.plugin.settings.mathEnvWrapKeys).onChange(async (value) => {
           this.plugin.settings.mathEnvWrapKeys = value.trim() || "Shift+E";
-          await this.plugin.saveSettings();
+          await runWithNotice(() => this.plugin.saveSettings(), "Math Chords: could not save settings.");
         }),
       );
 
     new Setting(containerEl)
-      .setName("数学环境")
+      .setName("Math environments")
       .addButton((button) =>
-        button.setButtonText("添加").onClick(() => {
+        button.setButtonText("Add").onClick(() => {
           new MathEnvironmentEditorModal(this.app, null, async (entry) => {
             if (!entry) return;
             this.plugin.settings.mathEnvironments.push(entry);
-            await this.plugin.saveSettings();
-            this.display();
+            await runWithNotice(async () => {
+              await this.plugin.saveSettings();
+              this.display();
+            }, "Math Chords: could not save settings.");
           }).open();
         }),
       );
 
     const envTable = containerEl.createEl("table", { cls: "obsidian-math-chords-table" });
     const envHeader = envTable.createEl("thead").createEl("tr");
-    for (const label of ["名称", "开始", "结束", "操作"]) {
+    for (const label of ["Name", "Begin", "End", "Actions"]) {
       envHeader.createEl("th", { text: label });
     }
 
@@ -146,29 +155,33 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       row.createEl("td", { text: entry.end });
 
       const actions = row.createEl("td");
-      actions.createEl("button", { text: "编辑", cls: "mod-small" }).addEventListener("click", () => {
+      actions.createEl("button", { text: "Edit", cls: "mod-small" }).addEventListener("click", () => {
         new MathEnvironmentEditorModal(this.app, entry, async (updated) => {
           if (!updated) return;
           this.plugin.settings.mathEnvironments[index] = updated;
-          await this.plugin.saveSettings();
-          this.display();
+          await runWithNotice(async () => {
+            await this.plugin.saveSettings();
+            this.display();
+          }, "Math Chords: could not save settings.");
         }).open();
       });
 
-      actions.createEl("button", { text: "删除", cls: "mod-small" }).addEventListener("click", async () => {
-        this.plugin.settings.mathEnvironments.splice(index, 1);
-        await this.plugin.saveSettings();
-        this.display();
+      actions.createEl("button", { text: "Delete", cls: "mod-small" }).addEventListener("click", () => {
+        void runWithNotice(async () => {
+          this.plugin.settings.mathEnvironments.splice(index, 1);
+          await this.plugin.saveSettings();
+          this.display();
+        }, "Math Chords: could not save settings.");
       });
     }
 
-    containerEl.createEl("h3", { text: "快捷键管理" });
+    containerEl.createEl("h3", { text: "Shortcut management" });
 
     new Setting(containerEl)
-      .setName("搜索")
+      .setName("Search")
       .addText((text) =>
         text
-          .setPlaceholder("按键或命令")
+          .setPlaceholder("Keys or command")
           .setValue(this.search)
           .onChange((value) => {
             this.search = value;
@@ -176,19 +189,21 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
           }),
       )
       .addButton((button) =>
-        button.setButtonText("添加").onClick(() => {
+        button.setButtonText("Add").onClick(() => {
           new ShortcutEditorModal(this.app, null, async (entry) => {
             if (!entry) return;
             this.plugin.shortcuts.set(shortcutStorageKey(entry), entry);
-            await this.plugin.persistShortcuts();
-            this.display();
+            await runWithNotice(async () => {
+              await this.plugin.persistShortcuts();
+              this.display();
+            }, "Math Chords: could not save shortcuts.yaml.");
           }).open();
         }),
       );
 
     const table = containerEl.createEl("table", { cls: "obsidian-math-chords-table" });
     const header = table.createEl("thead").createEl("tr");
-    for (const label of ["按键", "命令", "名称", "分组", "操作"]) {
+    for (const label of ["Keys", "Command", "Name", "Group", "Actions"]) {
       header.createEl("th", { text: label });
     }
 
@@ -206,20 +221,24 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       row.createEl("td", { text: entry.group ?? "" });
 
       const actions = row.createEl("td");
-      actions.createEl("button", { text: "编辑", cls: "mod-small" }).addEventListener("click", () => {
+      actions.createEl("button", { text: "Edit", cls: "mod-small" }).addEventListener("click", () => {
         new ShortcutEditorModal(this.app, entry, async (updated) => {
           if (!updated) return;
           if (key !== shortcutStorageKey(updated)) this.plugin.shortcuts.delete(key);
           this.plugin.shortcuts.set(shortcutStorageKey(updated), updated);
-          await this.plugin.persistShortcuts();
-          this.display();
+          await runWithNotice(async () => {
+            await this.plugin.persistShortcuts();
+            this.display();
+          }, "Math Chords: could not save shortcuts.yaml.");
         }).open();
       });
 
-      actions.createEl("button", { text: "删除", cls: "mod-small" }).addEventListener("click", async () => {
-        this.plugin.shortcuts.delete(key);
-        await this.plugin.persistShortcuts();
-        this.display();
+      actions.createEl("button", { text: "Delete", cls: "mod-small" }).addEventListener("click", () => {
+        void runWithNotice(async () => {
+          this.plugin.shortcuts.delete(key);
+          await this.plugin.persistShortcuts();
+          this.display();
+        }, "Math Chords: could not save shortcuts.yaml.");
       });
     }
   }
@@ -242,11 +261,11 @@ class ShortcutEditorModal extends Modal {
   onOpen(): void {
     const { contentEl } = this;
     contentEl.empty();
-    contentEl.createEl("h3", { text: this.initial ? "编辑快捷键" : "添加快捷键" });
+    contentEl.createEl("h3", { text: this.initial ? "Edit shortcut" : "Add shortcut" });
 
     new Setting(contentEl)
-      .setName("按键序列")
-      .setDesc('Leader 之后按下的键。例：分数 "F"，α "G A"，不等号 "= |"。')
+      .setName("Key sequence")
+      .setDesc('Keys after the leader. Examples: fraction "F", alpha "G A", neq "= |".')
       .addText((text) =>
         text.setValue(this.entry.keys).onChange((value) => {
           this.entry.keys = value;
@@ -254,21 +273,21 @@ class ShortcutEditorModal extends Modal {
       );
 
     new Setting(contentEl)
-      .setName("命令")
-      .setDesc("LaTeX 片段，$$ 为光标占位符。直接输入 \\frac{$$}{}，无需写成 \\\\frac。")
+      .setName("Command")
+      .setDesc("LaTeX snippet; $$ marks the caret. Type \\frac{$$}{} directly.")
       .addText((text) =>
         text.setValue(this.entry.command).onChange((value) => {
           this.entry.command = value;
         }),
       );
 
-    new Setting(contentEl).setName("名称").addText((text) =>
+    new Setting(contentEl).setName("Name").addText((text) =>
       text.setValue(this.entry.name ?? "").onChange((value) => {
         this.entry.name = value;
       }),
     );
 
-    new Setting(contentEl).setName("分组").addText((text) =>
+    new Setting(contentEl).setName("Group").addText((text) =>
       text.setValue(this.entry.group ?? "").onChange((value) => {
         this.entry.group = value;
       }),
@@ -277,11 +296,11 @@ class ShortcutEditorModal extends Modal {
     new Setting(contentEl)
       .addButton((button) =>
         button
-          .setButtonText("保存")
+          .setButtonText("Save")
           .setCta()
           .onClick(() => {
             if (!this.entry.keys.trim() || !this.entry.command.trim()) {
-              new Notice("按键与命令不能为空");
+              new Notice("Keys and command are required.");
               return;
             }
             this.entry.command = normalizeCommand(this.entry.command);
@@ -289,7 +308,7 @@ class ShortcutEditorModal extends Modal {
             this.close();
           }),
       )
-      .addButton((button) => button.setButtonText("取消").onClick(() => this.close()));
+      .addButton((button) => button.setButtonText("Cancel").onClick(() => this.close()));
   }
 }
 
@@ -314,11 +333,11 @@ class MathEnvironmentEditorModal extends Modal {
   onOpen(): void {
     const { contentEl } = this;
     contentEl.empty();
-    contentEl.createEl("h3", { text: this.initial ? "编辑数学环境" : "添加数学环境" });
+    contentEl.createEl("h3", { text: this.initial ? "Edit math environment" : "Add math environment" });
 
     new Setting(contentEl)
-      .setName("名称")
-      .setDesc("在环境选择列表中显示的名称，例如 aligned。")
+      .setName("Name")
+      .setDesc("Label in the environment picker, e.g. aligned.")
       .addText((text) =>
         text.setValue(this.entry.name).onChange((value) => {
           this.entry.name = value;
@@ -326,8 +345,8 @@ class MathEnvironmentEditorModal extends Modal {
       );
 
     new Setting(contentEl)
-      .setName("开始")
-      .setDesc("插入到公式内容前的 LaTeX，例如 \\begin{aligned}。")
+      .setName("Begin")
+      .setDesc("LaTeX inserted before the content, e.g. \\begin{aligned}.")
       .addText((text) =>
         text.setValue(this.entry.begin).onChange((value) => {
           this.entry.begin = value;
@@ -335,8 +354,8 @@ class MathEnvironmentEditorModal extends Modal {
       );
 
     new Setting(contentEl)
-      .setName("结束")
-      .setDesc("插入到公式内容后的 LaTeX，例如 \\end{aligned}。")
+      .setName("End")
+      .setDesc("LaTeX inserted after the content, e.g. \\end{aligned}.")
       .addText((text) =>
         text.setValue(this.entry.end).onChange((value) => {
           this.entry.end = value;
@@ -346,18 +365,18 @@ class MathEnvironmentEditorModal extends Modal {
     new Setting(contentEl)
       .addButton((button) =>
         button
-          .setButtonText("保存")
+          .setButtonText("Save")
           .setCta()
           .onClick(() => {
             const validated = validateMathEnvironment(this.entry);
             if (!validated) {
-              new Notice("名称、开始与结束均不能为空");
+              new Notice("Name, begin, and end are required.");
               return;
             }
             this.onSave(validated);
             this.close();
           }),
       )
-      .addButton((button) => button.setButtonText("取消").onClick(() => this.close()));
+      .addButton((button) => button.setButtonText("Cancel").onClick(() => this.close()));
   }
 }

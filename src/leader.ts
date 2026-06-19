@@ -99,7 +99,7 @@ export class LeaderController {
         this.refreshHints(view);
         return true;
       }
-      this.ctx.onNotice(`未定义 ${formatSequence(next, this.ctx.getLeaderKey())}`);
+      this.ctx.onNotice(`Undefined ${formatSequence(next, this.ctx.getLeaderKey())}`);
       this.reset();
       return true;
     }

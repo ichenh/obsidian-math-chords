@@ -4,13 +4,15 @@ Architecture and workflow reference for contributors and AI assistants.
 
 ---
 
-## 1. Product scope (v0.1.0)
+## 1. Product scope (v0.1.3)
 
+- **Plugin id:** `math-chords` (install folder `.obsidian/plugins/math-chords/`).
 - **Leader chords:** `Alt+M` + key sequence inserts LaTeX snippets (defaults inspired by LyX).
-- **Inline preview:** MathJax panel above `$…$` in Live Preview (optional).
-- **Display-math env wrap:** Inside `$$…$$`, leader chord opens environment picker.
-- **Commands:** `Ctrl+M` / `Ctrl+Shift+M` for inline / display math blocks.
-- **Config:** `shortcuts.yaml` + settings UI; merge defaults without overwriting custom keys.
+- **Inline preview:** MathJax panel above `$…$` (optional; inline `renderMath`, debounced `finishRenderMath`).
+- **Display-math env wrap:** Leader shortcut or command opens environment picker; inserts `$$…$$` when needed.
+- **Commands:** Insert inline / display math, wrap display math with environment (no default hotkeys).
+- **Config:** `shortcuts.yaml` + English settings UI; merge defaults without overwriting custom keys.
+- **minAppVersion:** `1.5.0`.
 
 Do not re-add removed overlay UI or bundled KaTeX without an explicit, LP-safe design.
 
@@ -21,19 +23,20 @@ Do not re-add removed overlay UI or bundled KaTeX without an explicit, LP-safe d
 | Module | Responsibility |
 | :--- | :--- |
 | `main.ts` | Plugin lifecycle, commands, leader wiring, editor callbacks. |
-| `settings.ts` | `ObsidianMathChordsSettings` and defaults. |
-| `settingsTab.ts` | Settings UI. |
+| `settings.ts` | Settings types, defaults, `normalizeSettings()`. |
+| `settingsTab.ts` | Settings UI (English). |
 | `config.ts` | YAML load/save, validation, merge, backslash normalization. |
 | `defaults.ts` | Static default shortcut catalog. |
 | `types.ts` | Domain types. |
 | `keys.ts` | **Sole** KeyboardEvent → canonical chord token mapping. |
 | `trie.ts` | Prefix trie for chord lookup. |
-| `snippet.ts` | `$$` placeholder expansion. |
+| `snippet.ts` | `$$` placeholder expansion; inline/display math insert. |
 | `math.ts` | Math region detection. |
 | `mathEnv.ts` | Display-math environment picker and wrap. |
-| `mathPreview.ts` | Inline `$…$` MathJax preview (no `renderMath` / global MathJax calls). |
+| `mathPreview.ts` | Inline `$…$` MathJax preview layer. |
 | `leader.ts` | Leader state machine. |
 | `hint.ts` | Optional which-key popup. |
+| `errors.ts` | `logAndNotice` / `runWithNotice` helpers. |
 
 No circular dependencies. New modules only when a responsibility cannot fit above.
 
@@ -44,10 +47,11 @@ No circular dependencies. New modules only when a responsibility cannot fit abov
 - **Keys:** canonical `ctrl` → `alt` → `shift` → `meta` + lowercase base; letters never imply `Shift`.
 - **Snippets:** `$$` = first caret/selection marker; `__DISPLAY_MATH__` = display block command.
 - **YAML:** space-separated chords; `Shift+S` style modifiers; leader is global in settings.
-- **Edits:** Obsidian `Editor` API only for mutations; `(editor as any).cm` read-only for layout.
+- **Edits:** Obsidian `Editor` API only for mutations; `(editor as unknown as { cm?: EditorView }).cm` read-only for layout.
 - **Externals:** `obsidian` and `@codemirror/*` are esbuild externals.
 - **Performance:** `math.ts` aborts when document length > 100,000 characters.
 - **Trie:** rebuild on every config save/reload.
+- **Release assets:** `main.js`, `manifest.json`, `styles.css`, plus optional `math-chords.zip`.
 
 ---
 
@@ -56,7 +60,7 @@ No circular dependencies. New modules only when a responsibility cannot fit abov
 1. `npm run build` — zero TypeScript errors.
 2. Update `CHANGELOG.md` (Keep a Changelog).
 3. Sync `manifest.json`, `package.json`, `versions.json`.
-4. Update `README.md` when features, schema, or defaults change.
+4. Update `README.md` / `README.zh-CN.md` when features, schema, or defaults change.
 5. `npm run seed` to regenerate `shortcuts.yaml` when `defaults.ts` changes.
 
 See [AI-ASSISTANCE.md](AI-ASSISTANCE.md) for AI-use disclosure.

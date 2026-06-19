@@ -28,7 +28,7 @@ export function resolveDisplayMathRegion(editor: Editor): MathRegion | null {
   }
 
   if (region?.kind === "inline") {
-    new Notice("请先将光标移出行内公式");
+    new Notice("Move the caret out of inline math first.");
     return null;
   }
 
@@ -45,7 +45,7 @@ export function resolveDisplayMathRegion(editor: Editor): MathRegion | null {
   const newOffset = editor.posToOffset(editor.getCursor());
   const newRegion = findMathRegionAt(editor.getValue(), newOffset);
   if (!newRegion || newRegion.kind !== "display") {
-    new Notice("无法创建行间公式块");
+    new Notice("Could not create a display math block.");
     return null;
   }
   return newRegion;
@@ -88,14 +88,22 @@ export function openEnvironmentPicker(
   onChoose: (env: MathEnvironment, region: MathRegion) => void,
 ): void {
   if (environments.length === 0) {
-    new Notice("请先在设置中添加数学环境");
+    new Notice("Add a math environment in settings first.");
     return;
   }
 
   const region = resolveDisplayMathRegion(editor);
   if (!region) return;
 
-  new EnvironmentPickerModal(app, environments, (env) => onChoose(env, region)).open();
+  new EnvironmentPickerModal(app, environments, (env) => {
+    const offset = editor.posToOffset(editor.getCursor());
+    const current = findMathRegionAt(editor.getValue(), offset);
+    if (!current || current.kind !== "display") {
+      new Notice("Could not find a display math block.");
+      return;
+    }
+    onChoose(env, current);
+  }).open();
 }
 
 class EnvironmentPickerModal extends FuzzySuggestModal<MathEnvironment> {
@@ -105,7 +113,7 @@ class EnvironmentPickerModal extends FuzzySuggestModal<MathEnvironment> {
     private readonly onChoose: (env: MathEnvironment) => void,
   ) {
     super(app);
-    this.setPlaceholder("选择数学环境…");
+    this.setPlaceholder("Choose a math environment…");
   }
 
   getItems(): MathEnvironment[] {
