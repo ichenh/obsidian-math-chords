@@ -1,0 +1,25 @@
+# Changelog
+
+All notable changes to this project are documented here.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.0] - 2026-06-19
+
+### Added
+
+- **Math Chords** Obsidian plugin (`id`: `obsidian-math-chords`): leader-key LaTeX
+  chords (`Alt+M` by default) with 101 default shortcuts inspired by LyX math-mode
+  bindings plus extension prefixes (`M` / `T` / `W` / `O` / `B`).
+- **Caret placeholder** `$$` in snippet templates; optional auto-wrap in `$…$` outside
+  math regions.
+- **Inline math live preview** using Obsidian's native MathJax while editing `$…$`.
+- **Display-math environment wrap** inside `$$…$$` via fuzzy-search picker (default
+  `Alt+M` `Shift+E`).
+- **Commands:** Insert inline math (`Ctrl+M`), insert display math (`Ctrl+Shift+M`),
+  wrap display math with environment.
+- **Configuration** via `shortcuts.yaml` and settings UI (search, add, edit,
+  delete, reload, merge defaults).
+- **Non-destructive merge** on load: appends missing default chords without
+  overwriting custom key bindings.

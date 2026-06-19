@@ -1,0 +1,129 @@
+.obsidian-math-chords-inline-preview-host {
+  pointer-events: none;
+}
+
+.obsidian-math-chords-inline-preview-panel {
+  box-sizing: border-box;
+  max-width: min(92vw, 640px);
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  box-shadow: var(--shadow-s);
+  overflow-x: auto;
+}
+
+.obsidian-math-chords-inline-preview-placeholder {
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.obsidian-math-chords-inline-preview-body .obsidian-math-chords-inline-preview-math {
+  display: block;
+  overflow-x: auto;
+}
+
+.obsidian-math-chords-hint-popup {
+  position: fixed;
+  z-index: 1000;
+  min-width: 220px;
+  max-width: min(420px, 92vw);
+  padding: 8px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  box-shadow: var(--shadow-s);
+}
+
+.obsidian-math-chords-hint-popup.is-hidden {
+  display: none;
+}
+
+.obsidian-math-chords-hint-title {
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.obsidian-math-chords-hint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.obsidian-math-chords-hint-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 12px;
+}
+
+.obsidian-math-chords-hint-row.is-pending {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.obsidian-math-chords-hint-key {
+  padding: 2px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.obsidian-math-chords-hint-label {
+  overflow: hidden;
+  color: var(--text-normal);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.obsidian-math-chords-hint-command,
+.obsidian-math-chords-hint-empty {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.obsidian-math-chords-table {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+}
+
+.obsidian-math-chords-table th,
+.obsidian-math-chords-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.obsidian-math-chords-table th {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.obsidian-math-chords-intro {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.obsidian-math-chords-table td:last-child {
+  display: flex;
+  gap: 8px;
+}
