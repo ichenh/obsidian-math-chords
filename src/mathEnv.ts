@@ -63,7 +63,22 @@ export function wrapDisplayMathWithEnvironment(
   const wrapped = `${env.begin}${content}${env.end}`;
 
   editor.replaceRange(wrapped, editor.offsetToPos(from), editor.offsetToPos(to));
-  editor.setSelection(editor.offsetToPos(from), editor.offsetToPos(from + wrapped.length));
+
+  const caret = caretOffsetAfterEnvWrap(from, env, content);
+  const pos = editor.offsetToPos(caret);
+  editor.setSelection(pos, pos);
+}
+
+/** Place the caret on the first editable line inside the environment block. */
+function caretOffsetAfterEnvWrap(from: number, env: MathEnvironment, content: string): number {
+  const innerStart = from + env.begin.length;
+  if (content.trim() !== "") {
+    return innerStart;
+  }
+  if (content.startsWith("\n")) {
+    return innerStart + 1;
+  }
+  return innerStart;
 }
 
 export function openEnvironmentPicker(

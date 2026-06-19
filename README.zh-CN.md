@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.1-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.1.2-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
@@ -10,7 +10,7 @@
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.1.1。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.1.2。** 见 [CHANGELOG](CHANGELOG.md)。
 
 ---
 

@@ -1,4 +1,4 @@
-import { editorLivePreviewField, renderMath } from "obsidian";
+import { editorLivePreviewField, finishRenderMath, renderMath } from "obsidian";
 import { EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view";
 import {
   extractMathContent,
@@ -170,11 +170,13 @@ function getInlineMathAnchorRect(
 /**
  * Obsidian MathJax preview — same engine/fonts as rendered $$…$$ in the note.
  * Host lives on document.body (not Shadow DOM) so MathJax CSS applies.
- * Never call finishRenderMath() — it can corrupt global math rendering.
+ * Call finishRenderMath() debounced after renderMath so the first preview is not blank.
  */
 class InlinePreviewLayer {
   private readonly host: HTMLElement;
   private readonly body: HTMLElement;
+  private mathFlushTimer: ReturnType<typeof setTimeout> | null = null;
+  private renderGeneration = 0;
 
   constructor(private readonly ownerDocument: Document) {
     this.host = ownerDocument.body.createDiv({ cls: "obsidian-math-chords-inline-preview-host" });
@@ -184,6 +186,10 @@ class InlinePreviewLayer {
   }
 
   destroy(): void {
+    if (this.mathFlushTimer) {
+      clearTimeout(this.mathFlushTimer);
+      this.mathFlushTimer = null;
+    }
     this.host.remove();
   }
 
@@ -192,6 +198,7 @@ class InlinePreviewLayer {
   }
 
   show(latex: string, anchor: DOMRect): void {
+    const generation = ++this.renderGeneration;
     this.body.empty();
 
     const trimmed = latex.trim();
@@ -201,9 +208,8 @@ class InlinePreviewLayer {
         text: PLACEHOLDER_TEXT,
       });
     } else {
-      const mathEl = renderMath(trimmed, true);
-      mathEl.addClass("obsidian-math-chords-inline-preview-math");
-      this.body.appendChild(mathEl);
+      this.appendMath(trimmed);
+      this.scheduleMathFlush(generation, trimmed);
     }
 
     const left = Math.max(8, Math.min(anchor.left, window.innerWidth - 80));
@@ -217,6 +223,43 @@ class InlinePreviewLayer {
     this.host.style.pointerEvents = "none";
     this.host.style.minWidth = `${Math.max(anchor.width, 48)}px`;
     this.host.style.maxWidth = "min(92vw, 640px)";
+  }
+
+  private appendMath(latex: string): void {
+    const mathEl = renderMath(latex, true);
+    mathEl.addClass("obsidian-math-chords-inline-preview-math");
+    this.body.appendChild(mathEl);
+  }
+
+  private scheduleMathFlush(generation: number, latex: string): void {
+    if (this.mathFlushTimer) clearTimeout(this.mathFlushTimer);
+    this.mathFlushTimer = setTimeout(() => {
+      this.mathFlushTimer = null;
+      void this.flushAndRetryIfEmpty(generation, latex);
+    }, 0);
+  }
+
+  private async flushAndRetryIfEmpty(generation: number, latex: string): Promise<void> {
+    await finishRenderMath();
+    if (generation !== this.renderGeneration || this.host.style.display === "none") return;
+
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+    if (generation !== this.renderGeneration || this.host.style.display === "none") return;
+
+    if (!this.isMathVisible()) {
+      this.body.empty();
+      this.appendMath(latex);
+      await finishRenderMath();
+    }
+  }
+
+  private isMathVisible(): boolean {
+    const mjx = this.body.querySelector(".mjx-container, mjx-container");
+    if (!(mjx instanceof HTMLElement)) return false;
+    const rect = mjx.getBoundingClientRect();
+    return rect.width > 0 || rect.height > 0;
   }
 }
 
