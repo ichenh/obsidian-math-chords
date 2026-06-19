@@ -52,9 +52,9 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 
 ### Manual
 
-1. Download **`math-chords.zip`** from [Releases](https://github.com/ichenh/obsidian-math-chords/releases) (or build locally; see [Development](#development)).
-2. Extract into your vault's `.obsidian/plugins/` folder so you have `.obsidian/plugins/math-chords/` with `main.js`, `manifest.json`, `styles.css`, and `shortcuts.yaml`.
-3. Enable **Math Chords** under **Settings → Community plugins** and reload Obsidian.
+Prefer **Settings → Community plugins → Browse** and search for **Math Chords**.
+
+To install from a release manually, download **`main.js`**, **`manifest.json`**, and **`styles.css`** from [Releases](https://github.com/ichenh/obsidian-math-chords/releases) into `.obsidian/plugins/math-chords/` (create the folder if needed). Copy **`shortcuts.yaml`** from the repo if you want the default shortcut catalog on disk.
 
 When installed from the community directory, Obsidian downloads `main.js`, `manifest.json`, and `styles.css` from the GitHub release automatically.
 
@@ -314,7 +314,7 @@ Pull requests welcome. Run `npm run build` before submitting.
 1. Bump `version` in `manifest.json` and `package.json`; add the mapping to `versions.json`.
 2. Update `CHANGELOG.md`.
 3. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.1.3 && git push origin 0.1.3`.
-4. The [release workflow](.github/workflows/release.yml) builds and attaches `main.js`, `manifest.json`, `styles.css`, and `math-chords.zip`.
+4. The [release workflow](.github/workflows/release.yml) builds and attaches `main.js`, `manifest.json`, and `styles.css`.
 
 ---
 

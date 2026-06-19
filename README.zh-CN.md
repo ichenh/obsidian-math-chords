@@ -52,9 +52,9 @@
 
 ### 手动安装
 
-1. 从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`math-chords.zip`**（或本地构建，见 [开发](#开发)）。
-2. 解压到库的 `.obsidian/plugins/` 目录，得到 `.obsidian/plugins/math-chords/`，内含 `main.js`、`manifest.json`、`styles.css`、`shortcuts.yaml`。
-3. 在 **设置 → 社区插件** 中启用 **Math Chords** 并重新加载 Obsidian。
+推荐在 **设置 → 社区插件 → 浏览** 中搜索 **Math Chords** 安装。
+
+若要从 Release 手动安装，从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`main.js`**、**`manifest.json`**、**`styles.css`** 到 `.obsidian/plugins/math-chords/`（若无此目录请先创建）。如需默认快捷键文件，可从仓库复制 **`shortcuts.yaml`**。
 
 从社区插件目录安装时，Obsidian 会自动从 GitHub Release 下载 `main.js`、`manifest.json`、`styles.css`。
 
@@ -315,7 +315,7 @@ npm run seed   # 从 src/defaults.ts 重写 shortcuts.yaml
 1. 更新 `manifest.json`、`package.json` 中的 `version`，并在 `versions.json` 中添加映射。
 2. 更新 `CHANGELOG.md`。
 3. 提交后打 tag（不要加 `v` 前缀），例如 `git tag 0.1.3 && git push origin 0.1.3`。
-4. [release 工作流](.github/workflows/release.yml) 会自动构建并附上 `main.js`、`manifest.json`、`styles.css` 和 `math-chords.zip`。
+4. [release 工作流](.github/workflows/release.yml) 会自动构建并附上 `main.js`、`manifest.json`、`styles.css`。
 
 ---
 
