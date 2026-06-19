@@ -18,7 +18,6 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    new Setting(containerEl).setName("Math Chords").setHeading();
 
     containerEl.createEl("p", {
       cls: "obsidian-math-chords-intro",
