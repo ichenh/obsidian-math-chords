@@ -31,8 +31,10 @@ jobs:
           mkdir -p "dist/${plugin_id}"
           cp main.js manifest.json styles.css shortcuts.yaml "dist/${plugin_id}/"
           (cd dist && zip -r "${plugin_id}.zip" "${plugin_id}")
+          awk "/^## \\[$tag\\] /{flag=1;next} /^## \\[/ && flag{exit} flag" CHANGELOG.md > release-notes.md
           gh release delete "$tag" --yes 2>/dev/null || true
           gh release create "$tag" \
-            --title="$tag" \
+            --title="Math Chords $tag" \
+            --notes-file release-notes.md \
             main.js manifest.json styles.css \
             "dist/${plugin_id}.zip"

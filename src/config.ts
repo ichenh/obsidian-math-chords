@@ -57,7 +57,7 @@ export function validateShortcut(raw: unknown): Shortcut | null {
 
 export function parseShortcutsYaml(yaml: string): Shortcut[] {
   if (!yaml.trim()) return [];
-  const data = parseYaml(yaml);
+  const data: unknown = parseYaml(yaml);
   if (!Array.isArray(data)) return [];
   return data.map(validateShortcut).filter((shortcut): shortcut is Shortcut => shortcut !== null);
 }

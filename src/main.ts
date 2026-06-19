@@ -36,7 +36,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       onMathEnvWrap: (view) => this.openMathEnvironmentPicker(view),
     });
 
-    this.registerDomEvent(document, "keydown", this.onDocumentKeyDown, true);
+    this.registerDomEvent(window.activeDocument, "keydown", this.onDocumentKeyDown, true);
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
         this.leaderController?.reset();
@@ -93,9 +93,9 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   };
 
   private isActiveEditorView(view: EditorView): boolean {
-    const leaf = this.app.workspace.activeLeaf;
-    if (!leaf || !(leaf.view instanceof MarkdownView)) return false;
-    return this.getEditorView(leaf.view.editor) === view;
+    const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!markdownView) return false;
+    return this.getEditorView(markdownView.editor) === view;
   }
 
   private isEditorFocused(view: EditorView): boolean {

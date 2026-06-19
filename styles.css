@@ -1,7 +1,15 @@
 .obsidian-math-chords-inline-preview-host {
+  position: fixed;
+  z-index: 10050;
   pointer-events: none;
   width: fit-content;
   max-width: min(92vw, 640px);
+  left: var(--mc-preview-left, 8px);
+  bottom: var(--mc-preview-bottom, 8px);
+}
+
+.obsidian-math-chords-inline-preview-host.is-hidden {
+  display: none;
 }
 
 .obsidian-math-chords-inline-preview-panel {
@@ -15,6 +23,11 @@
   box-shadow: var(--shadow-s);
   overflow-x: hidden;
   overflow-y: hidden;
+}
+
+.obsidian-math-chords-inline-preview-panel.is-scroll-x {
+  overflow-x: auto;
+  max-width: var(--mc-preview-max-width, min(92vw, 640px));
 }
 
 .obsidian-math-chords-inline-preview-body {
@@ -33,11 +46,11 @@
 }
 
 .obsidian-math-chords-inline-preview-body .obsidian-math-chords-inline-preview-math,
-.obsidian-math-chords-inline-preview-body mjx-container {
-  display: inline-block !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: visible !important;
+.obsidian-math-chords-inline-preview-body .mjx-container {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
   vertical-align: middle;
   line-height: normal;
 }
@@ -52,6 +65,8 @@
   border-radius: 8px;
   background: var(--background-primary);
   box-shadow: var(--shadow-s);
+  top: var(--mc-hint-top, 0);
+  left: var(--mc-hint-left, 0);
 }
 
 .obsidian-math-chords-hint-popup.is-hidden {

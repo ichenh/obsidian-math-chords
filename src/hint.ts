@@ -9,10 +9,9 @@ export class HintPopup {
   private readonly listEl: HTMLElement;
 
   constructor() {
-    this.rootEl = document.body.createDiv({ cls: "obsidian-math-chords-hint-popup" });
+    this.rootEl = window.activeDocument.body.createDiv({ cls: "obsidian-math-chords-hint-popup is-hidden" });
     this.titleEl = this.rootEl.createDiv({ cls: "obsidian-math-chords-hint-title" });
     this.listEl = this.rootEl.createDiv({ cls: "obsidian-math-chords-hint-list" });
-    this.hide();
   }
 
   show(
@@ -65,7 +64,9 @@ export class HintPopup {
     const coords = view.coordsAtPos(head);
     if (!coords) return;
 
-    this.rootEl.style.top = `${coords.bottom + 8}px`;
-    this.rootEl.style.left = `${coords.left}px`;
+    this.rootEl.setCssProps({
+      "--mc-hint-top": `${coords.bottom + 8}px`,
+      "--mc-hint-left": `${coords.left}px`,
+    });
   }
 }

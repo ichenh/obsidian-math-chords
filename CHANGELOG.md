@@ -5,6 +5,15 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-06-20
+
+### Fixed
+
+- Address Obsidian community plugin review: replace inline style assignments with CSS
+  classes and `setCssProps`, use `Setting.setHeading()` in settings UI, `window.activeDocument`
+  / `window.setTimeout` for popout compatibility, `instanceOf(HTMLElement)` for cross-window
+  checks, and typed YAML parsing.
+
 ## [0.1.3] - 2026-06-20
 
 ### Changed

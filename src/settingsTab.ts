@@ -18,7 +18,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Math Chords" });
+    new Setting(containerEl).setName("Math Chords").setHeading();
 
     containerEl.createEl("p", {
       cls: "obsidian-math-chords-intro",
@@ -101,7 +101,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         }),
       );
 
-    containerEl.createEl("h3", { text: "Display-math environment wrap" });
+    new Setting(containerEl).setName("Display-math environment wrap").setHeading();
 
     new Setting(containerEl)
       .setName("Enable environment wrap")
@@ -129,10 +129,10 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       .setName("Math environments")
       .addButton((button) =>
         button.setButtonText("Add").onClick(() => {
-          new MathEnvironmentEditorModal(this.app, null, async (entry) => {
+          new MathEnvironmentEditorModal(this.app, null, (entry) => {
             if (!entry) return;
-            this.plugin.settings.mathEnvironments.push(entry);
-            await runWithNotice(async () => {
+            void runWithNotice(async () => {
+              this.plugin.settings.mathEnvironments.push(entry);
               await this.plugin.saveSettings();
               this.display();
             }, "Math Chords: could not save settings.");
@@ -156,10 +156,10 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
 
       const actions = row.createEl("td");
       actions.createEl("button", { text: "Edit", cls: "mod-small" }).addEventListener("click", () => {
-        new MathEnvironmentEditorModal(this.app, entry, async (updated) => {
+        new MathEnvironmentEditorModal(this.app, entry, (updated) => {
           if (!updated) return;
-          this.plugin.settings.mathEnvironments[index] = updated;
-          await runWithNotice(async () => {
+          void runWithNotice(async () => {
+            this.plugin.settings.mathEnvironments[index] = updated;
             await this.plugin.saveSettings();
             this.display();
           }, "Math Chords: could not save settings.");
@@ -175,7 +175,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       });
     }
 
-    containerEl.createEl("h3", { text: "Shortcut management" });
+    new Setting(containerEl).setName("Shortcut management").setHeading();
 
     new Setting(containerEl)
       .setName("Search")
@@ -190,10 +190,10 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       )
       .addButton((button) =>
         button.setButtonText("Add").onClick(() => {
-          new ShortcutEditorModal(this.app, null, async (entry) => {
+          new ShortcutEditorModal(this.app, null, (entry) => {
             if (!entry) return;
-            this.plugin.shortcuts.set(shortcutStorageKey(entry), entry);
-            await runWithNotice(async () => {
+            void runWithNotice(async () => {
+              this.plugin.shortcuts.set(shortcutStorageKey(entry), entry);
               await this.plugin.persistShortcuts();
               this.display();
             }, "Math Chords: could not save shortcuts.yaml.");
@@ -222,11 +222,11 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
 
       const actions = row.createEl("td");
       actions.createEl("button", { text: "Edit", cls: "mod-small" }).addEventListener("click", () => {
-        new ShortcutEditorModal(this.app, entry, async (updated) => {
+        new ShortcutEditorModal(this.app, entry, (updated) => {
           if (!updated) return;
           if (key !== shortcutStorageKey(updated)) this.plugin.shortcuts.delete(key);
-          this.plugin.shortcuts.set(shortcutStorageKey(updated), updated);
-          await runWithNotice(async () => {
+          void runWithNotice(async () => {
+            this.plugin.shortcuts.set(shortcutStorageKey(updated), updated);
             await this.plugin.persistShortcuts();
             this.display();
           }, "Math Chords: could not save shortcuts.yaml.");
@@ -261,7 +261,9 @@ class ShortcutEditorModal extends Modal {
   onOpen(): void {
     const { contentEl } = this;
     contentEl.empty();
-    contentEl.createEl("h3", { text: this.initial ? "Edit shortcut" : "Add shortcut" });
+    new Setting(contentEl)
+      .setName(this.initial ? "Edit shortcut" : "Add shortcut")
+      .setHeading();
 
     new Setting(contentEl)
       .setName("Key sequence")
@@ -333,7 +335,9 @@ class MathEnvironmentEditorModal extends Modal {
   onOpen(): void {
     const { contentEl } = this;
     contentEl.empty();
-    contentEl.createEl("h3", { text: this.initial ? "Edit math environment" : "Add math environment" });
+    new Setting(contentEl)
+      .setName(this.initial ? "Edit math environment" : "Add math environment")
+      .setHeading();
 
     new Setting(contentEl)
       .setName("Name")
