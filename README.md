@@ -2,7 +2,7 @@
 
 [中文文档](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
@@ -10,7 +10,7 @@
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.1.0.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.1.1.** See [CHANGELOG](CHANGELOG.md).
 
 ---
 
@@ -50,10 +50,9 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 
 ### Manual
 
-1. Download or build `main.js`, `manifest.json`, and `styles.css`.
-2. Copy them into `<vault>/.obsidian/plugins/obsidian-math-chords/`.
-3. Optionally copy `shortcuts.yaml` (defaults are created automatically if the file is missing).
-4. Enable **Math Chords** under **Settings → Community plugins** and reload Obsidian.
+1. Download **`obsidian-math-chords.zip`** from [Releases](https://github.com/ichenh/obsidian-math-chords/releases) (or build locally; see [Development](#development)).
+2. Extract into your vault's `.obsidian/plugins/` folder so you have `.obsidian/plugins/obsidian-math-chords/` with `main.js`, `manifest.json`, `styles.css`, and `shortcuts.yaml`.
+3. Enable **Math Chords** under **Settings → Community plugins** and reload Obsidian.
 
 ### From source
 
@@ -309,7 +308,7 @@ Pull requests welcome. Run `npm run build` before submitting.
 1. Bump `version` in `manifest.json` and `package.json`; add the mapping to `versions.json`.
 2. Update `CHANGELOG.md`.
 3. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.1.0 && git push origin 0.1.0`.
-4. The [release workflow](.github/workflows/release.yml) builds and attaches `main.js`, `manifest.json`, and `styles.css`.
+4. The [release workflow](.github/workflows/release.yml) builds and attaches `obsidian-math-chords.zip`.
 
 ---
 

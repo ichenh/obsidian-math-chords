@@ -1,6 +1,7 @@
 import { App, Editor, FuzzySuggestModal, Notice } from "obsidian";
 import { normalizeCommand } from "./config";
 import { findMathRegionAt, getMathContentBounds } from "./math";
+import { insertDisplayMath } from "./snippet";
 import type { MathEnvironment, MathRegion } from "./types";
 
 export function validateMathEnvironment(raw: unknown): MathEnvironment | null {
@@ -15,6 +16,39 @@ export function validateMathEnvironment(raw: unknown): MathEnvironment | null {
     begin: normalizeCommand(entry.begin),
     end: normalizeCommand(entry.end),
   };
+}
+
+/** Display-math region at the caret, inserting `$$…$$` first when not already inside one. */
+export function resolveDisplayMathRegion(editor: Editor): MathRegion | null {
+  const offset = editor.posToOffset(editor.getCursor());
+  const region = findMathRegionAt(editor.getValue(), offset);
+
+  if (region?.kind === "display") {
+    return region;
+  }
+
+  if (region?.kind === "inline") {
+    new Notice("请先将光标移出行内公式");
+    return null;
+  }
+
+  const selection = editor.getSelection();
+  const { text, anchor, head } = insertDisplayMath(selection);
+  const from = editor.getCursor("from");
+  const base = editor.posToOffset(from);
+  editor.replaceSelection(text);
+  editor.setSelection(
+    editor.offsetToPos(base + anchor),
+    editor.offsetToPos(base + head),
+  );
+
+  const newOffset = editor.posToOffset(editor.getCursor());
+  const newRegion = findMathRegionAt(editor.getValue(), newOffset);
+  if (!newRegion || newRegion.kind !== "display") {
+    new Notice("无法创建行间公式块");
+    return null;
+  }
+  return newRegion;
 }
 
 export function wrapDisplayMathWithEnvironment(
@@ -38,18 +72,13 @@ export function openEnvironmentPicker(
   environments: MathEnvironment[],
   onChoose: (env: MathEnvironment, region: MathRegion) => void,
 ): void {
-  const offset = editor.posToOffset(editor.getCursor());
-  const region = findMathRegionAt(editor.getValue(), offset);
-
-  if (!region || region.kind !== "display") {
-    new Notice("请在行间公式 $$…$$ 内使用此功能");
-    return;
-  }
-
   if (environments.length === 0) {
     new Notice("请先在设置中添加数学环境");
     return;
   }
+
+  const region = resolveDisplayMathRegion(editor);
+  if (!region) return;
 
   new EnvironmentPickerModal(app, environments, (env) => onChoose(env, region)).open();
 }

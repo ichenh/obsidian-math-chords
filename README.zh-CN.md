@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
@@ -10,7 +10,7 @@
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.1.0。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.1.1。** 见 [CHANGELOG](CHANGELOG.md)。
 
 ---
 
@@ -50,10 +50,9 @@
 
 ### 手动安装
 
-1. 下载或构建 `main.js`、`manifest.json`、`styles.css`。
-2. 复制到 `<库>/.obsidian/plugins/obsidian-math-chords/`。
-3. 可选：复制 `shortcuts.yaml`（若缺失，插件会自动生成默认文件）。
-4. 在 **设置 → 社区插件** 中启用 **Math Chords** 并重新加载 Obsidian。
+1. 从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`obsidian-math-chords.zip`**（或本地构建，见 [开发](#开发)）。
+2. 解压到库的 `.obsidian/plugins/` 目录，得到 `.obsidian/plugins/obsidian-math-chords/`，内含 `main.js`、`manifest.json`、`styles.css`、`shortcuts.yaml`。
+3. 在 **设置 → 社区插件** 中启用 **Math Chords** 并重新加载 Obsidian。
 
 ### 从源码构建
 

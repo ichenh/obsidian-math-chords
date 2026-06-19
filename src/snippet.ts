@@ -23,7 +23,7 @@ export function insertInlineMath(selection: string): { text: string; anchor: num
     const text = `$${selection}$`;
     return { text, anchor: 1, head: 1 + selection.length };
   }
-  return { text: "$ $", anchor: 1, head: 1 };
+  return { text: "$$", anchor: 1, head: 1 };
 }
 
 export function insertDisplayMath(selection: string): { text: string; anchor: number; head: number } {

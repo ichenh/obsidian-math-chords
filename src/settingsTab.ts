@@ -98,7 +98,9 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("启用环境包裹")
-      .setDesc("在行间公式 $$…$$ 内通过 leader 快捷键弹出环境列表，将已有内容包裹进 \\begin{…}…\\end{…}。")
+      .setDesc(
+        "通过 leader 快捷键或命令面板「Wrap display math with environment」（可在 Obsidian 快捷键设置中绑定）弹出环境列表。光标不在 $$…$$ 内时会先插入行间公式块。",
+      )
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.mathEnvWrapEnabled).onChange(async (value) => {
           this.plugin.settings.mathEnvWrapEnabled = value;

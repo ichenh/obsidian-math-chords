@@ -5,6 +5,21 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-06-20
+
+### Fixed
+
+- **Insert inline math** (`Ctrl+M`) no longer inserts `$ $` with a space; empty blocks use
+  adjacent `$$` delimiters with the caret between them.
+
+### Changed
+
+- **Display-math environment wrap** creates a `$$…$$` block and opens the picker when the
+  caret is not already inside display math (Obsidian command and leader shortcut share
+  this behavior).
+- **GitHub Releases** ship `obsidian-math-chords.zip` (folder named after the plugin id)
+  for one-step extract into `.obsidian/plugins/`.
+
 ## [0.1.0] - 2026-06-19
 
 ### Added
