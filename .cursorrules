@@ -4,7 +4,7 @@ Architecture and workflow reference for contributors and AI assistants.
 
 ---
 
-## 1. Product scope (v0.1.3)
+## 1. Product scope (v0.1.6)
 
 - **Plugin id:** `math-chords` (install folder `.obsidian/plugins/math-chords/`).
 - **Leader chords:** `Alt+M` + key sequence inserts LaTeX snippets (defaults inspired by LyX).
@@ -51,7 +51,7 @@ No circular dependencies. New modules only when a responsibility cannot fit abov
 - **Externals:** `obsidian` and `@codemirror/*` are esbuild externals.
 - **Performance:** `math.ts` aborts when document length > 100,000 characters.
 - **Trie:** rebuild on every config save/reload.
-- **Release assets:** `main.js`, `manifest.json`, `styles.css`, plus optional `math-chords.zip`.
+- **Release assets:** `main.js`, `manifest.json`, `styles.css` (artifact attestations for `main.js` and `styles.css`).
 
 ---
 

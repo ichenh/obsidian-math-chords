@@ -2,7 +2,7 @@
 
 [中文文档](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.3-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.1.6-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
@@ -10,7 +10,7 @@
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.1.3.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.1.6.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
@@ -313,8 +313,8 @@ Pull requests welcome. Run `npm run build` before submitting.
 
 1. Bump `version` in `manifest.json` and `package.json`; add the mapping to `versions.json`.
 2. Update `CHANGELOG.md`.
-3. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.1.3 && git push origin 0.1.3`.
-4. The [release workflow](.github/workflows/release.yml) builds and attaches `main.js`, `manifest.json`, and `styles.css`.
+3. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.1.6 && git push origin 0.1.6`.
+4. The [release workflow](.github/workflows/release.yml) builds and attaches `main.js`, `manifest.json`, and `styles.css`, with artifact attestations for `main.js` and `styles.css`.
 
 ---
 

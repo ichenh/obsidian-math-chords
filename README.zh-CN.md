@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.3-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.1.6-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
@@ -10,7 +10,7 @@
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.1.3。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.1.6。** 见 [CHANGELOG](CHANGELOG.md)。
 
 **需要 Obsidian 1.5.0+。** 以键盘操作为主，建议在桌面端使用。
 
@@ -314,8 +314,8 @@ npm run seed   # 从 src/defaults.ts 重写 shortcuts.yaml
 
 1. 更新 `manifest.json`、`package.json` 中的 `version`，并在 `versions.json` 中添加映射。
 2. 更新 `CHANGELOG.md`。
-3. 提交后打 tag（不要加 `v` 前缀），例如 `git tag 0.1.3 && git push origin 0.1.3`。
-4. [release 工作流](.github/workflows/release.yml) 会自动构建并附上 `main.js`、`manifest.json`、`styles.css`。
+3. 提交后打 tag（不要加 `v` 前缀），例如 `git tag 0.1.6 && git push origin 0.1.6`。
+4. [release 工作流](.github/workflows/release.yml) 会自动构建并附上 `main.js`、`manifest.json`、`styles.css`，并为 `main.js`、`styles.css` 生成 artifact attestations。
 
 ---
 
