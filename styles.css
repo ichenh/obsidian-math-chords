@@ -130,6 +130,10 @@
   white-space: nowrap;
 }
 
+.obsidian-math-chords-settings-nested {
+  margin-left: 2em;
+}
+
 .obsidian-math-chords-table {
   width: 100%;
   margin-top: 12px;

@@ -77,7 +77,13 @@
     "noticeAddMathEnvFirst": "Voeg eers 'n wiskunde-omgewing by in instellings.",
     "noticeCouldNotFindDisplayMath": "Kon nie 'n vertoonwiskundeblok vind nie.",
     "noticeCouldNotRenderPreview": "Math Chords: kon nie inline wiskunde-voorskou weergee nie.",
-    "noticeUndefinedChord": "Ongedefinieerd %1"
+    "noticeUndefinedChord": "Ongedefinieerd %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "zh": {
     "intro": "先按可配置的 leader 键（默认 Alt+M），再按按键序列插入 LaTeX。默认快捷键参考 LyX 数学模式绑定。",
@@ -157,7 +163,13 @@
     "noticeAddMathEnvFirst": "请先在设置中添加数学环境。",
     "noticeCouldNotFindDisplayMath": "找不到行间公式块。",
     "noticeCouldNotRenderPreview": "Math Chords：无法渲染行内公式预览。",
-    "noticeUndefinedChord": "未定义 %1"
+    "noticeUndefinedChord": "未定义 %1",
+    "snippetTabStopsName": "公式内大括号跳转",
+    "snippetTabStopsDesc": "光标位于 $…$ 或 $$…$$ 内时，用可配置按键在 {…} 参数位之间跳转。公式外仍使用 Obsidian 自带的 Alt/Ctrl+箭头占位符跳转。",
+    "placeholderNavNextName": "下一大括号快捷键",
+    "placeholderNavNextDesc": "跳至公式内下一个 {…} 位。默认 \"Alt+ArrowRight\"。",
+    "placeholderNavPrevName": "上一大括号快捷键",
+    "placeholderNavPrevDesc": "跳至公式内上一个 {…} 位。默认 \"Alt+ArrowLeft\"。"
   },
   "zh-TW": {
     "intro": "先按可設定的 leader 鍵（預設 Alt+M），再按按鍵序列插入 LaTeX。預設快捷鍵參考 LyX 數學模式綁定。",
@@ -237,7 +249,13 @@
     "noticeAddMathEnvFirst": "請先在設定中新增數學環境。",
     "noticeCouldNotFindDisplayMath": "找不到行間公式區塊。",
     "noticeCouldNotRenderPreview": "Math Chords：無法渲染行內公式預覽。",
-    "noticeUndefinedChord": "未定義 %1"
+    "noticeUndefinedChord": "未定義 %1",
+    "snippetTabStopsName": "公式內大括號跳轉",
+    "snippetTabStopsDesc": "游標位於 $…$ 或 $$…$$ 內時，用可設定按鍵在 {…} 參數位之間跳轉。公式外仍使用 Obsidian 自帶的 Alt/Ctrl+箭頭占位符跳轉。",
+    "placeholderNavNextName": "下一個大括號快捷鍵",
+    "placeholderNavNextDesc": "跳至公式內下一個 {…} 位。預設 \"Alt+ArrowRight\"。",
+    "placeholderNavPrevName": "上一個大括號快捷鍵",
+    "placeholderNavPrevDesc": "跳至公式內上一個 {…} 位。預設 \"Alt+ArrowLeft\"。"
   },
   "fr": {
     "intro": "Appuyez sur une touche leader configurable (par défaut Alt+M), puis sur une séquence de touches pour insérer du LaTeX. Les raccourcis par défaut s'inspirent des raccourcis du mode mathématique LyX.",
@@ -317,7 +335,13 @@
     "noticeAddMathEnvFirst": "Ajoutez d'abord un environnement mathématique dans les paramètres.",
     "noticeCouldNotFindDisplayMath": "Impossible de trouver un bloc de maths display.",
     "noticeCouldNotRenderPreview": "Math Chords : impossible de rendre l'aperçu des maths inline.",
-    "noticeUndefinedChord": "Non défini %1"
+    "noticeUndefinedChord": "Non défini %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "de": {
     "intro": "Drücken Sie eine konfigurierbare Leader-Taste (Standard Alt+M), dann eine Tastensequenz zum Einfügen von LaTeX. Standardkurzbefehle orientieren sich an LyX-Mathematikmodus-Belegungen.",
@@ -397,7 +421,13 @@
     "noticeAddMathEnvFirst": "Zuerst eine Mathe-Umgebung in den Einstellungen hinzufügen.",
     "noticeCouldNotFindDisplayMath": "Display-Matheblock konnte nicht gefunden werden.",
     "noticeCouldNotRenderPreview": "Math Chords: Inline-Mathe-Vorschau konnte nicht gerendert werden.",
-    "noticeUndefinedChord": "Undefiniert %1"
+    "noticeUndefinedChord": "Undefiniert %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "es": {
     "intro": "Pulse una tecla leader configurable (predeterminada Alt+M) y luego una secuencia de teclas para insertar LaTeX. Los atajos predeterminados están inspirados en los atajos del modo matemático de LyX.",
@@ -477,7 +507,13 @@
     "noticeAddMathEnvFirst": "Añada primero un entorno matemático en la configuración.",
     "noticeCouldNotFindDisplayMath": "No se encontró un bloque de matemáticas display.",
     "noticeCouldNotRenderPreview": "Math Chords: no se pudo renderizar la vista previa de matemáticas inline.",
-    "noticeUndefinedChord": "Indefinido %1"
+    "noticeUndefinedChord": "Indefinido %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "it": {
     "intro": "Premere un tasto leader configurabile (predefinito Alt+M), quindi una sequenza di tasti per inserire LaTeX. Le scorciatoie predefinite sono ispirate ai binding della modalità matematica LyX.",
@@ -557,7 +593,13 @@
     "noticeAddMathEnvFirst": "Aggiungi prima un ambiente matematico nelle impostazioni.",
     "noticeCouldNotFindDisplayMath": "Impossibile trovare un blocco matematica display.",
     "noticeCouldNotRenderPreview": "Math Chords: impossibile renderizzare l'anteprima matematica inline.",
-    "noticeUndefinedChord": "Non definito %1"
+    "noticeUndefinedChord": "Non definito %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "nl": {
     "intro": "Druk op een configureerbare leader-toets (standaard Alt+M) en vervolgens op een toetsenreeks om LaTeX in te voegen. Standaard sneltoetsen zijn geïnspireerd op LyX wiskundemodus-bindingen.",
@@ -637,7 +679,13 @@
     "noticeAddMathEnvFirst": "Voeg eerst een wiskunde-omgeving toe in instellingen.",
     "noticeCouldNotFindDisplayMath": "Kon geen display-wiskundeblok vinden.",
     "noticeCouldNotRenderPreview": "Math Chords: inline wiskunde-voorvertoning kon niet worden weergegeven.",
-    "noticeUndefinedChord": "Ongedefinieerd %1"
+    "noticeUndefinedChord": "Ongedefinieerd %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "pt": {
     "intro": "Prima uma tecla leader configurável (predefinição Alt+M) e depois uma sequência de teclas para inserir LaTeX. Os atalhos predefinidos inspiram-se nas associações do modo matemático LyX.",
@@ -717,7 +765,13 @@
     "noticeAddMathEnvFirst": "Adicione primeiro um ambiente matemático nas definições.",
     "noticeCouldNotFindDisplayMath": "Não foi possível encontrar um bloco de matemática em exibição.",
     "noticeCouldNotRenderPreview": "Math Chords: não foi possível renderizar a pré-visualização de matemática inline.",
-    "noticeUndefinedChord": "Indefinido %1"
+    "noticeUndefinedChord": "Indefinido %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "pt-BR": {
     "intro": "Pressione uma tecla leader configurável (padrão Alt+M) e depois uma sequência de teclas para inserir LaTeX. Os atalhos padrão são inspirados nas associações do modo matemático LyX.",
@@ -797,7 +851,13 @@
     "noticeAddMathEnvFirst": "Adicione um ambiente matemático nas configurações primeiro.",
     "noticeCouldNotFindDisplayMath": "Não foi possível encontrar um bloco de matemática em exibição.",
     "noticeCouldNotRenderPreview": "Math Chords: não foi possível renderizar a pré-visualização de matemática inline.",
-    "noticeUndefinedChord": "Indefinido %1"
+    "noticeUndefinedChord": "Indefinido %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ru": {
     "intro": "Нажмите настраиваемую клавишу leader (по умолчанию Alt+M), затем последовательность клавиш для вставки LaTeX. Сочетания по умолчанию вдохновлены привязками математического режима LyX.",
@@ -877,7 +937,13 @@
     "noticeAddMathEnvFirst": "Сначала добавьте математическое окружение в настройках.",
     "noticeCouldNotFindDisplayMath": "Не удалось найти display-блок формулы.",
     "noticeCouldNotRenderPreview": "Math Chords: не удалось отобразить предпросмотр inline-формулы.",
-    "noticeUndefinedChord": "Не определено %1"
+    "noticeUndefinedChord": "Не определено %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ja": {
     "intro": "設定可能な leader キー（既定 Alt+M）を押し、続けてキー列を入力して LaTeX を挿入します。既定のショートカットは LyX の数式モード割り当てに着想を得ています。",
@@ -957,7 +1023,13 @@
     "noticeAddMathEnvFirst": "先に設定で数式環境を追加してください。",
     "noticeCouldNotFindDisplayMath": "ディスプレイ数式ブロックが見つかりませんでした。",
     "noticeCouldNotRenderPreview": "Math Chords: インライン数式プレビューを描画できませんでした。",
-    "noticeUndefinedChord": "未定義 %1"
+    "noticeUndefinedChord": "未定義 %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ko": {
     "intro": "구성 가능한 leader 키(기본 Alt+M)를 누른 다음 키 순서를 입력해 LaTeX를 삽입합니다. 기본 단축키는 LyX 수학 모드 바인딩에서 영감을 받았습니다.",
@@ -1037,7 +1109,13 @@
     "noticeAddMathEnvFirst": "먼저 설정에서 수식 환경을 추가하세요.",
     "noticeCouldNotFindDisplayMath": "디스플레이 수식 블록을 찾을 수 없습니다.",
     "noticeCouldNotRenderPreview": "Math Chords: 인라인 수식 미리보기를 렌더링할 수 없습니다.",
-    "noticeUndefinedChord": "정의되지 않음 %1"
+    "noticeUndefinedChord": "정의되지 않음 %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "pl": {
     "intro": "Naciśnij konfigurowalny klawisz leader (domyślnie Alt+M), a następnie sekwencję klawiszy, aby wstawić LaTeX. Domyślne skróty są inspirowane skrótami trybu matematycznego LyX.",
@@ -1117,7 +1195,13 @@
     "noticeAddMathEnvFirst": "Najpierw dodaj środowisko matematyczne w ustawieniach.",
     "noticeCouldNotFindDisplayMath": "Nie udało się znaleźć bloku matematyki display.",
     "noticeCouldNotRenderPreview": "Math Chords: nie udało się wyrenderować podglądu matematyki inline.",
-    "noticeUndefinedChord": "Niezdefiniowane %1"
+    "noticeUndefinedChord": "Niezdefiniowane %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "cs": {
     "intro": "Stiskněte konfigurovatelnou klávesu leader (výchozí Alt+M) a poté sekvenci kláves pro vložení LaTeX. Výchozí zkratky jsou inspirovány vazbami matematického režimu LyX.",
@@ -1197,7 +1281,13 @@
     "noticeAddMathEnvFirst": "Nejprve přidejte matematické prostředí v nastavení.",
     "noticeCouldNotFindDisplayMath": "Nepodařilo se najít display matematický blok.",
     "noticeCouldNotRenderPreview": "Math Chords: náhled inline matematiky se nepodařilo vykreslit.",
-    "noticeUndefinedChord": "Nedefinováno %1"
+    "noticeUndefinedChord": "Nedefinováno %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "sv": {
     "intro": "Tryck på en konfigurerbar leader-tangent (standard Alt+M) och sedan en tangentsekvens för att infoga LaTeX. Standardgenvägar är inspirerade av LyX matematiklägesbindningar.",
@@ -1277,7 +1367,13 @@
     "noticeAddMathEnvFirst": "Lägg till en matematikmiljö i inställningar först.",
     "noticeCouldNotFindDisplayMath": "Kunde inte hitta ett display-matematikblock.",
     "noticeCouldNotRenderPreview": "Math Chords: kunde inte rendera inline-matematikförhandsvisning.",
-    "noticeUndefinedChord": "Odefinierad %1"
+    "noticeUndefinedChord": "Odefinierad %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "da": {
     "intro": "Tryk på en konfigurerbar leader-tast (standard Alt+M), og derefter en tastatursekvens for at indsætte LaTeX. Standardgenveje er inspireret af LyX matematiktilstand-bindinger.",
@@ -1357,7 +1453,13 @@
     "noticeAddMathEnvFirst": "Tilføj et matematikmiljø i indstillinger først.",
     "noticeCouldNotFindDisplayMath": "Kunne ikke finde en display-matematikblok.",
     "noticeCouldNotRenderPreview": "Math Chords: kunne ikke gengive inline-matematikforhåndsvisning.",
-    "noticeUndefinedChord": "Udefineret %1"
+    "noticeUndefinedChord": "Udefineret %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "fi": {
     "intro": "Paina määritettävää leader-näppäintä (oletus Alt+M) ja sitten näppäinjono LaTeXin lisäämiseksi. Oletuspikavalinnat perustuvat LyXin matematiikkatilan sidontoihin.",
@@ -1437,7 +1539,13 @@
     "noticeAddMathEnvFirst": "Lisää ensin matematiikka-ympäristö asetuksissa.",
     "noticeCouldNotFindDisplayMath": "Display-matematiikkablokkia ei löytynyt.",
     "noticeCouldNotRenderPreview": "Math Chords: inline-matematiikan esikatselua ei voitu renderöidä.",
-    "noticeUndefinedChord": "Määrittelemätön %1"
+    "noticeUndefinedChord": "Määrittelemätön %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "no": {
     "intro": "Trykk en konfigurerbar leader-tast (standard Alt+M), deretter en tastesekvens for å sette inn LaTeX. Standard snarveier er inspirert av LyX matematikkmodus-bindinger.",
@@ -1517,7 +1625,13 @@
     "noticeAddMathEnvFirst": "Legg til et matematikkmiljø i innstillinger først.",
     "noticeCouldNotFindDisplayMath": "Kunne ikke finne en display-matematikkblokk.",
     "noticeCouldNotRenderPreview": "Math Chords: kunne ikke rendre inline-matematikkforhåndsvisning.",
-    "noticeUndefinedChord": "Udefinert %1"
+    "noticeUndefinedChord": "Udefinert %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ro": {
     "intro": "Apăsați o tastă leader configurabilă (implicit Alt+M), apoi o secvență de taste pentru a insera LaTeX. Comenzile rapide implicite sunt inspirate de legăturile modului matematic LyX.",
@@ -1597,7 +1711,13 @@
     "noticeAddMathEnvFirst": "Adăugați mai întâi un mediu matematic în setări.",
     "noticeCouldNotFindDisplayMath": "Nu s-a găsit un bloc de matematică display.",
     "noticeCouldNotRenderPreview": "Math Chords: previzualizarea matematicii inline nu a putut fi randată.",
-    "noticeUndefinedChord": "Nedefinit %1"
+    "noticeUndefinedChord": "Nedefinit %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "uk": {
     "intro": "Натисніть настроювану клавішу leader (за замовчуванням Alt+M), потім послідовність клавіш для вставки LaTeX. Типові скорочення натхнені прив’язками математичного режиму LyX.",
@@ -1677,7 +1797,13 @@
     "noticeAddMathEnvFirst": "Спочатку додайте математичне середовище в налаштуваннях.",
     "noticeCouldNotFindDisplayMath": "Не вдалося знайти display-блок формули.",
     "noticeCouldNotRenderPreview": "Math Chords: не вдалося відобразити попередній перегляд inline-формули.",
-    "noticeUndefinedChord": "Не визначено %1"
+    "noticeUndefinedChord": "Не визначено %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "vi": {
     "intro": "Nhấn phím leader có thể cấu hình (mặc định Alt+M), sau đó một chuỗi phím để chèn LaTeX. Các phím tắt mặc định lấy cảm hứng từ phím tắt chế độ toán LyX.",
@@ -1757,7 +1883,13 @@
     "noticeAddMathEnvFirst": "Thêm môi trường toán trong cài đặt trước.",
     "noticeCouldNotFindDisplayMath": "Không tìm thấy khối công thức display.",
     "noticeCouldNotRenderPreview": "Math Chords: không thể hiển thị xem trước công thức inline.",
-    "noticeUndefinedChord": "Chưa định nghĩa %1"
+    "noticeUndefinedChord": "Chưa định nghĩa %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "id": {
     "intro": "Tekan tombol leader yang dapat dikonfigurasi (default Alt+M), lalu urutan tombol untuk menyisipkan LaTeX. Pintasan default terinspirasi dari binding mode matematika LyX.",
@@ -1837,7 +1969,13 @@
     "noticeAddMathEnvFirst": "Tambahkan lingkungan matematika di pengaturan terlebih dahulu.",
     "noticeCouldNotFindDisplayMath": "Tidak dapat menemukan blok matematika display.",
     "noticeCouldNotRenderPreview": "Math Chords: tidak dapat merender pratinjau matematika inline.",
-    "noticeUndefinedChord": "Tidak terdefinisi %1"
+    "noticeUndefinedChord": "Tidak terdefinisi %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ar": {
     "intro": "اضغط على مفتاح leader قابل للتكوين (الافتراضي Alt+M)، ثم تسلسل مفاتيح لإدراج LaTeX. الاختصارات الافتراضية مستوحاة من ارتباطات وضع الرياضيات في LyX.",
@@ -1917,7 +2055,13 @@
     "noticeAddMathEnvFirst": "أضف بيئة رياضيات في الإعدادات أولاً.",
     "noticeCouldNotFindDisplayMath": "تعذر العثور على كتلة رياضيات معروضة.",
     "noticeCouldNotRenderPreview": "Math Chords: تعذر عرض معاينة الرياضيات المضمنة.",
-    "noticeUndefinedChord": "غير معرّف %1"
+    "noticeUndefinedChord": "غير معرّف %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "he": {
     "intro": "לחץ על מקש leader הניתן להגדרה (ברירת מחדל Alt+M), ואז רצף מקשים להוספת LaTeX. קיצורי ברירת המחדל מושפעים מקיצורי מצב המתמטיקה של LyX.",
@@ -1997,7 +2141,13 @@
     "noticeAddMathEnvFirst": "הוסף סביבת מתמטיקה בהגדרות קודם.",
     "noticeCouldNotFindDisplayMath": "לא נמצא בלוק מתמטיקת display.",
     "noticeCouldNotRenderPreview": "Math Chords: לא ניתן להציג תצוגה מקדימה של מתמטיקה inline.",
-    "noticeUndefinedChord": "לא מוגדר %1"
+    "noticeUndefinedChord": "לא מוגדר %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "th": {
     "intro": "กดปุ่ม leader ที่กำหนดได้ (ค่าเริ่มต้น Alt+M) แล้วตามด้วยลำดับปุ่มเพื่อแทรก LaTeX ทางลัดเริ่มต้นได้แรงบันดาลใจจากการผูกโหมดคณิตศาสตร์ LyX",
@@ -2077,7 +2227,13 @@
     "noticeAddMathEnvFirst": "เพิ่มสภาพแวดล้อมคณิตศาสตร์ในการตั้งค่าก่อน",
     "noticeCouldNotFindDisplayMath": "ไม่พบบล็อกคณิตศาสตร์ display",
     "noticeCouldNotRenderPreview": "Math Chords: ไม่สามารถแสดงตัวอย่างคณิตศาสตร์ inline",
-    "noticeUndefinedChord": "ไม่ได้กำหนด %1"
+    "noticeUndefinedChord": "ไม่ได้กำหนด %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "tr": {
     "intro": "Yapılandırılabilir bir leader tuşuna (varsayılan Alt+M) basın, ardından LaTeX eklemek için bir tuş dizisi girin. Varsayılan kısayollar LyX matematik modu bağlantılarından esinlenmiştir.",
@@ -2157,7 +2313,13 @@
     "noticeAddMathEnvFirst": "Önce ayarlardan bir matematik ortamı ekleyin.",
     "noticeCouldNotFindDisplayMath": "Display matematik bloku bulunamadı.",
     "noticeCouldNotRenderPreview": "Math Chords: satır içi matematik önizlemesi oluşturulamadı.",
-    "noticeUndefinedChord": "Tanımsız %1"
+    "noticeUndefinedChord": "Tanımsız %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "en-GB": {
     "intro": "Press a configurable leader key (default Alt+M), then a key sequence to insert LaTeX. Default shortcuts are inspired by LyX maths-mode bindings.",
@@ -2237,7 +2399,13 @@
     "noticeAddMathEnvFirst": "Add a maths environment in settings first.",
     "noticeCouldNotFindDisplayMath": "Could not find a display maths block.",
     "noticeCouldNotRenderPreview": "Math Chords: could not render inline maths preview.",
-    "noticeUndefinedChord": "Undefined %1"
+    "noticeUndefinedChord": "Undefined %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "hi": {
     "intro": "कॉन्फ़िगर करने योग्य leader कुंजी (डिफ़ॉल्ट Alt+M) दबाएँ, फिर LaTeX डालने के लिए कुंजी अनुक्रम दबाएँ। डिफ़ॉल्ट शॉर्टकट LyX गणित-मोड बाइंडिंग से प्रेरित हैं।",
@@ -2317,7 +2485,13 @@
     "noticeAddMathEnvFirst": "पहले सेटिंग में गणित परिवेश जोड़ें।",
     "noticeCouldNotFindDisplayMath": "डिस्प्ले गणित ब्लॉक नहीं मिला।",
     "noticeCouldNotRenderPreview": "Math Chords: इनलाइन गणित पूर्वावलोकन रेंडर नहीं हो सका।",
-    "noticeUndefinedChord": "अपरिभाषित %1"
+    "noticeUndefinedChord": "अपरिभाषित %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "fa": {
     "intro": "یک کلید leader قابل پیکربندی (پیش‌فرض Alt+M) بزنید، سپس یک توالی کلید برای درج LaTeX. میانبرهای پیش‌فرض از bindingهای حالت ریاضی LyX الهام گرفته‌اند.",
@@ -2397,7 +2571,13 @@
     "noticeAddMathEnvFirst": "ابتدا محیط ریاضی را در تنظیمات اضافه کنید.",
     "noticeCouldNotFindDisplayMath": "بلوک ریاضی display یافت نشد.",
     "noticeCouldNotRenderPreview": "Math Chords: پیش‌نمایش ریاضی inline رندر نشد.",
-    "noticeUndefinedChord": "تعریف‌نشده %1"
+    "noticeUndefinedChord": "تعریف‌نشده %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "nn": {
     "intro": "Trykk ein konfigurerbar leader-tast (standard Alt+M), deretter ein tastefølgje for å setje inn LaTeX. Standard snarvegar er inspirerte av LyX matematikkmodus-bindingar.",
@@ -2477,7 +2657,13 @@
     "noticeAddMathEnvFirst": "Legg til eit matematikkmiljø i innstillingar først.",
     "noticeCouldNotFindDisplayMath": "Kunne ikkje finne ein display-matematikkblokk.",
     "noticeCouldNotRenderPreview": "Math Chords: kunne ikkje rendre inline-matematikkførehandsvising.",
-    "noticeUndefinedChord": "Udefinert %1"
+    "noticeUndefinedChord": "Udefinert %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "hu": {
     "intro": "Nyomjon egy beállítható leader billentyűt (alapértelmezés Alt+M), majd egy billentyűsorozatot LaTeX beszúrásához. Az alapértelmezett gyorsbillentyűk a LyX matematikai mód kötéseiből merítettek.",
@@ -2557,7 +2743,13 @@
     "noticeAddMathEnvFirst": "Először adjon hozzá matematikai környezetet a beállításokban.",
     "noticeCouldNotFindDisplayMath": "Nem található display matematikai blokk.",
     "noticeCouldNotRenderPreview": "Math Chords: az inline matematika előnézet renderelése sikertelen.",
-    "noticeUndefinedChord": "Nincs definiálva: %1"
+    "noticeUndefinedChord": "Nincs definiálva: %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "am": {
     "intro": "ሊዋቀር የሚችል leader ቁልፍ (ነባሪ Alt+M)፣ ከዚያ LaTeXን ለማስገባት የቁልፍ ቅደም ተከተል ይጫኑ። ነባሪ አቋራጮች በLyX የሂሳብ ሁነታ ማሰሪያዎች ተመስጧዊ ናቸው።",
@@ -2637,7 +2829,13 @@
     "noticeAddMathEnvFirst": "በመጀመሪያ በቅንብሮች ውስጥ የሂሳብ አካባቢን ያክሉ።",
     "noticeCouldNotFindDisplayMath": "የማሳያ ሂሳብ ማገጃ ማግኘት አልተቻለም።",
     "noticeCouldNotRenderPreview": "Math Chords፡ የመስመር ላይ ሒሳብ ቅድመ እይታን ማድረግ አልቻለም።",
-    "noticeUndefinedChord": "ያልተገለጸ %1"
+    "noticeUndefinedChord": "ያልተገለጸ %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "az": {
     "intro": "Konfiqurasiya edilə bilən leader düyməsini (defolt Alt+M), sonra LaTeX daxil etmək üçün düymələr ardıcıllığını basın. Defolt qısayollar LyX riyazi rejim bağlamalarından ilhamlanır.",
@@ -2717,7 +2915,13 @@
     "noticeAddMathEnvFirst": "Əvvəlcə parametrlərdə riyaziyyat mühiti əlavə edin.",
     "noticeCouldNotFindDisplayMath": "Ekranın riyazi blokunu tapmaq mümkün olmadı.",
     "noticeCouldNotRenderPreview": "Math Chords: daxili riyaziyyat önizləməsini göstərə bilmədi.",
-    "noticeUndefinedChord": "Müəyyən edilməmiş %1"
+    "noticeUndefinedChord": "Müəyyən edilməmiş %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "be": {
     "intro": "Націсніце наладжвальную клавішу leader (па змаўчанні Alt+M), затым паслядоўнасць клавіш, каб уставіць LaTeX. Ярлыкі па змаўчанні натхнёныя прывязкамі матэматычнага рэжыму LyX.",
@@ -2797,7 +3001,13 @@
     "noticeAddMathEnvFirst": "Спачатку дадайце матэматычнае асяроддзе ў наладах.",
     "noticeCouldNotFindDisplayMath": "Не ўдалося знайсці матэматычны блок адлюстравання.",
     "noticeCouldNotRenderPreview": "Math Chords: не ўдалося адлюстраваць убудаваны папярэдні прагляд матэматыкі.",
-    "noticeUndefinedChord": "Нявызначаны %1"
+    "noticeUndefinedChord": "Нявызначаны %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "bg": {
     "intro": "Натиснете конфигурируем клавиш leader (по подразбиране Alt+M), след това последователност от клавиши, за да вмъкнете LaTeX. Преките пътища по подразбиране са вдъхновени от обвързванията в математически режим LyX.",
@@ -2877,7 +3087,13 @@
     "noticeAddMathEnvFirst": "Първо добавете математическа среда в настройките.",
     "noticeCouldNotFindDisplayMath": "Не може да се намери математически блок на дисплея.",
     "noticeCouldNotRenderPreview": "Math Chords: не можа да изобрази вграден математически преглед.",
-    "noticeUndefinedChord": "Недефиниран %1"
+    "noticeUndefinedChord": "Недефиниран %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "bn": {
     "intro": "একটি কনফিগারযোগ্য leader কী (ডিফল্ট Alt+M), তারপর LaTeX সন্নিবেশ করার জন্য একটি কী ক্রম টিপুন। ডিফল্ট শর্টকাটগুলি LyX গণিত-মোড বাইন্ডিং দ্বারা অনুপ্রাণিত।",
@@ -2957,7 +3173,13 @@
     "noticeAddMathEnvFirst": "প্রথমে সেটিংসে একটি গণিত পরিবেশ যোগ করুন।",
     "noticeCouldNotFindDisplayMath": "একটি প্রদর্শন গণিত ব্লক খুঁজে পাওয়া যায়নি.",
     "noticeCouldNotRenderPreview": "Math Chords: ইনলাইন গণিত পূর্বরূপ রেন্ডার করতে পারেনি।",
-    "noticeUndefinedChord": "অনির্ধারিত %1"
+    "noticeUndefinedChord": "অনির্ধারিত %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ca": {
     "intro": "Premeu una tecla configurable leader (Alt+M per defecte), després una seqüència de tecles per inserir LaTeX. Les dreceres predeterminades estan inspirades en els enllaços en mode matemàtic LyX.",
@@ -3037,7 +3259,13 @@
     "noticeAddMathEnvFirst": "Afegiu primer un entorn matemàtic a la configuració.",
     "noticeCouldNotFindDisplayMath": "No s'ha pogut trobar un bloc matemàtic de visualització.",
     "noticeCouldNotRenderPreview": "Math Chords: could not render inline math preview.",
-    "noticeUndefinedChord": "Undefined %1"
+    "noticeUndefinedChord": "Undefined %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "dv": {
     "intro": "ކޮންފިގްރޭޓް ކުރެވޭ leader ކީއެއް (ޑިފޯލްޓް Alt+M) ފިއްތާލުމަށްފަހު، LaTeX އިންސަރޓް ކުރުމަށް ކީ ސިކުއެންސެއް ފިއްތާލާށެވެ. ޑިފޯލްޓް ޝޯޓްކަޓްތައް އިންސްޕަޔަރ ކުރެވިފައިވަނީ LyX މެތު-މޯޑް ބައިންޑިންގސް އިންނެވެ.",
@@ -3117,7 +3345,13 @@
     "noticeAddMathEnvFirst": "ފުރަތަމަ ސެޓިންގްސްގައި ހިސާބު މާހައުލެއް އިތުރުކުރުން.",
     "noticeCouldNotFindDisplayMath": "ޑިސްޕްލޭ މެތު ބްލޮކެއް ނުފެނުނެވެ.",
     "noticeCouldNotRenderPreview": "Math Chords: އިންލައިން މެތު ޕްރިވިއު ރެންޑަރ ނުކުރެވުނެވެ.",
-    "noticeUndefinedChord": "މާނަ ނުކުރެވޭ %1"
+    "noticeUndefinedChord": "މާނަ ނުކުރެވޭ %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "el": {
     "intro": "Πατήστε ένα ρυθμιζόμενο πλήκτρο leader (προεπιλογή Alt+M) και μετά μια σειρά πλήκτρων για να εισαγάγετε LaTeX. Οι προεπιλεγμένες συντομεύσεις είναι εμπνευσμένες από δεσμεύσεις LyX μαθηματικής λειτουργίας.",
@@ -3197,7 +3431,13 @@
     "noticeAddMathEnvFirst": "Προσθέστε πρώτα ένα μαθηματικό περιβάλλον στις ρυθμίσεις.",
     "noticeCouldNotFindDisplayMath": "Δεν ήταν δυνατή η εύρεση μαθηματικού μπλοκ οθόνης.",
     "noticeCouldNotRenderPreview": "Math Chords: δεν ήταν δυνατή η απόδοση της ενσωματωμένης προεπισκόπησης μαθηματικών.",
-    "noticeUndefinedChord": "Απροσδιόριστο %1"
+    "noticeUndefinedChord": "Απροσδιόριστο %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "eo": {
     "intro": "Premu agorblan leader klavon (defaŭlte Alt+M), poste klavsekvencon por enmeti LaTeX. Defaŭltaj ŝparvojoj estas inspiritaj de LyX matematik-reĝimaj ligoj.",
@@ -3277,7 +3517,13 @@
     "noticeAddMathEnvFirst": "Aldonu matematikan medion unue en agordoj.",
     "noticeCouldNotFindDisplayMath": "Ne eblis trovi ekranan matematikan blokon.",
     "noticeCouldNotRenderPreview": "Math Chords: ne povis bildigi enlinian matematikan antaŭrigardon.",
-    "noticeUndefinedChord": "Nedifinita %1"
+    "noticeUndefinedChord": "Nedifinita %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "eu": {
     "intro": "Sakatu leader tekla konfiguragarri bat (Alt+M lehenetsia), gero tekla-sekuentzia bat LaTeX txertatzeko. Lasterbide lehenetsiak LyX matematika moduko loturetan inspiratuta daude.",
@@ -3357,7 +3603,13 @@
     "noticeAddMathEnvFirst": "Gehitu matematika-ingurune bat ezarpenetan lehenik.",
     "noticeCouldNotFindDisplayMath": "Ezin izan da bistaratzeko bloke matematikorik aurkitu.",
     "noticeCouldNotRenderPreview": "Math Chords: ezin izan da lerroko matematikaren aurrebista errendatu.",
-    "noticeUndefinedChord": "Definitu gabea %1"
+    "noticeUndefinedChord": "Definitu gabea %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ga": {
     "intro": "Brúigh eochair leader inchumraithe (réamhshocraithe Alt+M), ansin seicheamh eochrach chun LaTeX a chur isteach. Spreagann ceangail LyX de mhodh matamaitice aicearraí réamhshocraithe.",
@@ -3437,7 +3689,13 @@
     "noticeAddMathEnvFirst": "Cuir timpeallacht matamaitice leis i socruithe ar dtús.",
     "noticeCouldNotFindDisplayMath": "Níorbh fhéidir bloc taispeána matamaitice a aimsiú.",
     "noticeCouldNotRenderPreview": "Math Chords: níorbh fhéidir réamhamharc matamaitice inlíne a thabhairt.",
-    "noticeUndefinedChord": "%1 neamhshainithe"
+    "noticeUndefinedChord": "%1 neamhshainithe",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "gl": {
     "intro": "Prema unha tecla configurable leader (Alt+M predeterminada) e despois unha secuencia de teclas para inserir LaTeX. Os atallos predeterminados están inspirados nos enlaces do modo matemático LyX.",
@@ -3517,7 +3775,13 @@
     "noticeAddMathEnvFirst": "Engade primeiro un ambiente matemático na configuración.",
     "noticeCouldNotFindDisplayMath": "Non se puido atopar un bloque matemático de visualización.",
     "noticeCouldNotRenderPreview": "Math Chords: non se puido renderizar a vista previa matemática en liña.",
-    "noticeUndefinedChord": "Indefinido %1"
+    "noticeUndefinedChord": "Indefinido %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "hr": {
     "intro": "Pritisnite konfigurabilnu tipku leader (zadano Alt+M), zatim niz tipki za umetanje LaTeX. Zadani prečaci inspirirani su vezama LyX matematičkog načina rada.",
@@ -3597,7 +3861,13 @@
     "noticeAddMathEnvFirst": "Prvo dodajte matematičko okruženje u postavkama.",
     "noticeCouldNotFindDisplayMath": "Nije moguće pronaći matematički blok prikaza.",
     "noticeCouldNotRenderPreview": "Math Chords: nije moguće prikazati ugrađeni matematički pregled.",
-    "noticeUndefinedChord": "Nedefinirano %1"
+    "noticeUndefinedChord": "Nedefinirano %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ka": {
     "intro": "დააჭირეთ კონფიგურირებად leader კლავიშს (ნაგულისხმევი Alt+M), შემდეგ კლავიშების თანმიმდევრობას LaTeX ჩასართავად. ნაგულისხმევი მალსახმობები შთაგონებულია LyX მათემატიკის რეჟიმის აკინძებით.",
@@ -3677,7 +3947,13 @@
     "noticeAddMathEnvFirst": "ჯერ პარამეტრებში დაამატეთ მათემატიკური გარემო.",
     "noticeCouldNotFindDisplayMath": "ჩვენების მათემატიკური ბლოკის პოვნა ვერ მოხერხდა.",
     "noticeCouldNotRenderPreview": "Math Chords: მათემატიკური გადახედვის გადახედვა ვერ მოხერხდა.",
-    "noticeUndefinedChord": "განუსაზღვრელი %1"
+    "noticeUndefinedChord": "განუსაზღვრელი %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "kh": {
     "intro": "ចុចគ្រាប់ចុច leader ដែលអាចកំណត់រចនាសម្ព័ន្ធបាន (លំនាំដើមAlt+M) បន្ទាប់មកលំដាប់គ្រាប់ចុចដើម្បីបញ្ចូលLaTeX។ ផ្លូវកាត់លំនាំដើមត្រូវបានបំផុសគំនិតដោយការចងរបៀបគណិតវិទ្យាLyX។",
@@ -3757,7 +4033,13 @@
     "noticeAddMathEnvFirst": "បន្ថែមបរិយាកាសគណិតវិទ្យាក្នុងការកំណត់ជាមុនសិន។",
     "noticeCouldNotFindDisplayMath": "រកមិនឃើញប្លុកគណិតវិទ្យាបង្ហាញទេ។",
     "noticeCouldNotRenderPreview": "Math Chords៖ មិនអាចបង្ហាញការមើលគណិតវិទ្យាក្នុងជួរបានទេ។",
-    "noticeUndefinedChord": "មិនបានកំណត់%1"
+    "noticeUndefinedChord": "មិនបានកំណត់%1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "kn": {
     "intro": "ಕಾನ್ಫಿಗರ್ ಮಾಡಬಹುದಾದ leader ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ (ಡೀಫಾಲ್ಟ್ Alt+M), ನಂತರ LaTeX ಸೇರಿಸಲು ಕೀ ಅನುಕ್ರಮ. ಡೀಫಾಲ್ಟ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು LyX ಗಣಿತ-ಮೋಡ್ ಬೈಂಡಿಂಗ್‌ಗಳಿಂದ ಪ್ರೇರಿತವಾಗಿವೆ.",
@@ -3837,7 +4119,13 @@
     "noticeAddMathEnvFirst": "ಮೊದಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಗಣಿತದ ಪರಿಸರವನ್ನು ಸೇರಿಸಿ.",
     "noticeCouldNotFindDisplayMath": "ಡಿಸ್ಪ್ಲೇ ಮ್ಯಾಥ್ ಬ್ಲಾಕ್ ಅನ್ನು ಕಂಡುಹಿಡಿಯಲಾಗಲಿಲ್ಲ.",
     "noticeCouldNotRenderPreview": "Math Chords: ಇನ್‌ಲೈನ್ ಗಣಿತ ಪೂರ್ವವೀಕ್ಷಣೆ ನೀಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
-    "noticeUndefinedChord": "ವ್ಯಾಖ್ಯಾನಿಸದ %1"
+    "noticeUndefinedChord": "ವ್ಯಾಖ್ಯಾನಿಸದ %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ky": {
     "intro": "Конфигурациялануучу leader баскычын (демейки Alt+M), андан кийин LaTeX киргизүү үчүн баскыч ырааттуулугун басыңыз. Демейки жарлыктар LyX математикалык режимдеги байланыштардан шыктанган.",
@@ -3917,7 +4205,13 @@
     "noticeAddMathEnvFirst": "Адегенде жөндөөлөргө математикалык чөйрөнү кошуңуз.",
     "noticeCouldNotFindDisplayMath": "Дисплейдин математикалык блогу табылган жок.",
     "noticeCouldNotRenderPreview": "Math Chords: саптык математиканы алдын ала көрүүнү көрсөтө алган жок.",
-    "noticeUndefinedChord": "Аныкталбаган %1"
+    "noticeUndefinedChord": "Аныкталбаган %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "la": {
     "intro": "Preme configurabilem leader clavem (default Alt+M), deinde series clavis inserta LaTeX. Compendia defalta incitantur a LyX ligaturae math-modus.",
@@ -3997,7 +4291,13 @@
     "noticeAddMathEnvFirst": "Addere mathematicam in uncinis primis.",
     "noticeCouldNotFindDisplayMath": "Ostentationem math invenire non possent.",
     "noticeCouldNotRenderPreview": "Math Chords: inline math praevisum reddere non potuit.",
-    "noticeUndefinedChord": "Proin %1"
+    "noticeUndefinedChord": "Proin %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "lt": {
     "intro": "Paspauskite konfigūruojamą leader mygtuką (numatytasis Alt+M), tada klavišų seką įterpkite LaTeX. Numatytuosius sparčiuosius klavišus įkvėpė LyX matematikos režimo susiejimas.",
@@ -4077,7 +4377,13 @@
     "noticeAddMathEnvFirst": "Pirmiausia nustatymuose pridėkite matematikos aplinką.",
     "noticeCouldNotFindDisplayMath": "Nepavyko rasti ekrano matematinio bloko.",
     "noticeCouldNotRenderPreview": "Math Chords: nepavyko pateikti tiesioginės matematinės peržiūros.",
-    "noticeUndefinedChord": "Neapibrėžta %1"
+    "noticeUndefinedChord": "Neapibrėžta %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "lv": {
     "intro": "Nospiediet konfigurējamu leader taustiņu (noklusējums Alt+M), pēc tam taustiņu secību, lai ievietotu LaTeX. Noklusējuma saīsnes ir iedvesmotas no LyX matemātikas režīma saitēm.",
@@ -4157,7 +4463,13 @@
     "noticeAddMathEnvFirst": "Vispirms iestatījumos pievienojiet matemātisko vidi.",
     "noticeCouldNotFindDisplayMath": "Nevarēja atrast displeja matemātisko bloku.",
     "noticeCouldNotRenderPreview": "Math Chords: nevarēja atveidot iekļauto matemātisko priekšskatījumu.",
-    "noticeUndefinedChord": "Nedefinēts %1"
+    "noticeUndefinedChord": "Nedefinēts %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ml": {
     "intro": "ക്രമീകരിക്കാവുന്ന ഒരു leader കീ (സ്ഥിരസ്ഥിതി Alt+M) അമർത്തുക, തുടർന്ന് LaTeX ചേർക്കുന്നതിനുള്ള ഒരു കീ സീക്വൻസ് അമർത്തുക. ഡിഫോൾട്ട് കുറുക്കുവഴികൾ LyX ഗണിത-മോഡ് ബൈൻഡിംഗുകളിൽ നിന്ന് പ്രചോദനം ഉൾക്കൊണ്ടതാണ്.",
@@ -4237,7 +4549,13 @@
     "noticeAddMathEnvFirst": "ക്രമീകരണങ്ങളിൽ ആദ്യം ഒരു ഗണിത പരിസ്ഥിതി ചേർക്കുക.",
     "noticeCouldNotFindDisplayMath": "ഒരു ഡിസ്പ്ലേ മാത്ത് ബ്ലോക്ക് കണ്ടെത്താനായില്ല.",
     "noticeCouldNotRenderPreview": "Math Chords: ഇൻലൈൻ ഗണിത പ്രിവ്യൂ റെൻഡർ ചെയ്യാൻ കഴിഞ്ഞില്ല.",
-    "noticeUndefinedChord": "നിർവചിക്കാത്ത %1"
+    "noticeUndefinedChord": "നിർവചിക്കാത്ത %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ms": {
     "intro": "Tekan kekunci leader boleh dikonfigurasikan (lalai Alt+M), kemudian urutan kekunci untuk memasukkan LaTeX. Pintasan lalai diilhamkan oleh LyX pengikatan mod matematik.",
@@ -4317,7 +4635,13 @@
     "noticeAddMathEnvFirst": "Tambah persekitaran matematik dalam tetapan dahulu.",
     "noticeCouldNotFindDisplayMath": "Tidak dapat mencari blok matematik paparan.",
     "noticeCouldNotRenderPreview": "Math Chords: tidak dapat memaparkan pratonton matematik sebaris.",
-    "noticeUndefinedChord": "Tidak ditentukan %1"
+    "noticeUndefinedChord": "Tidak ditentukan %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "nan-TW": {
     "intro": "按下可設定的leader鍵（預設Alt+M），然後按鍵序列插入LaTeX。 預設快捷鍵的靈感來自LyX數學模式綁定。",
@@ -4397,7 +4721,13 @@
     "noticeAddMathEnvFirst": "首先在設定中加入數學環境。",
     "noticeCouldNotFindDisplayMath": "找不到顯示數學塊。",
     "noticeCouldNotRenderPreview": "Math Chords：無法渲染內嵌數學預覽。",
-    "noticeUndefinedChord": "未定義%1"
+    "noticeUndefinedChord": "未定義%1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ne": {
     "intro": "कन्फिगर योग्य leader कुञ्जी (पूर्वनिर्धारित Alt+M) थिच्नुहोस्, त्यसपछि LaTeX सम्मिलित गर्न कुञ्जी अनुक्रम। पूर्वनिर्धारित सर्टकटहरू LyX गणित-मोड बाइन्डिङहरूद्वारा प्रेरित हुन्छन्।",
@@ -4477,7 +4807,13 @@
     "noticeAddMathEnvFirst": "पहिले सेटिङहरूमा गणित वातावरण थप्नुहोस्।",
     "noticeCouldNotFindDisplayMath": "प्रदर्शन गणित ब्लक फेला पार्न सकेन।",
     "noticeCouldNotRenderPreview": "Math Chords: इनलाइन गणित पूर्वावलोकन प्रस्तुत गर्न सकेन।",
-    "noticeUndefinedChord": "अपरिभाषित %1"
+    "noticeUndefinedChord": "अपरिभाषित %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "oc": {
     "intro": "Premeu una tecla configurable leader (Alt+M per defecte), després una seqüència de tecles per inserir LaTeX. Les dreceres predeterminades estan inspirades en els enllaços en mode matemàtic LyX.",
@@ -4557,7 +4893,13 @@
     "noticeAddMathEnvFirst": "Afegiu primer un entorn matemàtic a la configuració.",
     "noticeCouldNotFindDisplayMath": "No s'ha pogut trobar un bloc matemàtic de visualització.",
     "noticeCouldNotRenderPreview": "Math Chords: no s'ha pogut representar la previsualització matemàtica en línia.",
-    "noticeUndefinedChord": "Sense definir %1"
+    "noticeUndefinedChord": "Sense definir %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "or": {
     "intro": "ଏକ ବିନ୍ୟାସଯୋଗ୍ୟ leader କି (ଡିଫଲ୍ଟ Alt+M) ଦବାନ୍ତୁ, ତାପରେ LaTeX ସନ୍ନିବେଶ କରିବାକୁ ଏକ କି କ୍ରମ | ଡିଫଲ୍ଟ ସର୍ଟକଟ୍ LyX ଗଣିତ-ମୋଡ୍ ବନ୍ଧନ ଦ୍ୱାରା ଅନୁପ୍ରାଣିତ |",
@@ -4637,7 +4979,13 @@
     "noticeAddMathEnvFirst": "ପ୍ରଥମେ ସେଟିଂସମୂହରେ ଏକ ଗଣିତ ପରିବେଶ ଯୋଡନ୍ତୁ |",
     "noticeCouldNotFindDisplayMath": "ଏକ ପ୍ରଦର୍ଶନ ଗଣିତ ବ୍ଲକ ଖୋଜି ପାଇଲା ନାହିଁ |",
     "noticeCouldNotRenderPreview": "Math Chords: ଇନଲାଇନ ଗଣିତ ପୂର୍ବାବଲୋକନ କରିପାରିବ ନାହିଁ |",
-    "noticeUndefinedChord": "ଅଜ୍ଞାତ %1 |"
+    "noticeUndefinedChord": "ଅଜ୍ଞାତ %1 |",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "sa": {
     "intro": "एकं विन्यासयोग्यं leader कुञ्जी (पूर्वनिर्धारितं Alt+M) नुदन्तु, ततः LaTeX सम्मिलितुं कुञ्जीक्रमं नुदन्तु । पूर्वनिर्धारितशॉर्टकट् LyX गणित-विधाबन्धनैः प्रेरिताः सन्ति ।",
@@ -4717,7 +5065,13 @@
     "noticeAddMathEnvFirst": "प्रथमं सेटिंग्स् मध्ये गणितस्य वातावरणं योजयन्तु।",
     "noticeCouldNotFindDisplayMath": "प्रदर्शनगणितखण्डं न प्राप्नोत् ।",
     "noticeCouldNotRenderPreview": "Math Chords: इनलाइन गणित पूर्वावलोकनं प्रतिपादयितुं न शक्तवान्।",
-    "noticeUndefinedChord": "अपरिभाषित %1 ."
+    "noticeUndefinedChord": "अपरिभाषित %1 .",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "si": {
     "intro": "වින්‍යාසගත කළ හැකි leader යතුරක් ඔබන්න (පෙරනිමි Alt+M), ඉන්පසු LaTeX ඇතුළු කිරීමට යතුරු අනුපිළිවෙලක්. පෙරනිමි කෙටිමං LyX ගණිත ප්‍රකාර බන්ධන මගින් ආභාෂය ලබා ඇත.",
@@ -4797,7 +5151,13 @@
     "noticeAddMathEnvFirst": "පළමුව සැකසීම් තුළ ගණිත පරිසරයක් එක් කරන්න.",
     "noticeCouldNotFindDisplayMath": "සංදර්ශක ගණිත අංශයක් සොයා ගැනීමට නොහැකි විය.",
     "noticeCouldNotRenderPreview": "Math Chords: පේළිගත ගණිත පෙරදසුන ඉදිරිපත් කළ නොහැක.",
-    "noticeUndefinedChord": "නිර්වචනය නොකළ %1"
+    "noticeUndefinedChord": "නිර්වචනය නොකළ %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "sk": {
     "intro": "Stlačte konfigurovateľné tlačidlo leader (predvolené Alt+M), potom sekvenciu tlačidiel na vloženie LaTeX. Predvolené skratky sú inšpirované väzbami v matematickom režime LyX.",
@@ -4877,7 +5237,13 @@
     "noticeAddMathEnvFirst": "Najprv pridajte matematické prostredie v nastaveniach.",
     "noticeCouldNotFindDisplayMath": "Nepodarilo sa nájsť zobrazovací matematický blok.",
     "noticeCouldNotRenderPreview": "Math Chords: nepodarilo sa vykresliť inline matematický náhľad.",
-    "noticeUndefinedChord": "Nedefinované %1"
+    "noticeUndefinedChord": "Nedefinované %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "sl": {
     "intro": "Pritisnite nastavljivo tipko leader (privzeto Alt+M), nato zaporedje tipk, da vstavite LaTeX. Privzete bližnjice se zgledujejo po povezavah matematičnega načina LyX.",
@@ -4957,7 +5323,13 @@
     "noticeAddMathEnvFirst": "V nastavitvah najprej dodajte matematično okolje.",
     "noticeCouldNotFindDisplayMath": "Ni bilo mogoče najti prikaznega matematičnega bloka.",
     "noticeCouldNotRenderPreview": "Math Chords: ni bilo mogoče upodobiti vgrajenega predogleda matematike.",
-    "noticeUndefinedChord": "Nedefinirano %1"
+    "noticeUndefinedChord": "Nedefinirano %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "sq": {
     "intro": "Shtypni një tast të konfigurueshëm leader (parazgjedhja Alt+M), më pas një sekuencë tasti për të futur LaTeX. Shkurtoret e parazgjedhura janë frymëzuar nga lidhjet e modalitetit matematikor LyX.",
@@ -5037,7 +5409,13 @@
     "noticeAddMathEnvFirst": "Fillimisht shtoni një mjedis matematikor te cilësimet.",
     "noticeCouldNotFindDisplayMath": "Nuk mund të gjente një bllok matematikor të ekranit.",
     "noticeCouldNotRenderPreview": "Math Chords: nuk mund të jepte pamje paraprake matematikore.",
-    "noticeUndefinedChord": "E pacaktuar %1"
+    "noticeUndefinedChord": "E pacaktuar %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "sr": {
     "intro": "Притисните тастер §ЛД§ који се може конфигурисати (подразумевано §АЛТ§), затим низ тастера да бисте уметнули §ЛКС§. Подразумеване пречице су инспирисане §ЛИКС§ везама математичког режима.",
@@ -5117,7 +5495,13 @@
     "noticeAddMathEnvFirst": "Прво додајте математичко окружење у подешавања.",
     "noticeCouldNotFindDisplayMath": "Није могуће пронаћи математички блок екрана.",
     "noticeCouldNotRenderPreview": "§МЦ§: није могуће приказати инлине математички преглед.",
-    "noticeUndefinedChord": "Недефинисано §П1§"
+    "noticeUndefinedChord": "Недефинисано §П1§",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "sw": {
     "intro": "Bonyeza kitufe cha leader kinachoweza kusanidiwa (chaguo-msingi Alt+M), kisha mfuatano wa kitufe ili kuingiza LaTeX. Njia za mkato chaguo-msingi zimechochewa na LyX vifunganishi vya modi ya hesabu.",
@@ -5197,7 +5581,13 @@
     "noticeAddMathEnvFirst": "Ongeza mazingira ya hesabu katika mipangilio kwanza.",
     "noticeCouldNotFindDisplayMath": "Haikuweza kupata kizuizi cha hesabu cha kuonyesha.",
     "noticeCouldNotRenderPreview": "Math Chords: haikuweza kutoa onyesho la kukagua hesabu la ndani.",
-    "noticeUndefinedChord": "Haijafafanuliwa %1"
+    "noticeUndefinedChord": "Haijafafanuliwa %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ta": {
     "intro": "உள்ளமைக்கக்கூடிய leader விசையை (இயல்புநிலை Alt+M) அழுத்தவும், பின்னர் LaTeX ஐச் செருக ஒரு விசை வரிசையை அழுத்தவும். இயல்புநிலை குறுக்குவழிகள் LyX கணித-முறை பிணைப்புகளால் ஈர்க்கப்படுகின்றன.",
@@ -5277,7 +5667,13 @@
     "noticeAddMathEnvFirst": "அமைப்புகளில் முதலில் கணித சூழலைச் சேர்க்கவும்.",
     "noticeCouldNotFindDisplayMath": "காட்சி கணிதத் தொகுதியைக் கண்டறிய முடியவில்லை.",
     "noticeCouldNotRenderPreview": "Math Chords: இன்லைன் கணித முன்னோட்டத்தை வழங்க முடியவில்லை.",
-    "noticeUndefinedChord": "வரையறுக்கப்படாத %1"
+    "noticeUndefinedChord": "வரையறுக்கப்படாத %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "te": {
     "intro": "కాన్ఫిగర్ చేయదగిన leader కీ (డిఫాల్ట్ Alt+M) నొక్కండి, ఆపై LaTeXని చొప్పించడానికి ఒక కీ క్రమాన్ని నొక్కండి. డిఫాల్ట్ షార్ట్‌కట్‌లు LyX మ్యాథ్-మోడ్ బైండింగ్‌ల ద్వారా ప్రేరణ పొందాయి.",
@@ -5357,7 +5753,13 @@
     "noticeAddMathEnvFirst": "ముందుగా సెట్టింగ్‌లలో గణిత వాతావరణాన్ని జోడించండి.",
     "noticeCouldNotFindDisplayMath": "డిస్‌ప్లే మ్యాథ్ బ్లాక్‌ని కనుగొనడం సాధ్యపడలేదు.",
     "noticeCouldNotRenderPreview": "Math Chords: ఇన్‌లైన్ గణిత పరిదృశ్యాన్ని అందించలేకపోయింది.",
-    "noticeUndefinedChord": "నిర్వచించని %1"
+    "noticeUndefinedChord": "నిర్వచించని %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "tl": {
     "intro": "Pindutin ang isang na-configure na leader key (default Alt+M), pagkatapos ay isang key sequence para ipasok ang LaTeX. Ang mga default na shortcut ay hango sa LyX math-mode na mga binding.",
@@ -5437,7 +5839,13 @@
     "noticeAddMathEnvFirst": "Magdagdag muna ng math environment sa mga setting.",
     "noticeCouldNotFindDisplayMath": "Hindi makahanap ng display math block.",
     "noticeCouldNotRenderPreview": "Math Chords: hindi makapag-render ng inline na preview ng matematika.",
-    "noticeUndefinedChord": "Hindi natukoy %1"
+    "noticeUndefinedChord": "Hindi natukoy %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "tt": {
     "intro": "Конфигурацияләнә торган leader төймәсенә басыгыз (килешү Alt+M), аннары keyLX§ кертү өчен төп эзлеклелек. Килешү кыска юллары LyX математика режимы белән илһамландырылган.",
@@ -5517,7 +5925,13 @@
     "noticeAddMathEnvFirst": "Башта көйләүләрдә математика мохитен өстәгез.",
     "noticeCouldNotFindDisplayMath": "Дисплей математика блогын таба алмадым.",
     "noticeCouldNotRenderPreview": "Math Chords: математика алдан карау.",
-    "noticeUndefinedChord": "Билгесез %1"
+    "noticeUndefinedChord": "Билгесез %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "ur": {
     "intro": "ایک قابل ترتیب leader کلید (پہلے سے طے شدہ Alt+M) کو دبائیں، پھر LaTeX داخل کرنے کے لیے ایک کلیدی ترتیب۔ ڈیفالٹ شارٹ کٹس LyX ریاضی موڈ بائنڈنگ سے متاثر ہیں۔",
@@ -5597,7 +6011,13 @@
     "noticeAddMathEnvFirst": "پہلے ترتیبات میں ریاضی کا ماحول شامل کریں۔",
     "noticeCouldNotFindDisplayMath": "ڈسپلے ریاضی بلاک نہیں مل سکا۔",
     "noticeCouldNotRenderPreview": "Math Chords: ان لائن ریاضی کا پیش نظارہ پیش نہیں کر سکا۔",
-    "noticeUndefinedChord": "غیر متعینہ %1"
+    "noticeUndefinedChord": "غیر متعینہ %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   },
   "uz": {
     "intro": "Sozlanishi mumkin boʻlgan leader tugmachasini (birlamchi Alt+M), soʻng LaTeX kiritish uchun tugmalar ketma-ketligini bosing. Standart yorliqlar LyX matematik-rejim bog‘lashlaridan ilhomlangan.",
@@ -5677,6 +6097,12 @@
     "noticeAddMathEnvFirst": "Avval sozlamalarda matematik muhitni qo'shing.",
     "noticeCouldNotFindDisplayMath": "Displey matematik bloki topilmadi.",
     "noticeCouldNotRenderPreview": "Math Chords: inline matematik oldindan ko'rishni ko'rsata olmadi.",
-    "noticeUndefinedChord": "Aniqlanmagan %1"
+    "noticeUndefinedChord": "Aniqlanmagan %1",
+    "snippetTabStopsName": "Brace navigation in math",
+    "snippetTabStopsDesc": "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+    "placeholderNavNextName": "Next brace key",
+    "placeholderNavNextDesc": "Jump to the next {…} field inside math. Default \"Alt+ArrowRight\".",
+    "placeholderNavPrevName": "Previous brace key",
+    "placeholderNavPrevDesc": "Jump to the previous {…} field inside math. Default \"Alt+ArrowLeft\"."
   }
 }

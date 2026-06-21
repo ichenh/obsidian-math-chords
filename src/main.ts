@@ -4,11 +4,18 @@ import { loadShortcuts, mergeShortcuts, saveShortcuts } from "./config";
 import { DEFAULT_SHORTCUTS } from "./defaults";
 import { DEFAULT_SETTINGS, normalizeSettings, type ObsidianMathChordsSettings } from "./settings";
 import { buildTrie, shortcutStorageKey, type TrieNode } from "./trie";
+import { eventMatchesChord } from "./keys";
 import { LeaderController } from "./leader";
 import { createInlineMathPreviewPlugin } from "./mathPreview";
 import { ObsidianMathChordsSettingTab } from "./settingsTab";
+import { jumpToBrace } from "./braceNav";
 import { expandSnippet, insertDisplayMath, insertInlineMath } from "./snippet";
-import { extractMathContent, findMathRegionAt, isInMath } from "./math";
+import {
+  extractMathContent,
+  findMathRegionAt,
+  resolveSnippetInsertPosition,
+  shouldAutoWrapSnippet,
+} from "./math";
 import { openEnvironmentPicker, wrapDisplayMathWithEnvironment } from "./mathEnv";
 import { logAndNotice, runWithNotice } from "./errors";
 import { initLocale, t } from "./l10n/locale";
@@ -87,6 +94,32 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     const cm = this.getEditorView(markdownView.editor);
     if (!cm) return;
     if (!this.isEditorFocused(cm)) return;
+
+    if (this.settings.mathBraceNavEnabled) {
+      const editor = this.findEditor(cm);
+      if (editor) {
+        const doc = editor.getValue();
+        const offset = editor.posToOffset(editor.getCursor());
+        if (findMathRegionAt(doc, offset)) {
+          if (
+            eventMatchesChord(event, this.settings.mathBraceNavNextKey) &&
+            jumpToBrace(editor, "next")
+          ) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+          if (
+            eventMatchesChord(event, this.settings.mathBraceNavPrevKey) &&
+            jumpToBrace(editor, "prev")
+          ) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+        }
+      }
+    }
 
     if (this.leaderController?.handleKeyDown(event, cm)) {
       event.preventDefault();
@@ -269,16 +302,28 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       return;
     }
 
-    const selection = editor.getSelection();
+    const doc = editor.getValue();
+    const selFrom = editor.posToOffset(editor.getCursor("from"));
+    const selTo = editor.posToOffset(editor.getCursor("to"));
+    const { from: insertFrom, to: insertTo } = resolveSnippetInsertPosition(doc, selFrom, selTo);
+
+    const selection =
+      insertFrom === insertTo && selFrom === selTo
+        ? editor.getSelection()
+        : doc.slice(insertFrom, insertTo);
+
     let { text, anchor, head } = expandSnippet(shortcut.command, selection);
 
-    const from = editor.getCursor("from");
-    const base = editor.posToOffset(from);
+    const base = insertFrom;
 
-    if (this.settings.wrapOutsideMath && !isInMath(editor.getValue(), base)) {
+    if (this.settings.wrapOutsideMath && shouldAutoWrapSnippet(doc, insertFrom, insertTo)) {
       text = `$${text}$`;
       anchor += 1;
       head += 1;
+    }
+
+    if (insertFrom !== selFrom || insertTo !== selTo) {
+      editor.setSelection(editor.offsetToPos(insertFrom), editor.offsetToPos(insertTo));
     }
 
     editor.replaceSelection(text);

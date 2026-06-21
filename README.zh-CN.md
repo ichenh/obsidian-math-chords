@@ -2,15 +2,15 @@
 
 [English](README.md)
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.2.1-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
-**Math Chords** 为 Obsidian 提供 **LaTeX 公式快捷键**：按 leader 键（默认 `Alt+M`），再按短序列即可插入分数、希腊字母、积分等片段，无需手打 `\frac`、`\alpha` 等命令。还支持 **行内公式实时预览** 和 **行间公式环境包裹**。
+**Math Chords** 为 Obsidian 提供 **LaTeX 公式快捷键**：按 leader 键（默认 `Alt+M`），再按短序列即可插入分数、希腊字母、积分等片段，无需手打 `\frac`、`\alpha` 等命令。还支持可选的 **行内公式实时预览**、**公式内大括号跳转** 和 **行间公式环境包裹**。
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.2.0。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.2.1。** 见 [CHANGELOG](CHANGELOG.md)。
 
 **需要 Obsidian 1.5.0+。** 以键盘操作为主，建议在桌面端使用。
 
@@ -46,7 +46,8 @@
 | **快捷键** | 按可配置的 leader 键，再按按键序列插入 LaTeX 片段。 |
 | **光标占位符** | 命令模板中的 `$$` 标记光标（或选区）位置，例如 `\frac{$$}{}`。 |
 | **自动 `$…$` 包裹** | 可选：在公式区域外插入时，自动用行内公式定界符包裹。 |
-| **行内实时预览** | 光标位于 `$…$` 内时，在公式上方用 Obsidian 原生 **MathJax** 渲染预览。 |
+| **行内实时预览** | 光标位于 `$…$` 内时，在公式上方用 Obsidian 原生 **MathJax** 渲染预览（默认开启）。 |
+| **公式内大括号跳转** | 在 `$…$` / `$$…$$` 内用可配置按键在 `{…}` 参数位之间跳转（默认 `Alt+→` / `Alt+←`；默认开启）。 |
 | **行间公式环境** | 通过模糊搜索选择 `\begin{…}…\end{…}` 包裹块内容；必要时先插入 `$$…$$`。 |
 | **内置数学命令** | 插入行内/行间公式；可选的智能切换在已有公式块内取消包裹或互相转换（见设置项 **Smart math toggle**）。 |
 | **YAML + 设置界面** | 编辑 `shortcuts.yaml` 或使用设置页；修改后立即重建快捷键查找树。 |
@@ -254,8 +255,10 @@ npm run build
 | 设置项 | 默认值 | 说明 |
 | :--- | :--- | :--- |
 | Enable plugin（启用插件） | 开 | leader 快捷键总开关。 |
-| Show shortcut hints（显示快捷键提示） | 关 | leader 后显示 which-key 面板。 |
+| Show shortcut hints（显示快捷键提示） | 开 | leader 后显示 which-key 面板。 |
 | Inline math live preview（行内公式实时预览） | 开 | 在 `$…$` 上方 MathJax 预览。 |
+| Brace navigation in math（公式内大括号跳转） | 开 | 在公式内 `{…}` 之间跳转；默认 `Alt+→` / `Alt+←`。 |
+| Next / previous brace keys（下/上一大括号键） | `Alt+→` / `Alt+←` | 大括号跳转快捷键（启用后生效）。 |
 | Leader key（Leader 键） | `Alt+M` | 快捷键前缀；YAML 中 `keys` 为 leader 之后的部分。 |
 | Auto-wrap outside math（公式外自动包裹） | 开 | 非公式区域插入时自动加 `$…$`。 |
 | Smart math toggle（智能公式切换） | 开 | 在已有公式块内，行内/行间命令会取消包裹或转换，而非插入新块。 |
@@ -297,10 +300,13 @@ math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-
 ├── src/                    # TypeScript 源码
 │   ├── main.ts             # 插件入口
 │   ├── leader.ts           # Leader 快捷键状态机
+│   ├── braceNav.ts         # 公式内大括号跳转
 │   ├── defaults.ts         # 默认快捷键目录
 │   ├── config.ts           # YAML 读写与合并
 │   ├── l10n/               # 内置语言包 + 按需加载 extras
 │   └── …                   # 公式检测、预览、设置界面等
+├── src/*.test.ts           # Vitest 单元测试
+├── vitest.config.ts
 ├── shortcuts.yaml          # 随仓库分发的默认快捷键（101 条）
 ├── styles.css              # 预览与设置样式
 ├── manifest.json           # Obsidian 插件清单
@@ -316,19 +322,20 @@ math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-
 npm install
 npm run dev    # 监听模式构建
 npm run build  # 类型检查 + 生产构建
+npm test       # Vitest 单元测试
 npm run seed   # 从 src/defaults.ts 重写 shortcuts.yaml
 npm run seed:locales  # 从 scripts/locale-catalog.json 生成内置 TS 语言包与 locales-extras.json
 ```
 
 模块划分与约束见 [`.cursorrules`](.cursorrules)。
 
-欢迎提交 Pull Request，提交前请运行 `npm run build`。
+欢迎提交 Pull Request，提交前请运行 `npm run build` 和 `npm test`。
 
 ### 发布
 
 1. 更新 `manifest.json`、`package.json` 中的 `version`，并在 `versions.json` 中添加映射。
 2. 更新 `CHANGELOG.md`。
-3. 提交后打 tag（不要加 `v` 前缀），例如 `git tag 0.1.6 && git push origin 0.1.6`。
+3. 提交后打 tag（不要加 `v` 前缀），例如 `git tag 0.2.0 && git push origin 0.2.0`。
 4. [release 工作流](.github/workflows/release.yml) 会自动构建并附上 `main.js`、`manifest.json`、`styles.css` 和 `locales-extras.json`，并为 `main.js`、`styles.css` 生成 artifact attestations。
 
 ---

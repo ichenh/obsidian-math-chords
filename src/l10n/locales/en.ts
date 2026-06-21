@@ -7,7 +7,15 @@ export const en = {
   showHintPopupName: "Show shortcut hints",
   showHintPopupDesc: "Show a which-key panel near the caret after pressing the leader key.",
   inlinePreviewName: "Inline math live preview",
-  inlinePreviewDesc: "While the caret is inside $…$, show a MathJax preview above the formula.",
+  inlinePreviewDesc:
+    "While the caret is inside $…$, show a MathJax preview above the formula. Obsidian Live Preview already renders display math ($$…$$).",
+  snippetTabStopsName: "Brace navigation in math",
+  snippetTabStopsDesc:
+    "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
+  placeholderNavNextName: "Next brace key",
+  placeholderNavNextDesc: 'Jump to the next {…} field inside math. Default "Alt+ArrowRight".',
+  placeholderNavPrevName: "Previous brace key",
+  placeholderNavPrevDesc: 'Jump to the previous {…} field inside math. Default "Alt+ArrowLeft".',
   leaderKeyName: "Leader key",
   leaderKeyDesc:
     'Default "Alt+M". Key sequences in shortcuts.yaml are pressed after the leader, e.g. "F" or "G A".',

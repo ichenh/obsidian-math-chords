@@ -4,18 +4,20 @@ Architecture and workflow reference for contributors and AI assistants.
 
 ---
 
-## 1. Product scope (v0.2.0)
+## 1. Product scope (v0.2.0+)
 
 - **Plugin id:** `math-chords` (install folder `.obsidian/plugins/math-chords/`).
 - **Leader chords:** `Alt+M` + key sequence inserts LaTeX snippets (defaults inspired by LyX).
-- **Inline preview:** MathJax panel above `$…$` (optional; inline `renderMath`, debounced `finishRenderMath`).
+- **Inline preview:** MathJax panel above `$…$` (optional, default on; inline `renderMath`, debounced `finishRenderMath`).
+- **Brace navigation:** Optional (default on); inside `$…$` / `$$…$$`, jump between `{…}` with configurable chords (default `Alt+→` / `Alt+←`).
 - **Display-math env wrap:** Leader shortcut or command opens environment picker; inserts `$$…$$` when needed.
 - **Commands:** Insert inline / display math, wrap display math with environment (no default hotkeys).
 - **Smart math toggle:** Optional (default on); inside `$…$` / `$$…$$`, inline/display commands unwrap or convert instead of inserting again.
 - **Config:** `shortcuts.yaml` + localized settings UI (11 bundled + 61 lazy locales); merge defaults without overwriting custom keys.
+- **Tests:** Vitest (`npm test`) for `braceNav`, `math`, `keys`, `snippet`, `trie`.
 - **minAppVersion:** `1.5.0`.
 
-Do not re-add removed overlay UI or bundled KaTeX without an explicit, LP-safe design.
+Do not re-add removed overlay UI, multi-`$$` tab-stop sessions, or bundled KaTeX without an explicit, LP-safe design.
 
 ---
 
@@ -24,16 +26,17 @@ Do not re-add removed overlay UI or bundled KaTeX without an explicit, LP-safe d
 | Module | Responsibility |
 | :--- | :--- |
 | `main.ts` | Plugin lifecycle, commands, leader wiring, editor callbacks. |
-| `settings.ts` | Settings types, defaults, `normalizeSettings()`. |
+| `settings.ts` | Settings types, defaults, `normalizeSettings()` (migrates legacy `snippetTabStops` keys). |
 | `settingsTab.ts` | Settings UI (localized). |
 | `l10n/` | Bundled mainstream locales + `locales-extras.json` lazy load; `getLanguage()` + fallback. |
 | `config.ts` | YAML load/save, validation, merge, backslash normalization. |
 | `defaults.ts` | Static default shortcut catalog. |
 | `types.ts` | Domain types. |
-| `keys.ts` | **Sole** KeyboardEvent → canonical chord token mapping. |
+| `keys.ts` | **Sole** KeyboardEvent → canonical chord token mapping; `eventMatchesChord()`. |
 | `trie.ts` | Prefix trie for chord lookup. |
-| `snippet.ts` | `$$` placeholder expansion; inline/display math insert. |
-| `math.ts` | Math region detection. |
+| `snippet.ts` | Single `$$` placeholder expansion; inline/display math insert. |
+| `math.ts` | Math region detection; auto-wrap rules for snippets inside inline math. |
+| `braceNav.ts` | Brace-pair scanning and jump inside math regions. |
 | `mathEnv.ts` | Display-math environment picker and wrap. |
 | `mathPreview.ts` | Inline `$…$` MathJax preview layer. |
 | `leader.ts` | Leader state machine. |
@@ -47,7 +50,7 @@ No circular dependencies. New modules only when a responsibility cannot fit abov
 ## 3. Engineering constraints
 
 - **Keys:** canonical `ctrl` → `alt` → `shift` → `meta` + lowercase base; letters never imply `Shift`.
-- **Snippets:** `$$` = first caret/selection marker; `__DISPLAY_MATH__` = display block command.
+- **Snippets:** `$$` = first caret/selection marker only; `__DISPLAY_MATH__` = display block command.
 - **YAML:** space-separated chords; `Shift+S` style modifiers; leader is global in settings.
 - **Edits:** Obsidian `Editor` API only for mutations; `(editor as unknown as { cm?: EditorView }).cm` read-only for layout.
 - **Externals:** `obsidian` and `@codemirror/*` are esbuild externals.
@@ -60,9 +63,10 @@ No circular dependencies. New modules only when a responsibility cannot fit abov
 ## 4. Release workflow
 
 1. `npm run build` — zero TypeScript errors.
-2. Update `CHANGELOG.md` (Keep a Changelog).
-3. Sync `manifest.json`, `package.json`, `versions.json`.
-4. Update `README.md` / `README.zh-CN.md` when features, schema, or defaults change.
-5. `npm run seed` to regenerate `shortcuts.yaml` when `defaults.ts` changes.
+2. `npm test` — all Vitest tests pass.
+3. Update `CHANGELOG.md` (Keep a Changelog).
+4. Sync `manifest.json`, `package.json`, `versions.json`.
+5. Update `README.md` / `README.zh-CN.md` when features, schema, or defaults change.
+6. `npm run seed` to regenerate `shortcuts.yaml` when `defaults.ts` changes.
 
 See [AI-ASSISTANCE.md](AI-ASSISTANCE.md) for AI-use disclosure.

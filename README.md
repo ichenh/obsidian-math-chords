@@ -2,15 +2,15 @@
 
 [中文文档](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.2.1-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
-**Math Chords** adds **keyboard shortcuts for LaTeX math** in Obsidian: press a leader key (default `Alt+M`), then a short sequence to insert fractions, Greek letters, integrals, and other snippets—without typing `\frac`, `\alpha`, and the rest by hand. Also includes **live inline formula preview** and **display-math environment wrapping**.
+**Math Chords** adds **keyboard shortcuts for LaTeX math** in Obsidian: press a leader key (default `Alt+M`), then a short sequence to insert fractions, Greek letters, integrals, and other snippets—without typing `\frac`, `\alpha`, and the rest by hand. Also includes optional **inline formula preview**, **brace navigation inside math**, and **display-math environment wrapping**.
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.2.0.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.2.1.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
@@ -44,7 +44,8 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 | **Shortcuts** | Press a configurable leader key, then a key sequence to insert LaTeX snippets. |
 | **Caret placeholder** | `$$` in a command template marks where the cursor (or selection) is placed, e.g. `\frac{$$}{}`. |
 | **Auto `$…$` wrap** | Optional: when inserting outside math, wrap the snippet in inline math delimiters. |
-| **Inline live preview** | While the caret is inside `$…$`, a floating panel above the formula renders with Obsidian's native **MathJax**. |
+| **Inline live preview** | While the caret is inside `$…$`, a floating panel above the formula renders with Obsidian's native **MathJax** (on by default). |
+| **Brace navigation in math** | Jump between `{…}` fields inside `$…$` / `$$…$$` with configurable keys (default `Alt+→` / `Alt+←`; on by default). |
 | **Display-math environments** | Wrap block content with `\begin{…}…\end{…}` via a fuzzy-search picker; inserts `$$…$$` when needed. |
 | **Built-in math commands** | Insert inline/display math; optional smart toggle unwraps or converts inside existing blocks (see settings). |
 | **YAML + UI config** | Edit `shortcuts.yaml` or use the settings tab; changes rebuild the shortcut trie immediately. |
@@ -251,8 +252,10 @@ Open **Settings → Math Chords**. The settings UI follows your Obsidian display
 | Setting | Default | Description |
 | :--- | :--- | :--- |
 | Enable plugin | on | Master switch for leader shortcuts. |
-| Show shortcut hints | off | Which-key panel after the leader. |
+| Show shortcut hints | on | Which-key panel after the leader. |
 | Inline math live preview | on | MathJax preview above `$…$`. |
+| Brace navigation in math | on | Jump between `{…}` inside math; defaults `Alt+→` / `Alt+←`. |
+| Next / previous brace keys | `Alt+→` / `Alt+←` | Chords for brace navigation (when enabled). |
 | Leader key | `Alt+M` | Global prefix before shortcut keys; `keys` in YAML are what follows it. |
 | Auto-wrap outside math | on | Auto-insert `$…$` around snippets when not in math. |
 | Smart math toggle | on | Inside a math block, inline/display commands unwrap or convert instead of inserting a new block. |
@@ -294,10 +297,13 @@ math-chords/                  # Plugin id; install folder .obsidian/plugins/math
 ├── src/                    # TypeScript source
 │   ├── main.ts             # Plugin entry
 │   ├── leader.ts           # Leader shortcut state machine
+│   ├── braceNav.ts         # Brace-pair navigation inside math
 │   ├── defaults.ts         # Default shortcut catalog
 │   ├── config.ts           # YAML load/save/merge
 │   ├── l10n/               # bundled locales + lazy extras loader
 │   └── …                   # math, preview, settings UI, etc.
+├── src/*.test.ts           # Vitest unit tests
+├── vitest.config.ts
 ├── shortcuts.yaml          # Shipped default shortcuts (101 entries)
 ├── styles.css              # Preview & settings styles
 ├── manifest.json           # Obsidian plugin manifest
@@ -313,19 +319,20 @@ math-chords/                  # Plugin id; install folder .obsidian/plugins/math
 npm install
 npm run dev    # watch build
 npm run build  # typecheck + production bundle
+npm test       # Vitest unit tests
 npm run seed   # rewrite shortcuts.yaml from src/defaults.ts
 npm run seed:locales  # bundled TS locales + locales-extras.json from scripts/locale-catalog.json
 ```
 
 Module layout and constraints: [`.cursorrules`](.cursorrules).
 
-Pull requests welcome. Run `npm run build` before submitting.
+Pull requests welcome. Run `npm run build` and `npm test` before submitting.
 
 ### Releasing
 
 1. Bump `version` in `manifest.json` and `package.json`; add the mapping to `versions.json`.
 2. Update `CHANGELOG.md`.
-3. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.1.6 && git push origin 0.1.6`.
+3. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.2.0 && git push origin 0.2.0`.
 4. The [release workflow](.github/workflows/release.yml) builds and attaches `main.js`, `manifest.json`, `styles.css`, and `locales-extras.json`, with artifact attestations for `main.js` and `styles.css`.
 
 ---

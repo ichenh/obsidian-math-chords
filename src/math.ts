@@ -69,6 +69,61 @@ export function isInMath(text: string, offset: number): boolean {
   return findMathRegionAt(text, offset) !== null;
 }
 
+/** Opening `$` before `offset` with no closing `$` before `offset` (inline only). */
+export function hasUnclosedInlineMathBefore(text: string, offset: number): boolean {
+  if (offset <= 0 || text.length > MAX_DOC_LENGTH) return false;
+
+  for (let i = offset - 1; i >= 0; i--) {
+    if (text[i] !== "$" || isEscaped(text, i)) continue;
+    if (i > 0 && text[i - 1] === "$") continue;
+    if (i < text.length - 1 && text[i + 1] === "$") continue;
+
+    for (let j = i + 1; j < offset; j++) {
+      if (text[j] !== "$" || isEscaped(text, j)) continue;
+      if (j < text.length - 1 && text[j + 1] === "$") continue;
+      return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+function touchesInlineMathClose(text: string, offset: number): boolean {
+  if (offset <= 0 || offset > text.length) return false;
+  const prev = findMathRegionAt(text, offset - 1);
+  return prev?.kind === "inline" && offset >= prev.to;
+}
+
+/** Whether `wrapOutsideMath` should add `$…$` around a snippet at `[from, to]`. */
+export function shouldAutoWrapSnippet(text: string, from: number, to: number): boolean {
+  if (text.length > MAX_DOC_LENGTH) return true;
+
+  const start = Math.max(0, from);
+  const end = Math.min(to, text.length);
+  for (let offset = start; offset <= end; offset++) {
+    if (findMathRegionAt(text, offset)) return false;
+  }
+
+  if (hasUnclosedInlineMathBefore(text, from)) return false;
+  if (from === to && touchesInlineMathClose(text, from)) return false;
+
+  return true;
+}
+
+/** Move an empty cursor from just after `$…$` to before the closing `$`. */
+export function resolveSnippetInsertPosition(
+  text: string,
+  from: number,
+  to: number,
+): { from: number; to: number } {
+  if (from !== to) return { from, to };
+  if (touchesInlineMathClose(text, from)) {
+    const prev = findMathRegionAt(text, from - 1)!;
+    return { from: prev.to - 1, to: prev.to - 1 };
+  }
+  return { from, to };
+}
+
 export function getMathContentBounds(region: MathRegion): { from: number; to: number } {
   if (region.kind === "display") {
     return { from: region.from + 2, to: region.to - 2 };

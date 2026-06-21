@@ -9,12 +9,11 @@ export function expandSnippet(template: string, selection: string): ExpandedSnip
     return { text: template, anchor: length, head: length };
   }
 
-  const replacement = selection;
-  const text = template.replace(PLACEHOLDER, replacement);
+  const text = template.replace(PLACEHOLDER, selection);
   return {
     text,
     anchor: markerIndex,
-    head: markerIndex + replacement.length,
+    head: markerIndex + selection.length,
   };
 }
 

@@ -1,5 +1,23 @@
 import type { MathEnvironment } from "./types";
+import { parseChord } from "./keys";
 import { validateMathEnvironment } from "./mathEnv";
+
+export const DEFAULT_MATH_BRACE_NAV_NEXT = "Alt+ArrowRight";
+export const DEFAULT_MATH_BRACE_NAV_PREV = "Alt+ArrowLeft";
+
+function isValidNavChord(chord: string): boolean {
+  const parsed = parseChord(chord);
+  if (!parsed) return false;
+  const parts = parsed.split("+");
+  const base = parts[parts.length - 1];
+  return base.length > 0 && !["ctrl", "alt", "shift", "meta"].includes(base);
+}
+
+function normalizeNavKey(raw: unknown, fallback: string): string {
+  if (typeof raw !== "string") return fallback;
+  const trimmed = raw.trim();
+  return trimmed && isValidNavChord(trimmed) ? trimmed : fallback;
+}
 
 export const DEFAULT_MATH_ENVIRONMENTS: MathEnvironment[] = [
   { name: "aligned", begin: "\\begin{aligned}", end: "\\end{aligned}" },
@@ -12,6 +30,9 @@ export interface ObsidianMathChordsSettings {
   enabled: boolean;
   showHintPopup: boolean;
   showInlinePreview: boolean;
+  mathBraceNavEnabled: boolean;
+  mathBraceNavNextKey: string;
+  mathBraceNavPrevKey: string;
   leaderKey: string;
   wrapOutsideMath: boolean;
   smartMathToggle: boolean;
@@ -22,8 +43,11 @@ export interface ObsidianMathChordsSettings {
 
 export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
   enabled: true,
-  showHintPopup: false,
+  showHintPopup: true,
   showInlinePreview: true,
+  mathBraceNavEnabled: true,
+  mathBraceNavNextKey: DEFAULT_MATH_BRACE_NAV_NEXT,
+  mathBraceNavPrevKey: DEFAULT_MATH_BRACE_NAV_PREV,
   leaderKey: "Alt+M",
   wrapOutsideMath: true,
   smartMathToggle: true,
@@ -33,7 +57,8 @@ export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
 };
 
 export function normalizeSettings(data: Record<string, unknown> | null): ObsidianMathChordsSettings {
-  const raw = { ...DEFAULT_SETTINGS, ...(data ?? {}) };
+  const legacy = data ?? {};
+  const raw = { ...DEFAULT_SETTINGS, ...legacy };
 
   const environments = Array.isArray(raw.mathEnvironments)
     ? raw.mathEnvironments
@@ -43,8 +68,22 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
 
   return {
     enabled: raw.enabled !== false,
-    showHintPopup: raw.showHintPopup === true,
+    showHintPopup: raw.showHintPopup !== false,
     showInlinePreview: raw.showInlinePreview !== false,
+    mathBraceNavEnabled:
+      typeof legacy.mathBraceNavEnabled === "boolean"
+        ? legacy.mathBraceNavEnabled
+        : typeof legacy.snippetTabStops === "boolean"
+          ? legacy.snippetTabStops
+          : DEFAULT_SETTINGS.mathBraceNavEnabled,
+    mathBraceNavNextKey: normalizeNavKey(
+      raw.mathBraceNavNextKey ?? legacy.placeholderNavNextKey,
+      DEFAULT_MATH_BRACE_NAV_NEXT,
+    ),
+    mathBraceNavPrevKey: normalizeNavKey(
+      raw.mathBraceNavPrevKey ?? legacy.placeholderNavPrevKey,
+      DEFAULT_MATH_BRACE_NAV_PREV,
+    ),
     leaderKey: typeof raw.leaderKey === "string" && raw.leaderKey.trim() ? raw.leaderKey.trim() : DEFAULT_SETTINGS.leaderKey,
     wrapOutsideMath: raw.wrapOutsideMath !== false,
     smartMathToggle: raw.smartMathToggle !== false,

@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-21
+
+### Added
+
+- **Brace navigation in math** setting (default on): inside `$…$` / `$$…$$`, jump between
+  `{…}` fields with **Alt+→** / **Alt+←** (customizable). Does not override Obsidian
+  placeholder jump outside math.
+- Unit tests for `braceNav`, `math`, and `trie` modules (Vitest).
+
+### Changed
+
+- **Shortcut hints** default to on (`showHintPopup`).
+- **Inline math live preview** and **brace navigation in math** default to on.
+- Settings keys renamed: `mathBraceNavEnabled`, `mathBraceNavNextKey`, `mathBraceNavPrevKey`
+  (legacy `snippetTabStops` / `placeholderNav*` still migrate on load).
+
+### Fixed
+
+- Leader shortcuts inside inline math (`$…$`) no longer wrap snippets in extra `$…$` or
+  break into display math.
+
+### Removed
+
+- Deprecated multi-`$$` tab-stop session module (`tabStops.ts`).
+
 ## [0.2.0] - 2026-06-21
 
 ### Added

@@ -95,6 +95,12 @@ export function eventMatchesLeader(event: KeyboardEvent, leaderKey: string): boo
   return normalizeEvent(event) === parseLeaderKey(leaderKey);
 }
 
+export function eventMatchesChord(event: KeyboardEvent, chord: string): boolean {
+  const trimmed = chord.trim();
+  if (!trimmed) return false;
+  return normalizeEvent(event) === parseChord(trimmed);
+}
+
 export function normalizeSequenceKey(event: KeyboardEvent): string | null {
   const key = normalizeKeyName(event.key);
   if (isModifierKey(key)) return null;

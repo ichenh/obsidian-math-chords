@@ -55,6 +55,46 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         }),
       );
 
+    const groupEl = containerEl.createDiv();
+    new Setting(groupEl)
+      .setName(t("snippetTabStopsName"))
+      .setDesc(t("snippetTabStopsDesc"))
+      .addToggle((toggle) =>
+        toggle.setValue(this.plugin.settings.mathBraceNavEnabled).onChange(async (value) => {
+          this.plugin.settings.mathBraceNavEnabled = value;
+          await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
+          this.display();
+        }),
+      );
+
+    if (this.plugin.settings.mathBraceNavEnabled) {
+      const nested = groupEl.createDiv({ cls: "obsidian-math-chords-settings-nested" });
+
+      new Setting(nested)
+        .setName(t("placeholderNavNextName"))
+        .setDesc(t("placeholderNavNextDesc"))
+        .addText((text) =>
+          text
+            .setValue(this.plugin.settings.mathBraceNavNextKey)
+            .onChange(async (value) => {
+              this.plugin.settings.mathBraceNavNextKey = value.trim() || "Alt+ArrowRight";
+              await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
+            }),
+        );
+
+      new Setting(nested)
+        .setName(t("placeholderNavPrevName"))
+        .setDesc(t("placeholderNavPrevDesc"))
+        .addText((text) =>
+          text
+            .setValue(this.plugin.settings.mathBraceNavPrevKey)
+            .onChange(async (value) => {
+              this.plugin.settings.mathBraceNavPrevKey = value.trim() || "Alt+ArrowLeft";
+              await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
+            }),
+        );
+    }
+
     new Setting(containerEl)
       .setName(t("leaderKeyName"))
       .setDesc(t("leaderKeyDesc"))
