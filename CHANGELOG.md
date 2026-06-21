@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-06-21
+
+### Changed
+
+- README / README.zh-CN: clarify that Obsidian installs only `main.js`, `manifest.json`, and
+  `styles.css` from releases; document manual `locales-extras.json` install for non-bundled locales.
+
+### Fixed
+
+- Remove unnecessary non-null assertions in `braceNav.ts` (community plugin review).
+
 ## [0.2.1] - 2026-06-21
 
 ### Added

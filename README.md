@@ -2,7 +2,7 @@
 
 [中文文档](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.2.1-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.2.2-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
@@ -10,7 +10,7 @@
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.2.1.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.2.2.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
