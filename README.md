@@ -49,20 +49,34 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 | **Display-math environments** | Wrap block content with `\begin{…}…\end{…}` via a fuzzy-search picker; inserts `$$…$$` when needed. |
 | **Built-in math commands** | Insert inline/display math; optional smart toggle unwraps or converts inside existing blocks (see settings). |
 | **YAML + UI config** | Edit `shortcuts.yaml` or use the settings tab; changes rebuild the shortcut trie immediately. |
-| **Localized UI** | 11 mainstream locales bundled in `main.js` (incl. Simplified/Traditional Chinese); 61 others load from `locales-extras.json` on first use. |
+| **Localized UI** | 11 mainstream locales bundled in `main.js` (incl. Simplified/Traditional Chinese). The other 61 [official Obsidian locales](https://github.com/obsidianmd/obsidian-translations#existing-languages) need `locales-extras.json` in the plugin folder (not installed automatically from the community directory). |
 | **Non-destructive merge** | On load, missing default shortcuts are merged in; your custom key bindings are never overwritten. |
 
 ---
 
 ## Installation
 
-### Manual
+### Community plugins (recommended)
 
-Prefer **Settings → Community plugins → Browse** and search for **Math Chords**.
+In **Settings → Community plugins → Browse**, search for **Math Chords** and install.
 
-To install from a release manually, download **`main.js`**, **`manifest.json`**, **`styles.css`**, and **`locales-extras.json`** from [Releases](https://github.com/ichenh/obsidian-math-chords/releases) into `.obsidian/plugins/math-chords/` (create the folder if needed). Copy **`shortcuts.yaml`** from the repo if you want the default shortcut catalog on disk.
+Obsidian's installer downloads only **`main.js`**, **`manifest.json`**, and **`styles.css`** from the plugin's GitHub release — not any other release assets. That is enough for all plugin features. Settings UI text is available immediately for the **11 bundled locales** (English plus the languages listed under [Settings](#settings)); other Obsidian display languages fall back to English until you add `locales-extras.json` (see below).
 
-When installed from the community directory, Obsidian downloads `main.js`, `manifest.json`, `styles.css`, and `locales-extras.json` from the GitHub release automatically.
+### Manual install from a release
+
+Download **`main.js`**, **`manifest.json`**, **`styles.css`**, and **`locales-extras.json`** from [Releases](https://github.com/ichenh/obsidian-math-chords/releases) into `.obsidian/plugins/math-chords/` inside your vault (create the folder if needed). Use the **`locales-extras.json`** from the **same release tag** as the installed plugin version. Copy **`shortcuts.yaml`** from the repo if you want the default shortcut catalog on disk.
+
+### Optional: extra UI languages (`locales-extras.json`)
+
+If your Obsidian display language is **not** one of the 11 bundled locales, install or update this file yourself:
+
+1. Open [Releases](https://github.com/ichenh/obsidian-math-chords/releases) and download **`locales-extras.json`** from the release that matches your installed plugin version (check **Settings → Community plugins** or `manifest.json` in the plugin folder).
+2. Place it at **`.obsidian/plugins/math-chords/locales-extras.json`** (same folder as `main.js`, not inside your notes).
+3. Reload Obsidian or toggle the plugin off and on.
+
+Without this file, the plugin still works; only the **Math Chords settings UI** stays in English. After adding the file, the settings UI follows your Obsidian language on the next load (for any of the 61 locales shipped in that JSON).
+
+When you update the plugin from the community directory, repeat these steps if you rely on a non-bundled locale — updates replace `main.js` / `manifest.json` / `styles.css` but do not refresh `locales-extras.json`.
 
 ### From source
 
@@ -247,7 +261,11 @@ Special command `__DISPLAY_MATH__` inserts a `$$…$$` block (used by `D`).
 
 ## Settings
 
-Open **Settings → Math Chords**. The settings UI follows your Obsidian display language. **Bundled** (no extra load): English, 简体中文, 繁體中文, 日本語, 한국어, Deutsch, Français, Español, Русский, Português (BR), Italiano. **Other [official locales](https://github.com/obsidianmd/obsidian-translations#existing-languages)** load from `locales-extras.json` the first time they are needed.
+Open **Settings → Math Chords**. The settings UI follows your Obsidian display language when a translation is available.
+
+**Bundled in `main.js`** (no extra file; works after community-plugin install): English, 简体中文, 繁體中文, 日本語, 한국어, Deutsch, Français, Español, Русский, Português (BR), Italiano.
+
+**Other [official Obsidian locales](https://github.com/obsidianmd/obsidian-translations#existing-languages)** (e.g. Polski, Nederlands, ไทย, العربية, English (UK), Português) require **`locales-extras.json`** in the plugin folder. Obsidian does not download that file when installing from the community directory; see [Optional: extra UI languages](#optional-extra-ui-languages-locales-extrasjson).
 
 | Setting | Default | Description |
 | :--- | :--- | :--- |

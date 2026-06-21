@@ -51,20 +51,34 @@
 | **行间公式环境** | 通过模糊搜索选择 `\begin{…}…\end{…}` 包裹块内容；必要时先插入 `$$…$$`。 |
 | **内置数学命令** | 插入行内/行间公式；可选的智能切换在已有公式块内取消包裹或互相转换（见设置项 **Smart math toggle**）。 |
 | **YAML + 设置界面** | 编辑 `shortcuts.yaml` 或使用设置页；修改后立即重建快捷键查找树。 |
-| **界面本地化** | 11 种主流语言内置于 `main.js`（含简/繁中文）；其余 61 种在首次使用时从 `locales-extras.json` 按需加载。 |
+| **界面本地化** | 11 种主流语言内置于 `main.js`（含简/繁中文）。其余 61 种 [Obsidian 官方语言](https://github.com/obsidianmd/obsidian-translations#existing-languages) 需在插件目录放置 `locales-extras.json`（社区插件安装不会自动下载该文件）。 |
 | **非破坏性合并** | 加载时合并缺失的默认快捷键，不会覆盖你的自定义绑定。 |
 
 ---
 
 ## 安装
 
-### 手动安装
+### 社区插件（推荐）
 
-推荐在 **设置 → 社区插件 → 浏览** 中搜索 **Math Chords** 安装。
+在 **设置 → 社区插件 → 浏览** 中搜索 **Math Chords** 并安装。
 
-若要从 Release 手动安装，从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`main.js`**、**`manifest.json`**、**`styles.css`**、**`locales-extras.json`** 到 `.obsidian/plugins/math-chords/`（若无此目录请先创建）。如需默认快捷键文件，可从仓库复制 **`shortcuts.yaml`**。
+Obsidian 安装器只会从 GitHub Release 下载 **`main.js`**、**`manifest.json`**、**`styles.css`** 这三个文件，不会下载 Release 中的其他附件。这对插件全部功能已足够。**11 种内置语言**（见下方 [设置](#设置)）的设置界面可立即显示对应翻译；若 Obsidian 界面语言不在其中，Math Chords 设置页会显示英文，直到你自行添加 `locales-extras.json`（见下文）。
 
-从社区插件目录安装时，Obsidian 会自动从 GitHub Release 下载 `main.js`、`manifest.json`、`styles.css` 和 `locales-extras.json`。
+### 从 Release 手动安装
+
+从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`main.js`**、**`manifest.json`**、**`styles.css`**、**`locales-extras.json`** 到库内的 `.obsidian/plugins/math-chords/`（若无此目录请先创建）。`locales-extras.json` 须与当前插件版本 **同一 Release 标签**。如需默认快捷键文件，可从仓库复制 **`shortcuts.yaml`**。
+
+### 可选：额外界面语言（`locales-extras.json`）
+
+若 Obsidian 显示语言 **不在** 上述 11 种内置语言之列，请自行安装或更新该文件：
+
+1. 打开 [Releases](https://github.com/ichenh/obsidian-math-chords/releases)，下载与已安装插件版本一致的 **`locales-extras.json`**（版本可在 **设置 → 社区插件** 或插件目录下的 `manifest.json` 中查看）。
+2. 放到 **`.obsidian/plugins/math-chords/locales-extras.json`**（与 `main.js` 同级，不要放在笔记目录里）。
+3. 重载 Obsidian，或关闭再开启本插件。
+
+没有该文件时插件功能正常，只是 **Math Chords 设置界面** 为英文。添加后，下次加载时设置页会跟随 Obsidian 语言显示（JSON 中包含的 61 种语言均支持）。
+
+通过社区插件更新版本时，若你依赖非内置语言，需 **重复上述步骤** —— 更新只会替换 `main.js` / `manifest.json` / `styles.css`，不会更新 `locales-extras.json`。
 
 ### 从源码构建
 
@@ -250,7 +264,11 @@ npm run build
 
 ## 设置
 
-打开 **设置 → Math Chords**。设置界面会跟随 Obsidian 的显示语言。**内置**（无需额外加载）：English、简体中文、繁體中文、日本語、한국어、Deutsch、Français、Español、Русский、Português (BR)、Italiano。**其余 [官方语言](https://github.com/obsidianmd/obsidian-translations#existing-languages)** 在首次需要时从 `locales-extras.json` 加载。
+打开 **设置 → Math Chords**。在有可用翻译时，设置界面会跟随 Obsidian 的显示语言。
+
+**内置于 `main.js`**（无需额外文件；社区插件安装即可）：English、简体中文、繁體中文、日本語、한국어、Deutsch、Français、Español、Русский、Português (BR)、Italiano。
+
+**其余 [Obsidian 官方语言](https://github.com/obsidianmd/obsidian-translations#existing-languages)**（如 Polski、Nederlands、ไทย、العربية、English (UK)、Português 等）需要在插件目录放置 **`locales-extras.json`**。社区插件安装不会下载该文件；步骤见 [可选：额外界面语言](#可选额外界面语言locales-extrasjson)。
 
 | 设置项 | 默认值 | 说明 |
 | :--- | :--- | :--- |

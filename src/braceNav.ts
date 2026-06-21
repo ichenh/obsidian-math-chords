@@ -41,22 +41,23 @@ export function findNextBraceStop(stops: BraceStop[], offset: number): BraceStop
 
   const inside = stops.findIndex((stop) => offset >= stop.start && offset <= stop.end);
   if (inside >= 0) {
-    return inside < stops.length - 1 ? stops[inside + 1]! : null;
+    return stops[inside + 1] ?? null;
   }
 
   const after = stops.find((stop) => stop.start > offset);
-  return after ?? stops[0]!;
+  return after ?? stops[0] ?? null;
 }
 
 export function findPrevBraceStop(stops: BraceStop[], offset: number): BraceStop | null {
   if (stops.length === 0) return null;
 
   const inside = stops.findIndex((stop) => offset >= stop.start && offset <= stop.end);
-  if (inside > 0) return stops[inside - 1]!;
+  if (inside > 0) return stops[inside - 1] ?? null;
   if (inside === 0) return null;
 
   for (let i = stops.length - 1; i >= 0; i--) {
-    if (stops[i]!.end < offset) return stops[i]!;
+    const stop = stops[i];
+    if (stop && stop.end < offset) return stop;
   }
   return null;
 }
