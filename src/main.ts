@@ -8,9 +8,10 @@ import { LeaderController } from "./leader";
 import { createInlineMathPreviewPlugin } from "./mathPreview";
 import { ObsidianMathChordsSettingTab } from "./settingsTab";
 import { expandSnippet, insertDisplayMath, insertInlineMath } from "./snippet";
-import { isInMath } from "./math";
+import { extractMathContent, findMathRegionAt, isInMath } from "./math";
 import { openEnvironmentPicker, wrapDisplayMathWithEnvironment } from "./mathEnv";
 import { logAndNotice, runWithNotice } from "./errors";
+import { initLocale, t } from "./l10n/locale";
 import type { Shortcut } from "./types";
 
 export default class ObsidianMathChordsPlugin extends Plugin {
@@ -22,7 +23,8 @@ export default class ObsidianMathChordsPlugin extends Plugin {
 
   async onload(): Promise<void> {
     await this.loadSettings();
-    await runWithNotice(() => this.reloadShortcuts(), "Math Chords: could not load shortcuts.yaml.");
+    await initLocale(this);
+    await runWithNotice(() => this.reloadShortcuts(), t("noticeCouldNotLoadYaml"));
 
     this.leaderController = new LeaderController({
       isEnabled: () => this.settings.enabled,
@@ -52,19 +54,19 @@ export default class ObsidianMathChordsPlugin extends Plugin {
 
     this.addCommand({
       id: "insert-inline-math",
-      name: "Insert inline math",
+      name: t("cmdInsertInlineMath"),
       editorCallback: (editor) => this.insertInlineMath(editor),
     });
 
     this.addCommand({
       id: "insert-display-math",
-      name: "Insert display math",
+      name: t("cmdInsertDisplayMath"),
       editorCallback: (editor) => this.insertDisplayMath(editor),
     });
 
     this.addCommand({
       id: "wrap-display-math-environment",
-      name: "Wrap display math with environment",
+      name: t("cmdWrapDisplayMathEnv"),
       editorCallback: (editor) => this.openMathEnvironmentPickerForEditor(editor),
     });
 
@@ -112,7 +114,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     try {
       await this.saveData(this.settings);
     } catch (error) {
-      logAndNotice("Math Chords: could not save settings.", error);
+      logAndNotice(t("noticeCouldNotSaveSettings"), error);
       throw error;
     }
   }
@@ -129,7 +131,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     );
 
     if (mergedCount > 0) {
-      new Notice(`Merged ${mergedCount} default shortcut(s); your custom bindings were kept.`);
+      new Notice(t("noticeMergedDefaults", String(mergedCount)));
     }
 
     this.shortcuts = new Map(
@@ -150,7 +152,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
         merged,
       );
     } catch (error) {
-      logAndNotice("Math Chords: could not save shortcuts.yaml.", error);
+      logAndNotice(t("noticeCouldNotSaveYaml"), error);
       throw error;
     }
     this.rebuildTrie();
@@ -162,7 +164,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     try {
       await saveShortcuts((content) => this.app.vault.adapter.write(this.yamlPath(), content), list);
     } catch (error) {
-      logAndNotice("Math Chords: could not save shortcuts.yaml.", error);
+      logAndNotice(t("noticeCouldNotSaveYaml"), error);
       throw error;
     }
     this.rebuildTrie();
@@ -188,6 +190,10 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   }
 
   insertInlineMath(editor: Editor): void {
+    if (this.toggleMathBlock(editor, "inline")) {
+      return;
+    }
+
     const selection = editor.getSelection();
     const { text, anchor, head } = insertInlineMath(selection);
     const from = editor.getCursor("from");
@@ -200,6 +206,10 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   }
 
   insertDisplayMath(editor: Editor): void {
+    if (this.toggleMathBlock(editor, "display")) {
+      return;
+    }
+
     const selection = editor.getSelection();
     const { text, anchor, head } = insertDisplayMath(selection);
     const from = editor.getCursor("from");
@@ -209,6 +219,45 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       editor.offsetToPos(base + anchor),
       editor.offsetToPos(base + head),
     );
+  }
+
+  private toggleMathBlock(editor: Editor, targetKind: "inline" | "display"): boolean {
+    if (!this.settings.smartMathToggle) return false;
+
+    const doc = editor.getValue();
+    const offset = editor.posToOffset(editor.getCursor());
+    const region = findMathRegionAt(doc, offset);
+    if (!region) return false;
+
+    const rawContent = extractMathContent(doc, region);
+    let text = rawContent;
+    let caretOffsetInText = offset - (region.kind === "display" ? region.from + 2 : region.from + 1);
+    if (caretOffsetInText < 0) caretOffsetInText = 0;
+    if (caretOffsetInText > rawContent.length) caretOffsetInText = rawContent.length;
+
+    if (targetKind === "inline" && region.kind === "display") {
+      const hasOuterBlankLine = rawContent.startsWith("\n") && rawContent.endsWith("\n");
+      if (hasOuterBlankLine) {
+        text = rawContent.slice(1, -1);
+        caretOffsetInText = Math.max(0, Math.min(text.length, caretOffsetInText - 1));
+      }
+    }
+
+    if (region.kind === targetKind) {
+      editor.replaceRange(text, editor.offsetToPos(region.from), editor.offsetToPos(region.to));
+      const caret = region.from + Math.min(caretOffsetInText, text.length);
+      const pos = editor.offsetToPos(caret);
+      editor.setSelection(pos, pos);
+      return true;
+    }
+
+    const wrapped = targetKind === "display" ? `$$\n${text}\n$$` : `$${text}$`;
+    const caretBase = targetKind === "display" ? region.from + 3 : region.from + 1;
+    editor.replaceRange(wrapped, editor.offsetToPos(region.from), editor.offsetToPos(region.to));
+    const caret = caretBase + Math.min(caretOffsetInText, text.length);
+    const pos = editor.offsetToPos(caret);
+    editor.setSelection(pos, pos);
+    return true;
   }
 
   private insertShortcut(view: EditorView, shortcut: Shortcut): void {
@@ -247,7 +296,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
 
   private openMathEnvironmentPickerForEditor(editor: Editor): void {
     if (!this.settings.mathEnvWrapEnabled) {
-      new Notice("Enable environment wrap in Math Chords settings.");
+      new Notice(t("noticeEnableEnvWrap"));
       return;
     }
 

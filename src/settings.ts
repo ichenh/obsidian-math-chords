@@ -14,6 +14,7 @@ export interface ObsidianMathChordsSettings {
   showInlinePreview: boolean;
   leaderKey: string;
   wrapOutsideMath: boolean;
+  smartMathToggle: boolean;
   mathEnvWrapEnabled: boolean;
   mathEnvWrapKeys: string;
   mathEnvironments: MathEnvironment[];
@@ -25,6 +26,7 @@ export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
   showInlinePreview: true,
   leaderKey: "Alt+M",
   wrapOutsideMath: true,
+  smartMathToggle: true,
   mathEnvWrapEnabled: true,
   mathEnvWrapKeys: "Shift+E",
   mathEnvironments: DEFAULT_MATH_ENVIRONMENTS.map((env) => ({ ...env })),
@@ -45,6 +47,7 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
     showInlinePreview: raw.showInlinePreview !== false,
     leaderKey: typeof raw.leaderKey === "string" && raw.leaderKey.trim() ? raw.leaderKey.trim() : DEFAULT_SETTINGS.leaderKey,
     wrapOutsideMath: raw.wrapOutsideMath !== false,
+    smartMathToggle: raw.smartMathToggle !== false,
     mathEnvWrapEnabled: raw.mathEnvWrapEnabled !== false,
     mathEnvWrapKeys:
       typeof raw.mathEnvWrapKeys === "string" && raw.mathEnvWrapKeys.trim()

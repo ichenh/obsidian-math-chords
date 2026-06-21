@@ -1,5 +1,6 @@
 import type { EditorView } from "@codemirror/view";
 import { formatToken, formatSequence } from "./keys";
+import { t } from "./l10n/locale";
 import { listHints, type TrieNode } from "./trie";
 import type { Shortcut } from "./types";
 
@@ -29,13 +30,13 @@ export class HintPopup {
 
     if (pending) {
       const row = this.listEl.createDiv({ cls: "obsidian-math-chords-hint-row is-pending" });
-      row.createSpan({ cls: "obsidian-math-chords-hint-key", text: "Enter" });
+      row.createSpan({ cls: "obsidian-math-chords-hint-key", text: t("hintEnter") });
       row.createSpan({ cls: "obsidian-math-chords-hint-label", text: pending.name ?? pending.command });
       row.createSpan({ cls: "obsidian-math-chords-hint-command", text: pending.command });
     }
 
     if (hints.length === 0 && !pending) {
-      this.listEl.createDiv({ cls: "obsidian-math-chords-hint-empty", text: "No further shortcuts" });
+      this.listEl.createDiv({ cls: "obsidian-math-chords-hint-empty", text: t("hintNoFurtherShortcuts") });
     }
 
     for (const hint of hints) {

@@ -1,9 +1,9 @@
 {
   "id": "math-chords",
   "name": "Math Chords",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "minAppVersion": "1.5.0",
-  "description": "Insert LaTeX math with customizable keyboard shortcuts, inline MathJax preview, and display-math environments.",
+  "description": "Type LaTeX math with keyboard shortcuts—fractions, Greek letters, integrals, and 100+ snippets (leader key + keys). Inline preview, display-math wrap. Settings UI in 70+ languages incl. Chinese.",
   "author": "CHEH Hua",
   "authorUrl": "https://github.com/ichenh",
   "isDesktopOnly": false

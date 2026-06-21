@@ -5,6 +5,7 @@ import {
   normalizeSequenceKey,
   parseKeysField,
 } from "./keys";
+import { t } from "./l10n/locale";
 import { findNode, hasChildren, type TrieNode } from "./trie";
 import type { Shortcut } from "./types";
 import { HintPopup } from "./hint";
@@ -99,7 +100,7 @@ export class LeaderController {
         this.refreshHints(view);
         return true;
       }
-      this.ctx.onNotice(`Undefined ${formatSequence(next, this.ctx.getLeaderKey())}`);
+      this.ctx.onNotice(t("noticeUndefinedChord", formatSequence(next, this.ctx.getLeaderKey())));
       this.reset();
       return true;
     }

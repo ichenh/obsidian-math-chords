@@ -30,6 +30,7 @@ jobs:
           subject-path: |
             main.js
             styles.css
+            locales-extras.json
 
       - name: Create release
         env:
@@ -41,4 +42,4 @@ jobs:
           gh release create "$tag" \
             --title="Math Chords $tag" \
             --notes-file release-notes.md \
-            main.js manifest.json styles.css
+            main.js manifest.json styles.css locales-extras.json

@@ -5,6 +5,28 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.2.0] - 2026-06-21
+
+### Added
+
+- **Smart math toggle** setting (default on): when using Insert inline math or Insert display math
+  inside an existing math block, unwrap or convert the block instead of inserting a new one.
+  Applies to leader **`D`** as well. Turn off in **Settings → Math Chords** if you prefer
+  always inserting a fresh block.
+- **Localized UI**: settings, commands, notices, and hint text follow Obsidian's
+  display language via `getLanguage()`. Eleven mainstream locales are bundled in `main.js`;
+  61 others load from `locales-extras.json` on first use (English fallback).
+- **Math environment reorder**: drag rows in settings to change picker order.
+
+### Changed
+
+- Plugin description follows Obsidian marketplace practice: English-only `manifest.json`
+  text with search keywords; localized UI after install. README.zh-CN explains the listing
+  for Chinese users.
+- Release assets now include `locales-extras.json` for on-demand locale loading.
+
 ## [0.1.6] - 2026-06-20
 
 ### Changed

@@ -1,0 +1,96 @@
+export const en = {
+  intro:
+    "Press a configurable leader key (default Alt+M), then a key sequence to insert LaTeX. Default shortcuts are inspired by LyX math-mode bindings.",
+
+  enablePluginName: "Enable plugin",
+  enablePluginDesc: "Turn off to disable leader-key chord sequences.",
+  showHintPopupName: "Show shortcut hints",
+  showHintPopupDesc: "Show a which-key panel near the caret after pressing the leader key.",
+  inlinePreviewName: "Inline math live preview",
+  inlinePreviewDesc: "While the caret is inside $…$, show a MathJax preview above the formula.",
+  leaderKeyName: "Leader key",
+  leaderKeyDesc:
+    'Default "Alt+M". Key sequences in shortcuts.yaml are pressed after the leader, e.g. "F" or "G A".',
+  wrapOutsideMathName: "Auto-wrap outside math",
+  wrapOutsideMathDesc: "When inserting outside a math region, wrap the snippet in $…$.",
+  smartMathToggleName: "Smart math toggle",
+  smartMathToggleDesc:
+    "When using Insert inline math or Insert display math (including leader D) inside an existing math block, unwrap or convert the block instead of inserting a new one.",
+  reloadYamlName: "Reload YAML",
+  reloadYamlDesc: "Reload shortcut bindings from shortcuts.yaml.",
+  reloadButton: "Reload",
+  mergeDefaultsButton: "Merge defaults",
+
+  displayEnvWrapHeading: "Display-math environment wrap",
+  mathEnvWrapEnabledName: "Enable environment wrap",
+  mathEnvWrapEnabledDesc:
+    'Use the leader shortcut or the command "Wrap display math with environment" (assign a hotkey in Obsidian settings). If the caret is not inside $$…$$, a display block is inserted first.',
+  mathEnvWrapKeysName: "Environment wrap keys",
+  mathEnvWrapKeysDesc: 'Key sequence after the leader, e.g. "Shift+E".',
+  mathEnvironmentsName: "Math environments",
+
+  shortcutManagementHeading: "Shortcut management",
+  searchName: "Search",
+  searchPlaceholder: "Keys or command",
+
+  tableName: "Name",
+  tableBegin: "Begin",
+  tableEnd: "End",
+  tableActions: "Actions",
+  tableOrder: "Order",
+  dragToReorder: "Drag to reorder",
+  tableKeys: "Keys",
+  tableCommand: "Command",
+  tableGroup: "Group",
+
+  addButton: "Add",
+  editButton: "Edit",
+  deleteButton: "Delete",
+  saveButton: "Save",
+  cancelButton: "Cancel",
+
+  editShortcutHeading: "Edit shortcut",
+  addShortcutHeading: "Add shortcut",
+  keySequenceName: "Key sequence",
+  keySequenceDesc: 'Keys after the leader. Examples: fraction "F", alpha "G A", neq "= |".',
+  commandName: "Command",
+  commandDesc: "LaTeX snippet; $$ marks the caret. Type \\frac{$$}{} directly.",
+  groupName: "Group",
+
+  editMathEnvHeading: "Edit math environment",
+  addMathEnvHeading: "Add math environment",
+  mathEnvNameDesc: "Label in the environment picker, e.g. aligned.",
+  mathEnvBeginName: "Begin",
+  mathEnvBeginDesc: "LaTeX inserted before the content, e.g. \\begin{aligned}.",
+  mathEnvEndName: "End",
+  mathEnvEndDesc: "LaTeX inserted after the content, e.g. \\end{aligned}.",
+
+  cmdInsertInlineMath: "Insert inline math",
+  cmdInsertDisplayMath: "Insert display math",
+  cmdWrapDisplayMathEnv: "Wrap display math with environment",
+
+  hintEnter: "Enter",
+  hintNoFurtherShortcuts: "No further shortcuts",
+  previewPlaceholder: "Type LaTeX here; preview updates as you edit.",
+  envPickerPlaceholder: "Choose a math environment…",
+
+  noticeCouldNotSaveSettings: "Math Chords: could not save settings.",
+  noticeCouldNotReloadYaml: "Math Chords: could not reload shortcuts.yaml.",
+  noticeCouldNotMergeDefaults: "Math Chords: could not merge default shortcuts.",
+  noticeCouldNotSaveYaml: "Math Chords: could not save shortcuts.yaml.",
+  noticeCouldNotLoadYaml: "Math Chords: could not load shortcuts.yaml.",
+  noticeReloadedYaml: "Reloaded shortcuts.yaml.",
+  noticeMergedDefaults: "Merged %1 default shortcut(s); your custom bindings were kept.",
+  noticeNoDefaultsToMerge: "No new default shortcuts to merge.",
+  noticeKeysAndCommandRequired: "Keys and command are required.",
+  noticeEnvFieldsRequired: "Name, begin, and end are required.",
+  noticeEnableEnvWrap: "Enable environment wrap in Math Chords settings.",
+  noticeMoveOutOfInlineMath: "Move the caret out of inline math first.",
+  noticeCouldNotCreateDisplayMath: "Could not create a display math block.",
+  noticeAddMathEnvFirst: "Add a math environment in settings first.",
+  noticeCouldNotFindDisplayMath: "Could not find a display math block.",
+  noticeCouldNotRenderPreview: "Math Chords: could not render inline math preview.",
+  noticeUndefinedChord: "Undefined %1",
+} as const;
+
+export type TranslationKey = keyof typeof en;

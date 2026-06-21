@@ -7,9 +7,9 @@ import {
   isValidMathRegion,
 } from "./math";
 import { logAndNotice } from "./errors";
+import { t } from "./l10n/locale";
 
 const PREVIEW_GAP = 8;
-const PLACEHOLDER_TEXT = "Type LaTeX here; preview updates as you edit.";
 
 export interface InlinePreviewContext {
   isEnabled: () => boolean;
@@ -216,7 +216,7 @@ class InlinePreviewLayer {
     if (!trimmed) {
       this.body.createDiv({
         cls: "obsidian-math-chords-inline-preview-placeholder",
-        text: PLACEHOLDER_TEXT,
+        text: t("previewPlaceholder"),
       });
       this.positionHost();
       this.adaptSize();
@@ -281,7 +281,7 @@ class InlinePreviewLayer {
     try {
       await finishRenderMath();
     } catch (error) {
-      logAndNotice("Math Chords: could not render inline math preview.", error);
+      logAndNotice(t("noticeCouldNotRenderPreview"), error);
       return;
     }
     if (generation !== this.renderGeneration || this.host.hasClass("is-hidden")) return;
@@ -297,7 +297,7 @@ class InlinePreviewLayer {
       try {
         await finishRenderMath();
       } catch (error) {
-        logAndNotice("Math Chords: could not render inline math preview.", error);
+        logAndNotice(t("noticeCouldNotRenderPreview"), error);
       }
     }
 

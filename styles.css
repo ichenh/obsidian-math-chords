@@ -160,3 +160,33 @@
   display: flex;
   gap: 8px;
 }
+
+.obsidian-math-chords-drag-header {
+  width: 2.5em;
+}
+
+.obsidian-math-chords-drag-cell {
+  width: 2.5em;
+  padding-left: 4px;
+  padding-right: 4px;
+  vertical-align: middle;
+}
+
+.obsidian-math-chords-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  cursor: grab;
+}
+
+.obsidian-math-chords-drag-handle:active {
+  cursor: grabbing;
+}
+
+.obsidian-math-chords-table tr.is-dragging {
+  opacity: 0.55;
+}
+
+.obsidian-math-chords-table tr.is-drop-target td {
+  box-shadow: inset 0 2px 0 var(--interactive-accent);
+}

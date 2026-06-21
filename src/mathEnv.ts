@@ -1,5 +1,6 @@
 import { App, Editor, FuzzySuggestModal, Notice } from "obsidian";
 import { normalizeCommand } from "./config";
+import { t } from "./l10n/locale";
 import { findMathRegionAt, getMathContentBounds } from "./math";
 import { insertDisplayMath } from "./snippet";
 import type { MathEnvironment, MathRegion } from "./types";
@@ -28,7 +29,7 @@ export function resolveDisplayMathRegion(editor: Editor): MathRegion | null {
   }
 
   if (region?.kind === "inline") {
-    new Notice("Move the caret out of inline math first.");
+    new Notice(t("noticeMoveOutOfInlineMath"));
     return null;
   }
 
@@ -45,7 +46,7 @@ export function resolveDisplayMathRegion(editor: Editor): MathRegion | null {
   const newOffset = editor.posToOffset(editor.getCursor());
   const newRegion = findMathRegionAt(editor.getValue(), newOffset);
   if (!newRegion || newRegion.kind !== "display") {
-    new Notice("Could not create a display math block.");
+    new Notice(t("noticeCouldNotCreateDisplayMath"));
     return null;
   }
   return newRegion;
@@ -88,7 +89,7 @@ export function openEnvironmentPicker(
   onChoose: (env: MathEnvironment, region: MathRegion) => void,
 ): void {
   if (environments.length === 0) {
-    new Notice("Add a math environment in settings first.");
+    new Notice(t("noticeAddMathEnvFirst"));
     return;
   }
 
@@ -99,7 +100,7 @@ export function openEnvironmentPicker(
     const offset = editor.posToOffset(editor.getCursor());
     const current = findMathRegionAt(editor.getValue(), offset);
     if (!current || current.kind !== "display") {
-      new Notice("Could not find a display math block.");
+      new Notice(t("noticeCouldNotFindDisplayMath"));
       return;
     }
     onChoose(env, current);
@@ -113,7 +114,7 @@ class EnvironmentPickerModal extends FuzzySuggestModal<MathEnvironment> {
     private readonly onChoose: (env: MathEnvironment) => void,
   ) {
     super(app);
-    this.setPlaceholder("Choose a math environment…");
+    this.setPlaceholder(t("envPickerPlaceholder"));
   }
 
   getItems(): MathEnvironment[] {

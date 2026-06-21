@@ -4,14 +4,15 @@ Architecture and workflow reference for contributors and AI assistants.
 
 ---
 
-## 1. Product scope (v0.1.6)
+## 1. Product scope (v0.2.0)
 
 - **Plugin id:** `math-chords` (install folder `.obsidian/plugins/math-chords/`).
 - **Leader chords:** `Alt+M` + key sequence inserts LaTeX snippets (defaults inspired by LyX).
 - **Inline preview:** MathJax panel above `$…$` (optional; inline `renderMath`, debounced `finishRenderMath`).
 - **Display-math env wrap:** Leader shortcut or command opens environment picker; inserts `$$…$$` when needed.
 - **Commands:** Insert inline / display math, wrap display math with environment (no default hotkeys).
-- **Config:** `shortcuts.yaml` + English settings UI; merge defaults without overwriting custom keys.
+- **Smart math toggle:** Optional (default on); inside `$…$` / `$$…$$`, inline/display commands unwrap or convert instead of inserting again.
+- **Config:** `shortcuts.yaml` + localized settings UI (11 bundled + 61 lazy locales); merge defaults without overwriting custom keys.
 - **minAppVersion:** `1.5.0`.
 
 Do not re-add removed overlay UI or bundled KaTeX without an explicit, LP-safe design.
@@ -24,7 +25,8 @@ Do not re-add removed overlay UI or bundled KaTeX without an explicit, LP-safe d
 | :--- | :--- |
 | `main.ts` | Plugin lifecycle, commands, leader wiring, editor callbacks. |
 | `settings.ts` | Settings types, defaults, `normalizeSettings()`. |
-| `settingsTab.ts` | Settings UI (English). |
+| `settingsTab.ts` | Settings UI (localized). |
+| `l10n/` | Bundled mainstream locales + `locales-extras.json` lazy load; `getLanguage()` + fallback. |
 | `config.ts` | YAML load/save, validation, merge, backslash normalization. |
 | `defaults.ts` | Static default shortcut catalog. |
 | `types.ts` | Domain types. |
@@ -51,7 +53,7 @@ No circular dependencies. New modules only when a responsibility cannot fit abov
 - **Externals:** `obsidian` and `@codemirror/*` are esbuild externals.
 - **Performance:** `math.ts` aborts when document length > 100,000 characters.
 - **Trie:** rebuild on every config save/reload.
-- **Release assets:** `main.js`, `manifest.json`, `styles.css` (artifact attestations for `main.js` and `styles.css`).
+- **Release assets:** `main.js`, `manifest.json`, `styles.css`, `locales-extras.json` (artifact attestations for `main.js` and `styles.css`).
 
 ---
 

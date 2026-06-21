@@ -2,17 +2,23 @@
 
 [English](README.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.6-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
-**Math Chords** 让你在 Obsidian 里**用快捷键输入 LaTeX 公式**：先按可配置的 leader 键，再按短按键序列，即可插入公式片段，无需手打复杂的 LaTeX 代码。还支持行内 MathJax 实时预览，以及行间公式环境包裹。
+**Math Chords** 为 Obsidian 提供 **LaTeX 公式快捷键**：按 leader 键（默认 `Alt+M`），再按短序列即可插入分数、希腊字母、积分等片段，无需手打 `\frac`、`\alpha` 等命令。还支持 **行内公式实时预览** 和 **行间公式环境包裹**。
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.1.6。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.2.0。** 见 [CHANGELOG](CHANGELOG.md)。
 
 **需要 Obsidian 1.5.0+。** 以键盘操作为主，建议在桌面端使用。
+
+> **社区插件市场说明：** Obsidian 社区插件列表里的插件简介来自 `manifest.json`，**固定为英文**（浏览页的按钮、标签等会随软件语言变化）。安装后，**设置 → Math Chords** 及命令名称会跟随 Obsidian 显示语言（含简体中文、繁体中文等）。
+>
+> 市场英文简介大意：**用快捷键输入 LaTeX 公式**（分数、希腊字母、积分等 100+ 片段；行内预览、行间环境包裹；设置界面支持 70+ 种语言）。
+
+![Math Chords 演示：leader 快捷键插入 LaTeX 并实时预览](docs/demo.gif)
 
 ---
 
@@ -42,8 +48,9 @@
 | **自动 `$…$` 包裹** | 可选：在公式区域外插入时，自动用行内公式定界符包裹。 |
 | **行内实时预览** | 光标位于 `$…$` 内时，在公式上方用 Obsidian 原生 **MathJax** 渲染预览。 |
 | **行间公式环境** | 通过模糊搜索选择 `\begin{…}…\end{…}` 包裹块内容；必要时先插入 `$$…$$`。 |
-| **内置数学命令** | 插入行内公式、插入行间公式、包裹行间环境（在 Obsidian 快捷键设置中自行绑定）。 |
+| **内置数学命令** | 插入行内/行间公式；可选的智能切换在已有公式块内取消包裹或互相转换（见设置项 **Smart math toggle**）。 |
 | **YAML + 设置界面** | 编辑 `shortcuts.yaml` 或使用设置页；修改后立即重建快捷键查找树。 |
+| **界面本地化** | 11 种主流语言内置于 `main.js`（含简/繁中文）；其余 61 种在首次使用时从 `locales-extras.json` 按需加载。 |
 | **非破坏性合并** | 加载时合并缺失的默认快捷键，不会覆盖你的自定义绑定。 |
 
 ---
@@ -54,9 +61,9 @@
 
 推荐在 **设置 → 社区插件 → 浏览** 中搜索 **Math Chords** 安装。
 
-若要从 Release 手动安装，从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`main.js`**、**`manifest.json`**、**`styles.css`** 到 `.obsidian/plugins/math-chords/`（若无此目录请先创建）。如需默认快捷键文件，可从仓库复制 **`shortcuts.yaml`**。
+若要从 Release 手动安装，从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`main.js`**、**`manifest.json`**、**`styles.css`**、**`locales-extras.json`** 到 `.obsidian/plugins/math-chords/`（若无此目录请先创建）。如需默认快捷键文件，可从仓库复制 **`shortcuts.yaml`**。
 
-从社区插件目录安装时，Obsidian 会自动从 GitHub Release 下载 `main.js`、`manifest.json`、`styles.css`。
+从社区插件目录安装时，Obsidian 会自动从 GitHub Release 下载 `main.js`、`manifest.json`、`styles.css` 和 `locales-extras.json`。
 
 ### 从源码构建
 
@@ -67,7 +74,7 @@ npm install
 npm run build
 ```
 
-将 `main.js`、`manifest.json`、`styles.css` 和 `shortcuts.yaml` 复制到 `.obsidian/plugins/math-chords/`。
+将 `main.js`、`manifest.json`、`styles.css`、`locales-extras.json` 和 `shortcuts.yaml` 复制到 `.obsidian/plugins/math-chords/`。
 
 ---
 
@@ -78,8 +85,9 @@ npm run build
 3. 继续按快捷键，例如 **`F`** → `\frac{}{}`，光标落在分子处。
 4. 希腊字母：**`G` `A`** → `\alpha`（leader 之后的按键）。
 5. 行间公式：**`D`** → `$$\n\n$$`。
-6. 可选：在 **设置 → 快捷键** 中为 **Insert inline math**、**Insert display math**、**Wrap display math with environment** 绑定热键（插件不注册默认热键）。
-7. 按 leader 之后的 **`Shift+E`**（默认），或运行命令 **Wrap display math with environment** 选择环境；若光标不在 `$$…$$` 内，会先插入行间公式块。
+6. 智能切换（默认开启）：在公式块内，行内/行间命令会取消包裹或互相转换，而非重复插入；可在设置 **Smart math toggle** 中关闭。
+7. 可选：在 **设置 → 快捷键** 中为 **Insert inline math**、**Insert display math**、**Wrap display math with environment** 绑定热键（插件不注册默认热键）。
+8. 按 leader 之后的 **`Shift+E`**（默认），或运行命令 **Wrap display math with environment** 选择环境；若光标不在 `$$…$$` 内，会先插入行间公式块。
 
 > **说明：** 下文快捷键表只列出 **leader 之后** 的按键。默认 leader 为 `Alt+M`。
 
@@ -241,20 +249,24 @@ npm run build
 
 ## 设置
 
-打开 **设置 → Math Chords**。**设置界面为英文**（下表括号内为中文说明，便于对照）。
+打开 **设置 → Math Chords**。设置界面会跟随 Obsidian 的显示语言。**内置**（无需额外加载）：English、简体中文、繁體中文、日本語、한국어、Deutsch、Français、Español、Русский、Português (BR)、Italiano。**其余 [官方语言](https://github.com/obsidianmd/obsidian-translations#existing-languages)** 在首次需要时从 `locales-extras.json` 加载。
 
-| 设置项（英文界面） | 默认值 | 说明 |
+| 设置项 | 默认值 | 说明 |
 | :--- | :--- | :--- |
 | Enable plugin（启用插件） | 开 | leader 快捷键总开关。 |
 | Show shortcut hints（显示快捷键提示） | 关 | leader 后显示 which-key 面板。 |
 | Inline math live preview（行内公式实时预览） | 开 | 在 `$…$` 上方 MathJax 预览。 |
 | Leader key（Leader 键） | `Alt+M` | 快捷键前缀；YAML 中 `keys` 为 leader 之后的部分。 |
 | Auto-wrap outside math（公式外自动包裹） | 开 | 非公式区域插入时自动加 `$…$`。 |
+| Smart math toggle（智能公式切换） | 开 | 在已有公式块内，行内/行间命令会取消包裹或转换，而非插入新块。 |
 | Enable environment wrap（启用环境包裹） | 开 | 环境选择器；必要时先插入 `$$…$$`。 |
 | Environment wrap keys（环境包裹快捷键） | `Shift+E` | leader 之后触发环境选择器的按键。 |
 | Math environments（数学环境） | 4 个内置 | 可编辑的环境列表。 |
 
 **内置命令**（在 **设置 → 快捷键** 中自行绑定）：**Insert inline math**、**Insert display math**、**Wrap display math with environment**。
+
+- `Insert inline math`：在非公式区域插入 `$…$`；开启 **Smart math toggle** 时，在行内公式内取消包裹，在行间公式内转换为行内。
+- `Insert display math`：在非公式区域插入 `$$…$$`；开启 **Smart math toggle** 时，在行间公式内取消包裹，在行内公式内转换为行间。
 
 **Shortcut management（快捷键管理）：** 搜索、添加、编辑、删除；**Reload** 重新读取 YAML；**Merge defaults** 追加缺失的内置项，不覆盖已有绑定。
 
@@ -287,6 +299,7 @@ math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-
 │   ├── leader.ts           # Leader 快捷键状态机
 │   ├── defaults.ts         # 默认快捷键目录
 │   ├── config.ts           # YAML 读写与合并
+│   ├── l10n/               # 内置语言包 + 按需加载 extras
 │   └── …                   # 公式检测、预览、设置界面等
 ├── shortcuts.yaml          # 随仓库分发的默认快捷键（101 条）
 ├── styles.css              # 预览与设置样式
@@ -304,6 +317,7 @@ npm install
 npm run dev    # 监听模式构建
 npm run build  # 类型检查 + 生产构建
 npm run seed   # 从 src/defaults.ts 重写 shortcuts.yaml
+npm run seed:locales  # 从 scripts/locale-catalog.json 生成内置 TS 语言包与 locales-extras.json
 ```
 
 模块划分与约束见 [`.cursorrules`](.cursorrules)。
@@ -315,7 +329,7 @@ npm run seed   # 从 src/defaults.ts 重写 shortcuts.yaml
 1. 更新 `manifest.json`、`package.json` 中的 `version`，并在 `versions.json` 中添加映射。
 2. 更新 `CHANGELOG.md`。
 3. 提交后打 tag（不要加 `v` 前缀），例如 `git tag 0.1.6 && git push origin 0.1.6`。
-4. [release 工作流](.github/workflows/release.yml) 会自动构建并附上 `main.js`、`manifest.json`、`styles.css`，并为 `main.js`、`styles.css` 生成 artifact attestations。
+4. [release 工作流](.github/workflows/release.yml) 会自动构建并附上 `main.js`、`manifest.json`、`styles.css` 和 `locales-extras.json`，并为 `main.js`、`styles.css` 生成 artifact attestations。
 
 ---
 
