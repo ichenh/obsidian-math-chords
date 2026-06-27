@@ -209,7 +209,7 @@ npm run build
 
 **矩阵**（`M` 前缀）：`M P` pmatrix，`M B` bmatrix，`M C` cases
 
-完整列表见 [`shortcuts.yaml`](shortcuts.yaml)（101 条默认快捷键）。
+完整列表见 [`shortcuts.yaml`](shortcuts.yaml)（102 条默认快捷键）。
 
 ---
 
@@ -325,7 +325,7 @@ math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-
 │   └── …                   # 公式检测、预览、设置界面等
 ├── src/*.test.ts           # Vitest 单元测试
 ├── vitest.config.ts
-├── shortcuts.yaml          # 随仓库分发的默认快捷键（101 条）
+├── shortcuts.yaml          # 随仓库分发的默认快捷键（102 条）
 ├── styles.css              # 预览与设置样式
 ├── manifest.json           # Obsidian 插件清单
 ├── esbuild.config.mjs      # 构建配置

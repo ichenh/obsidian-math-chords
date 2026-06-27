@@ -25,6 +25,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { keys: "8", command: "\\infty", name: "Infinity", group: "Operators" },
   { keys: "'", command: "'", name: "Prime", group: "Operators" },
   { keys: "+", command: "\\pm", name: "Plus-minus", group: "Operators" },
+  { keys: ",", command: "\\,", name: "Thin space", group: "Operators" },
   { keys: "= |", command: "\\neq", name: "Not equal", group: "Operators" },
 
   // Accents

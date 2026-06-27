@@ -18,6 +18,15 @@ describe("findBraceStopsInMath", () => {
   it("returns empty outside math", () => {
     expect(findBraceStopsInMath("hello {x}", 3)).toEqual([]);
   });
+
+  it("returns empty in plain text after closed inline math", () => {
+    expect(findBraceStopsInMath("$x$ plain {y}", 10)).toEqual([]);
+  });
+
+  it("returns empty in plain text after closed display math", () => {
+    const doc = "$$\\alpha$$ plain {y}";
+    expect(findBraceStopsInMath(doc, doc.indexOf("{") + 1)).toEqual([]);
+  });
 });
 
 describe("findNextBraceStop", () => {

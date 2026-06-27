@@ -78,6 +78,11 @@
   name: "Plus-minus"
   group: "Operators"
 
+- keys: ","
+  command: "\\,"
+  name: "Thin space"
+  group: "Operators"
+
 - keys: "= |"
   command: "\\neq"
   name: "Not equal"

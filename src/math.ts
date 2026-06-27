@@ -69,23 +69,30 @@ export function isInMath(text: string, offset: number): boolean {
   return findMathRegionAt(text, offset) !== null;
 }
 
-/** Opening `$` before `offset` with no closing `$` before `offset` (inline only). */
+/** True when an inline `$…` opener before `offset` has no closing `$` before `offset`. */
 export function hasUnclosedInlineMathBefore(text: string, offset: number): boolean {
   if (offset <= 0 || text.length > MAX_DOC_LENGTH) return false;
 
-  for (let i = offset - 1; i >= 0; i--) {
+  let inlineOpen = false;
+  for (let i = 0; i < offset; i++) {
     if (text[i] !== "$" || isEscaped(text, i)) continue;
-    if (i > 0 && text[i - 1] === "$") continue;
-    if (i < text.length - 1 && text[i + 1] === "$") continue;
 
-    for (let j = i + 1; j < offset; j++) {
-      if (text[j] !== "$" || isEscaped(text, j)) continue;
-      if (j < text.length - 1 && text[j + 1] === "$") continue;
-      return false;
+    if (i < text.length - 1 && text[i + 1] === "$") {
+      i += 2;
+      while (i < offset - 1) {
+        if (text[i] === "$" && text[i + 1] === "$" && !isEscaped(text, i)) {
+          i += 2;
+          break;
+        }
+        i++;
+      }
+      i--;
+      continue;
     }
-    return true;
+
+    inlineOpen = !inlineOpen;
   }
-  return false;
+  return inlineOpen;
 }
 
 function touchesInlineMathClose(text: string, offset: number): boolean {

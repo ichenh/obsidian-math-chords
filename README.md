@@ -206,7 +206,7 @@ Copy `main.js`, `manifest.json`, `styles.css`, `locales-extras.json`, and `short
 
 **Matrices** (`M` prefix): `M P` pmatrix, `M B` bmatrix, `M C` cases
 
-The full list lives in [`shortcuts.yaml`](shortcuts.yaml) (101 default shortcuts).
+The full list lives in [`shortcuts.yaml`](shortcuts.yaml) (102 default shortcuts).
 
 ---
 
@@ -322,7 +322,7 @@ math-chords/                  # Plugin id; install folder .obsidian/plugins/math
 │   └── …                   # math, preview, settings UI, etc.
 ├── src/*.test.ts           # Vitest unit tests
 ├── vitest.config.ts
-├── shortcuts.yaml          # Shipped default shortcuts (101 entries)
+├── shortcuts.yaml          # Shipped default shortcuts (102 entries)
 ├── styles.css              # Preview & settings styles
 ├── manifest.json           # Obsidian plugin manifest
 ├── esbuild.config.mjs      # Build config

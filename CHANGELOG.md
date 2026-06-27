@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-06-28
+
+### Added
+
+- Default shortcut **`,`** (after leader): `\,` thin space.
+
+### Fixed
+
+- **Auto-wrap outside math** works again in plain text that follows closed inline math
+  (`$x$` then more text); a backward `$` scan had treated closing delimiters as unclosed
+  openers.
+
 ## [0.2.2] - 2026-06-21
 
 ### Changed
