@@ -1,29 +1,64 @@
 # AI Assistance Disclosure
 
-This project was developed with the help of **AI-assisted coding tools** (including
-[Cursor](https://cursor.com/) and large language models).
+[中文说明](AI-ASSISTANCE.zh-CN.md)
 
-## What this means
+This repository has used AI-assisted development tools, including Cursor and large
+language models, and is currently maintained primarily with OpenAI Codex. These tools
+are used as implementation and review aids; they do not make project decisions or
+replace maintainer review.
 
-- **Human direction:** Feature goals, architecture constraints, and release decisions
-are made by the maintainer ([CHEH Hua](https://github.com/ichenh)).
-- **AI contribution:** Drafting and refactoring TypeScript, documentation, YAML
-defaults, and build scripts; exploring edge cases; generating changelog and README
-prose under maintainer review.
-- **Review:** All merged code is built (`npm run build`), manually tested in Obsidian,
-and edited before release.
+## Scope of assistance
 
-## For contributors
+AI tools may be used to:
 
-If you use AI tools while contributing:
+- draft or refactor TypeScript, tests, build scripts, and documentation;
+- identify edge cases and propose test cases;
+- compare related code paths and check consistency across generated files; and
+- help investigate build, test, localization, and release-metadata failures.
 
-1. **Review every line** you submit — you are responsible for correctness and license
-  compatibility.
-2. **Disclose AI use** in pull-request descriptions when it materially shaped the change.
-3. **Do not** paste secrets, private notes, or third-party code without permission.
+AI-generated suggestions are not accepted solely because they compile, pass a test,
+or were produced by a particular tool. Feature scope, architecture, compatibility,
+release timing, and the final contents of the repository remain human decisions.
 
-## Transparency
+## Responsibility and verification
 
-We publish this notice so users and contributors understand how the repository was
-bootstrapped. AI assistance does not change the [MIT license](LICENSE) or your
-rights to use, modify, and redistribute this plugin.
+The maintainer, [CHEH Hua](https://github.com/ichenh), is responsible for changes
+accepted into the project. Changes are reviewed in context and verified in
+proportion to their risk. The repository's standard checks include:
+
+- `npm run build` for TypeScript checking and production bundling;
+- `npm test` for automated behavior tests;
+- `npm run check:shortcuts` for generated shortcut-catalog consistency;
+- `npm run check:locales` for generated localization completeness;
+- `npm run check:release` for package and release-metadata consistency; and
+- manual testing in Obsidian when behavior depends on the editor, commands,
+  settings, hotkeys, paste handling, or undo history.
+
+`npm run check` runs the complete automated verification sequence used by CI.
+
+These checks reduce risk but do not guarantee that the software is free of defects.
+Users should report reproducible problems through the project's issue tracker.
+
+## Requirements for contributors
+
+Contributors who use AI-assisted tools must:
+
+1. understand and review every submitted change;
+2. test the affected behavior and include or update tests when practical;
+3. disclose material AI assistance in the pull-request description;
+4. verify that submitted material is compatible with the project's license and
+   does not reproduce third-party code or text without permission; and
+5. never provide secrets, private vault contents, personal data, or other
+   confidential information to an AI service.
+
+The contributor remains the author and accountable submitter of the pull request.
+AI output without adequate review, provenance, or validation may be rejected.
+
+## License and transparency
+
+This disclosure documents the development process. It does not change the
+[MIT license](LICENSE), the plugin's behavior, or users' rights to use, inspect,
+modify, and redistribute the software under that license.
+
+Repository architecture, generated-file rules, and required verification commands
+are documented in [AGENTS.md](AGENTS.md).

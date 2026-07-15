@@ -1,31 +1,55 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
+const {
+  BUNDLED_LOCALE_CODES,
+  LOCALES_DIR,
+  ROOT,
+  readInputs,
+  renderBundledCodes,
+  renderBundledIndex,
+  renderExtras,
+  renderLazyCodes,
+  renderLocaleFile,
+  validateCatalog,
+} = require("./locale-utils.cjs");
 
-const ROOT = path.join(__dirname, "..");
-const BUNDLED = ["en", "zh", "zh-TW", "ja", "ko", "de", "fr", "es", "ru", "pt-BR", "it"];
+const { catalog, catalogCodes, lazyCodes, translationKeys } = readInputs();
+const errors = validateCatalog(catalog, catalogCodes, translationKeys);
 
-const main = fs.statSync(path.join(ROOT, "main.js"));
-const extras = fs.statSync(path.join(ROOT, "locales-extras.json"));
-const catalog = require("./locale-catalog.json");
-
-const enSource = fs.readFileSync(path.join(ROOT, "src/l10n/locales/en.ts"), "utf8");
-const keys = [...enSource.matchAll(/^\s+(\w+):/gm)].map((m) => m[1]);
-
-console.log("main.js KB:", (main.size / 1024).toFixed(1));
-console.log("locales-extras.json KB:", (extras.size / 1024).toFixed(1));
-console.log("bundled:", BUNDLED.length, "lazy:", Object.keys(catalog).length - (BUNDLED.length - 1));
-
-for (const code of Object.keys(catalog)) {
-  const missing = keys.filter((k) => !(k in catalog[code]));
-  if (missing.length > 0) console.log(`${code} missing:`, missing.length);
+checkGenerated(
+  "src/l10n/locales/index.ts",
+  renderBundledIndex(),
+  errors,
+);
+checkGenerated("src/l10n/bundled.ts", renderBundledCodes(), errors);
+checkGenerated("src/l10n/lazy-codes.ts", renderLazyCodes(lazyCodes), errors);
+checkGenerated("locales-extras.json", renderExtras(catalog, lazyCodes), errors);
+for (const code of BUNDLED_LOCALE_CODES) {
+  checkGenerated(
+    path.relative(ROOT, path.join(LOCALES_DIR, `${code}.ts`)),
+    renderLocaleFile(catalog[code], translationKeys),
+    errors,
+  );
 }
 
-for (const code of BUNDLED.slice(1)) {
-  if (!fs.existsSync(path.join(ROOT, `src/l10n/locales/${code}.ts`))) {
-    console.error("missing bundled file:", code);
-    process.exit(1);
+if (errors.length > 0) {
+  for (const error of errors) console.error(`Locale check: ${error}`);
+  process.exit(1);
+}
+
+const mainSize = fs.statSync(path.join(ROOT, "main.js")).size;
+const extrasSize = fs.statSync(path.join(ROOT, "locales-extras.json")).size;
+console.log(
+  `Locales are complete and generated artifacts are current: ${BUNDLED_LOCALE_CODES.length + 1} bundled, ${lazyCodes.length} lazy; main.js ${(mainSize / 1024).toFixed(1)} KB, extras ${(extrasSize / 1024).toFixed(1)} KB.`,
+);
+
+function checkGenerated(relativePath, expected, errors) {
+  const filePath = path.join(ROOT, relativePath);
+  if (!fs.existsSync(filePath)) {
+    errors.push(`${relativePath} is missing; run npm run seed:locales`);
+    return;
+  }
+  if (fs.readFileSync(filePath, "utf8") !== expected) {
+    errors.push(`${relativePath} is stale; run npm run seed:locales`);
   }
 }
-
-const lazy = JSON.parse(fs.readFileSync(path.join(ROOT, "locales-extras.json"), "utf8"));
-console.log("extras locales:", Object.keys(lazy).length);

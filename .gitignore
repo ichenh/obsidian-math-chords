@@ -2,9 +2,11 @@ node_modules/
 main.js
 main.js.map
 dist/
+coverage/
 .DS_Store
 data.json
 *.log
+release-notes.md
 scripts/.defaults.cjs
 fonts/
 katex.min.css

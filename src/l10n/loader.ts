@@ -9,7 +9,6 @@ const EXTRAS_FILE = "locales-extras.json";
 
 let activeBundle: Record<TranslationKey, string> = en;
 let extrasByCode: Record<string, Record<TranslationKey, string>> | null = null;
-let loadPromise: Promise<void> | null = null;
 
 export function getActiveLocaleBundle(): Record<TranslationKey, string> {
   return activeBundle;
@@ -52,11 +51,13 @@ async function applyLocale(plugin: Plugin, code: string): Promise<void> {
 }
 
 export function initLocale(plugin: Plugin): Promise<void> {
-  if (loadPromise) return loadPromise;
-
+  // Obsidian can reload a plugin module without restarting the application.
+  // Reset cached state so a changed application language or updated locale file
+  // is reflected after a reload instead of retaining the previous instance.
+  activeBundle = en;
+  extrasByCode = null;
   const code = resolveLanguage(getLanguage(), supportedLocaleCodes());
-  loadPromise = applyLocale(plugin, code);
-  return loadPromise;
+  return applyLocale(plugin, code);
 }
 
 export function supportedLocaleCodes(): Set<string> {

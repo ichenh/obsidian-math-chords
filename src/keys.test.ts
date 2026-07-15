@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { eventMatchesChord } from "./keys";
+import {
+  eventMatchesChord,
+  isValidChord,
+  normalizeSequenceKeys,
+  parseChord,
+  parseKeysField,
+} from "./keys";
 
 function keyEvent(partial: Partial<KeyboardEvent> & { key: string }): KeyboardEvent {
   return partial as KeyboardEvent;
@@ -42,5 +48,36 @@ describe("eventMatchesChord", () => {
 
   it("does not match plain ArrowRight", () => {
     expect(eventMatchesChord(keyEvent({ key: "ArrowRight" }), "Alt+ArrowRight")).toBe(false);
+  });
+});
+
+describe("chord parsing", () => {
+  it("preserves a literal plus key", () => {
+    expect(parseChord("+")).toBe("+");
+    expect(parseChord("Shift++")).toBe("shift++");
+    expect(parseKeysField("+")).toEqual(["+"]);
+  });
+
+  it("rejects modifier-only and multi-base chords", () => {
+    expect(isValidChord("Ctrl+Alt")).toBe(false);
+    expect(isValidChord("A+B")).toBe(false);
+    expect(parseKeysField("Ctrl+Alt")).toEqual([]);
+  });
+
+  it("offers an unshifted fallback for printable punctuation", () => {
+    expect(normalizeSequenceKeys(keyEvent({ key: '"', shiftKey: true }))).toEqual([
+      'shift+"',
+      '"',
+    ]);
+    expect(normalizeSequenceKeys(keyEvent({ key: "A", shiftKey: true }))).toEqual([
+      "shift+a",
+    ]);
+  });
+
+  it("normalizes configured modifier chords after the leader", () => {
+    expect(normalizeSequenceKeys(keyEvent({ key: "A", ctrlKey: true }))).toEqual(["ctrl+a"]);
+    expect(
+      normalizeSequenceKeys(keyEvent({ key: "K", altKey: true, shiftKey: true })),
+    ).toEqual(["alt+shift+k"]);
   });
 });

@@ -2,7 +2,7 @@ import { EditorView } from "@codemirror/view";
 import {
   eventMatchesLeader,
   formatSequence,
-  normalizeSequenceKey,
+  normalizeSequenceKeys,
   parseKeysField,
 } from "./keys";
 import { t } from "./l10n/locale";
@@ -54,7 +54,17 @@ export class LeaderController {
 
   /** Returns true when the event was consumed. Caller should preventDefault. */
   handleKeyDown(event: KeyboardEvent, view: EditorView): boolean {
-    if (!this.ctx.isEnabled()) return false;
+    if (!this.ctx.isEnabled()) {
+      if (this.state.armed) this.reset();
+      return false;
+    }
+    if (event.isComposing) {
+      if (this.state.armed) this.reset();
+      return false;
+    }
+    if (event.repeat) {
+      return this.state.armed || eventMatchesLeader(event, this.ctx.getLeaderKey());
+    }
 
     if (this.state.armed) {
       return this.handleArmed(event, view);
@@ -82,10 +92,18 @@ export class LeaderController {
       return true;
     }
 
-    const token = normalizeSequenceKey(event);
-    if (!token) return false;
+    const candidates = normalizeSequenceKeys(event).map((token) => ({
+      next: [...this.state.sequence, token],
+    }));
+    if (candidates.length === 0) return false;
 
-    const next = [...this.state.sequence, token];
+    const match = candidates.find(
+      ({ next }) =>
+        this.isMathEnvWrapSequence(next) ||
+        findNode(this.ctx.getTrie(), next) !== null ||
+        this.isMathEnvWrapPrefix(next),
+    );
+    const { next } = match ?? candidates[0];
 
     if (this.isMathEnvWrapSequence(next)) {
       this.ctx.onMathEnvWrap?.(view);

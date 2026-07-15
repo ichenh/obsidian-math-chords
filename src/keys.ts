@@ -45,13 +45,38 @@ function sortMods(mods: string[]): string[] {
 }
 
 export function parseChord(chord: string): string {
-  const parts = chord
-    .split("+")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
+  const parsed = chordComponents(chord);
+  if (!parsed) return "";
+  return [...sortMods(parsed.mods), parsed.base].join("+");
+}
+
+export function isValidChord(chord: string): boolean {
+  return chordComponents(chord) !== null;
+}
+
+export function isValidKeySequence(sequence: string): boolean {
+  const trimmed = sequence.trim();
+  return trimmed.length > 0 && trimmed.split(/\s+/).every(isValidChord);
+}
+
+function chordComponents(chord: string): { mods: string[]; base: string } | null {
+  const trimmed = chord.trim();
+  if (!trimmed) return null;
+
+  let parts: string[];
+  if (trimmed === "+") {
+    parts = ["+"];
+  } else if (trimmed.endsWith("++")) {
+    const prefix = trimmed.slice(0, -2);
+    parts = [...(prefix ? prefix.split("+") : []), "+"];
+  } else {
+    parts = trimmed.split("+");
+  }
+  parts = parts.map((part) => part.trim());
+  if (parts.some((part) => part.length === 0)) return null;
 
   const mods: string[] = [];
-  let base = "";
+  const bases: string[] = [];
 
   for (const part of parts) {
     const mod = normalizeModifier(part);
@@ -59,12 +84,10 @@ export function parseChord(chord: string): string {
       if (!mods.includes(mod)) mods.push(mod);
       continue;
     }
-    base = normalizeKeyName(part);
+    bases.push(normalizeKeyName(part));
   }
-
-  const ordered = sortMods(mods);
-  if (!base) return ordered.join("+");
-  return [...ordered, base].join("+");
+  if (bases.length !== 1) return null;
+  return { mods, base: bases[0] };
 }
 
 export function parseKeysField(keys: string): string[] {
@@ -101,19 +124,24 @@ export function eventMatchesChord(event: KeyboardEvent, chord: string): boolean 
   return normalizeEvent(event) === parseChord(trimmed);
 }
 
-export function normalizeSequenceKey(event: KeyboardEvent): string | null {
+export function normalizeSequenceKeys(event: KeyboardEvent): string[] {
   const key = normalizeKeyName(event.key);
-  if (isModifierKey(key)) return null;
+  if (isModifierKey(key)) return [];
 
-  if (event.ctrlKey || event.altKey || event.metaKey) return null;
+  if (event.ctrlKey || event.altKey || event.metaKey) return [normalizeEvent(event)];
 
-  if (event.shiftKey) return `shift+${key}`;
-  return key;
+  if (!event.shiftKey) return [key];
+
+  const shifted = `shift+${key}`;
+  // On many layouts punctuation requires Shift. Prefer an explicit Shift binding,
+  // then fall back to the resulting printable symbol (for defaults such as ^ or ").
+  return /^[a-z0-9]$/i.test(key) ? [shifted] : [shifted, key];
 }
 
 export function formatToken(token: string): string {
-  return token
-    .split("+")
+  const parsed = chordComponents(token);
+  if (!parsed) return token;
+  return [...sortMods(parsed.mods), parsed.base]
     .map((part) => {
       if (part.length === 1 && /[a-z0-9]/i.test(part)) return part.toUpperCase();
       if (part === "shift") return "Shift";

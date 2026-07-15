@@ -1,6 +1,6 @@
 export const en = {
   intro:
-    "Press a configurable leader key (default Alt+M), then a key sequence to insert LaTeX. Default shortcuts are inspired by LyX math-mode bindings.",
+    "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
 
   enablePluginName: "Enable plugin",
   enablePluginDesc: "Turn off to disable leader-key chord sequences.",
@@ -23,7 +23,10 @@ export const en = {
   wrapOutsideMathDesc: "When inserting outside a math region, wrap the snippet in $…$.",
   smartMathToggleName: "Smart math toggle",
   smartMathToggleDesc:
-    "When using Insert inline math or Insert display math (including leader D) inside an existing math block, unwrap or convert the block instead of inserting a new one.",
+    "The matching command always unwraps an existing math block. When enabled, the other command converts inline and display math into each other.",
+  autoConvertPasteName: "Automatically convert pasted LaTeX math delimiters",
+  autoConvertPasteDesc:
+    "Convert \\[...\\] and \\(...\\) to Obsidian Markdown math delimiters when pasting. Disabled by default.",
   reloadYamlName: "Reload YAML",
   reloadYamlDesc: "Reload shortcut bindings from shortcuts.yaml.",
   reloadButton: "Reload",
@@ -38,8 +41,14 @@ export const en = {
   mathEnvironmentsName: "Math environments",
 
   shortcutManagementHeading: "Shortcut management",
+  shortcutManagementDesc:
+    "Browse by group or search keys, names, commands, and groups. Formula previews are generated from each LaTeX snippet.",
   searchName: "Search",
-  searchPlaceholder: "Keys or command",
+  searchPlaceholder: "Keys, name, command, or group",
+  shortcutCount: "%1 of %2 shortcuts",
+  noMatchingShortcuts: "No shortcuts match this search.",
+  ungroupedGroup: "Ungrouped",
+  unnamedShortcut: "Unnamed shortcut",
 
   tableName: "Name",
   tableBegin: "Begin",
@@ -47,6 +56,8 @@ export const en = {
   tableActions: "Actions",
   tableOrder: "Order",
   dragToReorder: "Drag to reorder",
+  moveUpButton: "Move up",
+  moveDownButton: "Move down",
   tableKeys: "Keys",
   tableCommand: "Command",
   tableGroup: "Group",
@@ -56,6 +67,11 @@ export const en = {
   deleteButton: "Delete",
   saveButton: "Save",
   cancelButton: "Cancel",
+
+  deleteShortcutHeading: "Delete shortcut",
+  deleteShortcutDesc: 'Delete the shortcut "%1"? This action cannot be undone.',
+  deleteMathEnvHeading: "Delete math environment",
+  deleteMathEnvDesc: 'Delete the math environment "%1"? This action cannot be undone.',
 
   editShortcutHeading: "Edit shortcut",
   addShortcutHeading: "Add shortcut",
@@ -76,6 +92,8 @@ export const en = {
   cmdInsertInlineMath: "Insert inline math",
   cmdInsertDisplayMath: "Insert display math",
   cmdWrapDisplayMathEnv: "Wrap display math with environment",
+  cmdConvertLatexDelimitersSelection: "Convert LaTeX Delimiters in Selection",
+  cmdConvertLatexDelimitersCurrentFile: "Convert LaTeX Delimiters in Current File",
 
   hintEnter: "Enter",
   hintNoFurtherShortcuts: "No further shortcuts",
@@ -91,6 +109,7 @@ export const en = {
   noticeMergedDefaults: "Merged %1 default shortcut(s); your custom bindings were kept.",
   noticeNoDefaultsToMerge: "No new default shortcuts to merge.",
   noticeKeysAndCommandRequired: "Keys and command are required.",
+  noticeInvalidKeySequence: "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
   noticeEnvFieldsRequired: "Name, begin, and end are required.",
   noticeEnableEnvWrap: "Enable environment wrap in Math Chords settings.",
   noticeMoveOutOfInlineMath: "Move the caret out of inline math first.",
@@ -99,6 +118,9 @@ export const en = {
   noticeCouldNotFindDisplayMath: "Could not find a display math block.",
   noticeCouldNotRenderPreview: "Math Chords: could not render inline math preview.",
   noticeUndefinedChord: "Undefined %1",
+  noticeEnableSmartMathToggle: "Enable Smart math toggle to convert between inline and display math.",
+  noticeNoTextSelected: "No text selected.",
+  noticeConvertedLatexDelimiters: "Converted %1 display formulas and %2 inline formulas.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

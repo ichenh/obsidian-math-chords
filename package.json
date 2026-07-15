@@ -1,7 +1,8 @@
 {
   "name": "obsidian-math-chords",
-  "version": "0.2.3",
-  "description": "Type LaTeX math with keyboard shortcuts—fractions, Greek letters, integrals, and 100+ snippets (leader key + keys). Inline preview, display-math wrap. Settings UI in 70+ languages incl. Chinese.",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Write and normalize LaTeX math in Obsidian with leader-key snippets, protected delimiter conversion, preview, brace navigation, and display environments.",
   "main": "main.js",
   "repository": {
     "type": "git",
@@ -11,12 +12,19 @@
     "url": "https://github.com/ichenh/obsidian-math-chords/issues"
   },
   "homepage": "https://github.com/ichenh/obsidian-math-chords#readme",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "dev": "node esbuild.config.mjs",
-    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "build": "tsc --noEmit && node esbuild.config.mjs production",
     "test": "vitest run",
     "seed": "node scripts/seed-yaml.cjs",
-    "seed:locales": "node scripts/seed-locales.cjs"
+    "seed:locales": "node scripts/seed-locales.cjs",
+    "check:shortcuts": "node scripts/seed-yaml.cjs --check",
+    "check:locales": "node scripts/check-locales.cjs",
+    "check:release": "node scripts/check-release.cjs",
+    "check": "npm run build && npm test && npm run check:shortcuts && npm run check:locales && npm run check:release"
   },
   "author": "CHEH Hua",
   "license": "MIT",

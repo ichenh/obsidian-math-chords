@@ -2,19 +2,23 @@
 
 [中文文档](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.2.2-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
-**Math Chords** adds **keyboard shortcuts for LaTeX math** in Obsidian: press a leader key (default `Alt+M`), then a short sequence to insert fractions, Greek letters, integrals, and other snippets—without typing `\frac`, `\alpha`, and the rest by hand. Also includes optional **inline formula preview**, **brace navigation inside math**, and **display-math environment wrapping**.
+**Math Chords** is an Obsidian plugin for writing and normalizing LaTeX mathematics in Markdown notes. It addresses two recurring sources of friction: entering common LaTeX structures character by character, and reconciling text copied from AI tools, papers, or LaTeX sources with Obsidian's Markdown math delimiters.
+
+For direct input, a configurable leader key (default `Alt+M`) followed by a short sequence inserts fractions, Greek letters, integrals, and other snippets. For imported text, explicit commands convert `\(...\)` and `\[...\]` to `$...$` and `$$...$$` in a selection or the current file; the same conversion can optionally run on paste.
+
+The converter changes delimiters only. It preserves formula content, whitespace, and line breaks, and excludes Markdown regions where textual conversion would be unsafe. The plugin also provides optional inline preview, brace navigation within math, and display-math environment wrapping.
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.2.2.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.3.0.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
-> **Community plugin browser:** Obsidian shows each plugin's `description` from `manifest.json` in **English only** (the browse UI itself follows your app language). After install, **Settings → Math Chords** and command names follow your Obsidian display language.
+> **Community plugin browser:** Obsidian shows each plugin's `description` from `manifest.json` in **English only** (the browse UI itself follows your app language). After installation, **Settings → Math Chords** and command names follow your Obsidian display language.
 
 ![Math Chords demo: leader shortcuts insert LaTeX with live preview](docs/demo.gif)
 
@@ -28,6 +32,7 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 - [Shortcut reference](#shortcut-reference)
 - [Display-math environment wrap](#display-math-environment-wrap)
 - [Configuration](#configuration)
+- [LaTeX delimiter conversion](#latex-delimiter-conversion)
 - [Settings](#settings)
 - [Updating shortcuts](#updating-shortcuts)
 - [Project structure](#project-structure)
@@ -41,13 +46,14 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 
 | Feature | Description |
 | :--- | :--- |
-| **Shortcuts** | Press a configurable leader key, then a key sequence to insert LaTeX snippets. |
+| **Structured input** | Press a configurable leader key, then a key sequence to insert common LaTeX structures and symbols. |
 | **Caret placeholder** | `$$` in a command template marks where the cursor (or selection) is placed, e.g. `\frac{$$}{}`. |
 | **Auto `$…$` wrap** | Optional: when inserting outside math, wrap the snippet in inline math delimiters. |
 | **Inline live preview** | While the caret is inside `$…$`, a floating panel above the formula renders with Obsidian's native **MathJax** (on by default). |
 | **Brace navigation in math** | Jump between `{…}` fields inside `$…$` / `$$…$$` with configurable keys (default `Alt+→` / `Alt+←`; on by default). |
 | **Display-math environments** | Wrap block content with `\begin{…}…\end{…}` via a fuzzy-search picker; inserts `$$…$$` when needed. |
-| **Built-in math commands** | Insert inline/display math; optional smart toggle unwraps or converts inside existing blocks (see settings). |
+| **Built-in math commands** | Wrap selected text, insert inline/display math, or remove a matching wrapper; optional smart toggle enables conversion between inline and display math. |
+| **LaTeX delimiter conversion** | Convert `\(...\)` / `\[...\]` to `$...$` / `$$...$$` in a selection, the current file, or optionally on paste, while excluding protected Markdown regions. |
 | **YAML + UI config** | Edit `shortcuts.yaml` or use the settings tab; changes rebuild the shortcut trie immediately. |
 | **Localized UI** | 11 mainstream locales bundled in `main.js` (incl. Simplified/Traditional Chinese). The other 61 [official Obsidian locales](https://github.com/obsidianmd/obsidian-translations#existing-languages) need `locales-extras.json` in the plugin folder (not installed automatically from the community directory). |
 | **Non-destructive merge** | On load, missing default shortcuts are merged in; your custom key bindings are never overwritten. |
@@ -98,10 +104,11 @@ Copy `main.js`, `manifest.json`, `styles.css`, `locales-extras.json`, and `short
 3. Press a shortcut, e.g. **`F`** → `\frac{}{}` with the cursor in the numerator.
 4. For Greek letters: **`G` `A`** → `\alpha` (after the leader).
 5. For display math: **`D`** → `$$\n\n$$`.
-6. Smart toggle (on by default): inside a math block, inline/display commands unwrap or convert instead of inserting again; turn off under **Smart math toggle** in settings.
-7. Press **`Shift+E`** (default, after the leader) or run **Wrap display math with environment** to pick an environment. If the caret is not already inside `$$…$$`, a display block is inserted first.
+6. With only a caret inside math, pressing the matching inline/display command removes that wrapper. **Smart math toggle** (on by default) additionally lets the other command convert between inline and display math. A non-empty selection is always wrapped by the requested command.
+7. Select LaTeX-delimited math and run **Convert LaTeX Delimiters in Selection** (default hotkey `Ctrl+Alt+M` on Windows/Linux or `Cmd+Alt+M` on macOS), or use the whole-file command.
+8. Press **`Shift+E`** (default, after the leader) or run **Wrap display math with environment** to pick an environment. If the caret is not already inside `$$…$$`, a display block is inserted first.
 
-> **Note:** Shortcut tables list keys **after** the leader. The default leader is `Alt+M`. Assign hotkeys for the built-in commands under **Settings → Hotkeys** (no defaults are registered).
+> **Note:** Shortcut tables list keys **after** the leader. The default leader is `Alt+M`. Built-in commands can be reassigned under **Settings → Hotkeys**; only the selection delimiter converter has a registered default hotkey.
 
 ---
 
@@ -216,8 +223,17 @@ With the caret inside `$$…$$`, or anywhere else in the note (a block is create
 
 1. Press the configured shortcut after the leader (default **`Shift+E`**), or run **Wrap display math with environment** from the command palette.
 2. Choose an environment from the fuzzy-search list.
-3. The plugin wraps the **entire block content** (not only the selection), e.g.  
-   `$$\alpha+\beta$$` → `$$\begin{aligned}\alpha+\beta\end{aligned}$$`
+3. The plugin wraps the **entire block content** (not only the selection) and keeps delimiters and environment markers on separate lines.
+
+   ```latex
+   $$
+   \begin{aligned}
+   \alpha+\beta
+   \end{aligned}
+   $$
+   ```
+
+Creating a display block when needed and adding the environment are committed as one editor transaction, so one Undo reverts the command. Cancelling the picker does not modify the note.
 
 Configure environments (name / `\begin{…}` / `\end{…}`) and the trigger keys under **Display-math environment wrap** in **Settings → Math Chords**, or assign a hotkey to the command in **Settings → Hotkeys**.
 
@@ -256,6 +272,22 @@ Special command `__DISPLAY_MATH__` inserts a `$$…$$` block (used by `D`).
 
 - Keys are canonicalized to lowercase `mod+base` order: `ctrl` → `alt` → `shift` → `meta`.
 - Letters are lowercase unless `Shift` is explicit (`Shift+A`).
+- A literal `+` is a valid base key. For punctuation produced with Shift on the
+  current keyboard layout, an explicit `Shift+symbol` binding takes precedence;
+  otherwise the printable-symbol binding is used.
+
+## LaTeX delimiter conversion
+
+Math Chords can replace standard LaTeX math delimiters while preserving the formula contents, whitespace, and line breaks:
+
+- `\(...\)` → `$...$`
+- `\[...\]` → `$$...$$`
+
+Use **Convert LaTeX Delimiters in Selection** for selected text, or **Convert LaTeX Delimiters in Current File** for the active Markdown note. The whole-file command reports the number of display and inline formulas converted. Each command uses one editor transaction, so one Undo reverts the complete operation.
+
+The converter leaves delimiters unchanged inside YAML frontmatter, fenced code blocks, inline code, HTML comments, HTML `<pre>` / `<code>` blocks, and existing `$...$` / `$$...$$` math. Existing Markdown math is recognized using delimiter rules that distinguish it from ordinary currency text. Multiple editor selections are processed in one transaction.
+
+Enable **Automatically convert pasted LaTeX math delimiters** to apply the same context-aware conversion on paste. This setting is off by default. Paste conversion does not take over an event that another editor extension has already handled.
 
 ---
 
@@ -276,17 +308,22 @@ Open **Settings → Math Chords**. The settings UI follows your Obsidian display
 | Next / previous brace keys | `Alt+→` / `Alt+←` | Chords for brace navigation (when enabled). |
 | Leader key | `Alt+M` | Global prefix before shortcut keys; `keys` in YAML are what follows it. |
 | Auto-wrap outside math | on | Auto-insert `$…$` around snippets when not in math. |
-| Smart math toggle | on | Inside a math block, inline/display commands unwrap or convert instead of inserting a new block. |
-| Enable environment wrap | on | Environment picker; inserts `$$…$$` first when needed. |
+| Smart math toggle | on | Allow inline/display commands to convert an existing block to the other kind. Matching commands always remove their wrapper. |
+| Automatically convert pasted LaTeX math delimiters | off | Safely convert `\(...\)` / `\[...\]` in pasted text. |
+| Enable environment wrap | on | Environment picker; creates and wraps `$$…$$` in one transaction when needed. |
 | Environment wrap keys | `Shift+E` | Keys after the leader for the picker. |
 | Math environments | 4 built-ins | Editable list for the picker. |
 
-**Built-in commands** (assign under **Settings → Hotkeys**): **Insert inline math**, **Insert display math**, **Wrap display math with environment**.
+**Built-in commands** (assign or reassign under **Settings → Hotkeys**): **Insert inline math**, **Insert display math**, **Wrap display math with environment**, **Convert LaTeX Delimiters in Selection**, **Convert LaTeX Delimiters in Current File**.
 
-- `Insert inline math`: insert `$…$` outside math; when **Smart math toggle** is on, inside inline math unwraps and inside display math converts to inline.
-- `Insert display math`: insert `$$…$$` outside math; when **Smart math toggle** is on, inside display math unwraps and inside inline math converts to display.
+The selection converter defaults to `Ctrl+Alt+M` on Windows/Linux and `Cmd+Alt+M` on macOS. The other commands have no default hotkey.
 
-**Shortcut management:** search, add, edit, delete entries; **Reload** re-reads YAML; **Merge defaults** appends any missing built-in shortcuts without overwriting yours.
+- `Insert inline math`: wrap a non-empty selection in `$…$`; with only a caret, insert inline math outside math, remove an existing inline wrapper, or convert display math when **Smart math toggle** is on.
+- `Insert display math`: wrap a non-empty selection in `$$…$$`; with only a caret, insert display math outside math, remove an existing display wrapper, or convert inline math when **Smart math toggle** is on.
+
+When cross-kind conversion is disabled, invoking the other math command inside an existing block leaves the note unchanged and shows a notice instead of creating invalid nested delimiters. Converting display math to inline math removes one wrapper-adjacent line break and replaces remaining internal line breaks with spaces, because inline Markdown math cannot span lines reliably.
+
+**Shortcut management:** shortcuts are grouped into compact, responsive sections. Each row keeps the readable name and raw LaTeX command while adding a derived MathJax preview and keycap-style sequence. Search matches keys, names, commands, and groups without rebuilding the settings page. Add and edit operations remain available in focused dialogs; deletions require confirmation. **Reload** re-reads YAML, and **Merge defaults** appends missing built-in shortcuts without overwriting yours. Formula previews are presentation-only and are never written to `shortcuts.yaml`.
 
 ---
 
@@ -316,6 +353,11 @@ math-chords/                  # Plugin id; install folder .obsidian/plugins/math
 │   ├── main.ts             # Plugin entry
 │   ├── leader.ts           # Leader shortcut state machine
 │   ├── braceNav.ts         # Brace-pair navigation inside math
+│   ├── delimiterConverter.ts # Pure, protected LaTeX delimiter conversion
+│   ├── delimiterEditor.ts  # Obsidian editor transactions for conversion
+│   ├── markdownProtection.ts # Shared Markdown protected-region parser
+│   ├── mathToggle.ts       # Pure inline/display toggle and conversion planning
+│   ├── mathEnvPlan.ts      # Pure single-transaction environment planning
 │   ├── defaults.ts         # Default shortcut catalog
 │   ├── config.ts           # YAML load/save/merge
 │   ├── l10n/               # bundled locales + lazy extras loader
@@ -325,13 +367,19 @@ math-chords/                  # Plugin id; install folder .obsidian/plugins/math
 ├── shortcuts.yaml          # Shipped default shortcuts (102 entries)
 ├── styles.css              # Preview & settings styles
 ├── manifest.json           # Obsidian plugin manifest
-├── esbuild.config.mjs      # Build config
-└── scripts/seed-yaml.cjs   # Regenerate YAML from defaults.ts
+├── scripts/                 # Generation, shared utilities, and validation
+├── AGENTS.md                # Canonical Codex, engineering, and workflow rules
+├── CONTRIBUTING.md          # Contributor workflow and submission requirements
+├── .editorconfig            # Editor encoding and whitespace defaults
+├── .gitattributes           # Repository line-ending and binary-file rules
+└── esbuild.config.mjs       # Build config
 ```
 
 ---
 
 ## Development
+
+Development requires Node.js `20.19+` or `22.12+`, as declared in `package.json`.
 
 ```bash
 npm install
@@ -339,29 +387,47 @@ npm run dev    # watch build
 npm run build  # typecheck + production bundle
 npm test       # Vitest unit tests
 npm run seed   # rewrite shortcuts.yaml from src/defaults.ts
+npm run check:shortcuts # verify shortcuts.yaml matches src/defaults.ts
 npm run seed:locales  # bundled TS locales + locales-extras.json from scripts/locale-catalog.json
+npm run check:locales # verify locale schema and generated artifacts
+npm run check:release # verify metadata, changelog, and README version references
+npm run check  # complete build, test, generated-artifact, and metadata verification
 ```
 
-Module layout and constraints: [`.cursorrules`](.cursorrules).
+Canonical Codex guidance and module, safety, generation, and release rules:
+[`AGENTS.md`](AGENTS.md). The repository does not define `.codex/config.toml`
+because it currently needs no project-specific Codex runtime overrides.
 
-Pull requests welcome. Run `npm run build` and `npm test` before submitting.
+Pull requests welcome. Follow [CONTRIBUTING.md](CONTRIBUTING.md), run `npm run check`
+before submitting, and perform relevant manual Obsidian testing for editor-integrated
+behavior.
+
+Potential future work and its design constraints are tracked in [ROADMAP.md](ROADMAP.md).
 
 ### Releasing
 
-1. Bump `version` in `manifest.json` and `package.json`; add the mapping to `versions.json`.
-2. Update `CHANGELOG.md`.
-3. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.2.0 && git push origin 0.2.0`.
-4. The [release workflow](.github/workflows/release.yml) builds and attaches `main.js`, `manifest.json`, `styles.css`, and `locales-extras.json`, with artifact attestations for `main.js` and `styles.css`.
+1. After the maintainer approves a release, update the version consistently in `package.json`, `package-lock.json`, and `manifest.json`; add its minimum-app mapping to `versions.json`.
+2. Replace the `Unreleased` changelog section with a dated release section and create a new empty `Unreleased` section above it. Update both README version badges and current-release lines.
+3. Run `npm run check`, review the release assets, and complete the relevant manual Obsidian acceptance checks.
+4. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.3.0 && git push origin 0.3.0`.
+5. The [release workflow](.github/workflows/release.yml) reruns the complete verification path, builds and attaches `main.js`, `manifest.json`, `styles.css`, and `locales-extras.json`, and creates artifact attestations for every asset. Existing releases are not deleted or recreated.
 
 ---
 
 ## AI assistance
 
-This repository was bootstrapped and maintained with **AI-assisted coding tools**
-(Cursor IDE and large language models) under human review.
+This repository has used **AI-assisted development tools**, including Cursor and
+large language models, and is now maintained primarily with OpenAI Codex. These tools
+support tasks such as drafting, refactoring, test design, documentation, and
+consistency checks. Project decisions, accepted changes, and releases remain the
+maintainer's responsibility.
 
-- Full disclosure: [AI-ASSISTANCE.md](AI-ASSISTANCE.md)
-- Contributors using AI should review all output and mention it in PR descriptions.
+- The use of AI does not replace code review, automated checks, or relevant manual
+  testing in Obsidian.
+- Contributors remain responsible for correctness, licensing, provenance, and the
+  protection of private or confidential information.
+- Scope, verification practices, and contribution requirements:
+  [AI-ASSISTANCE.md](AI-ASSISTANCE.md).
 
 ---
 

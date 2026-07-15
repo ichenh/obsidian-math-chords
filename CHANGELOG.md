@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-15
+
+### Added
+
+- Commands to safely convert LaTeX `\(...\)` / `\[...\]` delimiters in the selection or current Markdown file, with protected-region parsing and single-step undo.
+- Optional automatic conversion of pasted LaTeX math delimiters (off by default).
+
+### Changed
+
+- Inline/display math commands now follow one deterministic rule set: a non-empty selection is wrapped, the matching command always unwraps at a caret, and Smart math toggle controls cross-kind conversion only.
+- Display-to-inline conversion normalizes multiline content to a valid single-line formula while preserving the mathematical text and caret position.
+- The settings page now uses grouped, responsive shortcut rows with derived MathJax previews, readable keycaps, in-place search filtering, accessible row actions, and confirmed deletion; math environments retain direct drag-to-reorder handling in a more consistently aligned table.
+- Shared Markdown protection and math-region parsing now runs in linear time and is reused by delimiter conversion, preview, brace navigation, and snippet auto-wrap.
+- CI and releases validate locale and version metadata; GitHub Actions are pinned to audited commits.
+- README introductions and plugin metadata now describe both core responsibilities: structured LaTeX input and context-aware delimiter normalization for imported text.
+- AI-assistance documentation now defines its scope, human accountability, verification limits, privacy and provenance requirements, and contributor disclosure expectations.
+- Repository guidance is unified around Codex-compatible `AGENTS.md` and bilingual contribution guides; obsolete Cursor-specific rule files were removed.
+- The bilingual project roadmap now records a safe, document-scoped design for possible future LaTeX macro support without relying on undocumented global MathJax mutation.
+- Generation and validation scripts now share locale definitions, detect stale generated artifacts and shortcut YAML, and expose a single `npm run check` verification path.
+- Delimiter editor transactions are separated from pure parsing, and overlapping selections no longer duplicate conversion counts.
+
+### Fixed
+
+- Cross-kind math commands no longer create nested delimiters when Smart math toggle is disabled; the note is left unchanged and a notice explains the setting.
+- Math toggle detection is independent of selection direction, respects exact delimiter boundaries, and remains available for explicitly invoked edits in large notes.
+- Shortcut YAML is validated atomically, duplicate canonical key sequences are rejected, failed writes no longer leave in-memory shortcut state out of sync, and leader sequences support configured modifier chords.
+- Leader input now cancels safely for IME composition and ignores key-repeat noise; preview and hint DOM/timers use the active editor window in Obsidian popouts.
+- Locale state is refreshed on plugin reload, and synchronous MathJax preview failures no longer escape into the editor update loop.
+- Cancelling the display-environment picker no longer inserts an empty math block; choosing an environment creates and wraps display math in one transaction and one Undo step.
+- Caret placement after transactions is calculated against the resulting document, preventing line/ch drift when a math toggle or environment edit adds line breaks.
+- An intentionally empty math-environment list now remains empty after plugin reload instead of being replaced by defaults.
+- Settings and shortcut write failures now produce one actionable notice instead of duplicate notices from nested error handlers.
+- Settings and shortcut writes are serialized from immutable snapshots so rapid UI changes cannot complete out of order or persist a later-mutated object accidentally.
+- Key-setting fields now validate and persist complete values on blur instead of saving transient incomplete chords on every keystroke.
+- Shortcut hints and inline previews now clamp to the active window and flip around the caret when there is insufficient viewport space.
+- Disabling hints, previews, leader handling, or environment wrapping now clears pending leader state and refreshes every open Markdown editor immediately.
+- The leader-key master switch no longer disables the independently configured inline-preview feature.
+- Closing an Obsidian popout now removes its document-level keyboard listener immediately instead of retaining the closed window until plugin unload.
+- Shortcut previews now separate placeholder samples from TeX control words, fixing MathJax rendering for Angle brackets, Floor, and Ceiling.
+- Shortcut previews now wait for MathJax initialization before rendering, preventing every formula preview from degrading to a dash when settings are opened first in a new Obsidian session.
+- Shortcut rows now use their two-line height more effectively with a larger, consistently aligned MathJax preview column on desktop and narrow settings panels.
+- The settings introduction now explains both core workflows and the supporting editor features, uses the full settings content width without an artificial empty column, and is synchronized across bundled and extra locale resources.
+- Literal `+` shortcut parsing, shifted-punctuation fallback, and persisted key-setting validation now handle common keyboard layouts and reject incomplete chords.
+- Currency text is no longer mistaken for existing Markdown math during delimiter conversion.
+- Unclosed HTML `<pre>` / `<code>` blocks, fenced code, inline code, YAML frontmatter, and existing Markdown math remain untouched.
+- Selection conversion handles all editor selections in one transaction, and paste conversion respects earlier paste handlers.
+
 ## [0.2.3] - 2026-06-28
 
 ### Added

@@ -26,7 +26,12 @@ describe("buildTrie", () => {
 describe("shortcutStorageKey", () => {
   it("normalizes keys for map storage", () => {
     expect(shortcutStorageKey({ keys: " Shift+F ", command: "\\foo" })).toBe(
-      "shift+f::\\foo",
+      "shift+f",
     );
+  });
+
+  it("uses the canonical sequence rather than the command as identity", () => {
+    expect(shortcutStorageKey({ keys: "Control+A", command: "\\alpha" })).toBe("ctrl+a");
+    expect(shortcutStorageKey({ keys: "Ctrl+A", command: "\\beta" })).toBe("ctrl+a");
   });
 });

@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   extractMathContent,
   findMathRegionAt,
+  findMathRegionAtForEdit,
   hasUnclosedDisplayMath,
   hasUnclosedInlineMathBefore,
   isInMath,
+  MAX_DOC_LENGTH,
   resolveSnippetInsertPosition,
   shouldAutoWrapSnippet,
 } from "./math";
@@ -15,6 +17,13 @@ describe("findMathRegionAt", () => {
     const region = findMathRegionAt(doc, 7);
     expect(region).toEqual({ from: 5, to: 10, kind: "inline" });
     expect(extractMathContent(doc, region!)).toBe("x+y");
+  });
+
+  it("treats delimiter-exterior boundaries as outside math", () => {
+    expect(findMathRegionAt("$x$", 0)).toBeNull();
+    expect(findMathRegionAt("$x$", 3)).toBeNull();
+    expect(findMathRegionAt("$x$", 1)?.kind).toBe("inline");
+    expect(findMathRegionAt("$x$", 2)?.kind).toBe("inline");
   });
 
   it("detects display math regions", () => {
@@ -37,6 +46,18 @@ describe("findMathRegionAt", () => {
   it("returns null in plain text after closed display math", () => {
     const doc = "$$\\alpha$$ tail";
     expect(findMathRegionAt(doc, doc.length)).toBeNull();
+  });
+
+  it("ignores math-like text in Markdown protected regions", () => {
+    expect(findMathRegionAt("`$x$`", 3)).toBeNull();
+    expect(findMathRegionAt("---\nformula: $x$\n---", 14)).toBeNull();
+  });
+
+  it("keeps the realtime guard but supports explicit edits in large documents", () => {
+    const doc = `${"a".repeat(MAX_DOC_LENGTH + 1)} $x$`;
+    const offset = doc.length - 2;
+    expect(findMathRegionAt(doc, offset)).toBeNull();
+    expect(findMathRegionAtForEdit(doc, offset)?.kind).toBe("inline");
   });
 });
 
@@ -121,5 +142,9 @@ describe("hasUnclosedDisplayMath", () => {
 
   it("returns false when closed inline math precedes plain text", () => {
     expect(hasUnclosedDisplayMath("$x$ tail")).toBe(false);
+  });
+
+  it("ignores display delimiters inside fenced code", () => {
+    expect(hasUnclosedDisplayMath("```latex\n$$\n```")).toBe(false);
   });
 });

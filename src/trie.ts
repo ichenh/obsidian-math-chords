@@ -59,5 +59,5 @@ export function listHints(node: TrieNode): HintEntry[] {
 }
 
 export function shortcutStorageKey(shortcut: Shortcut): string {
-  return `${shortcut.keys.trim().toLowerCase()}::${shortcut.command}`;
+  return parseKeysField(shortcut.keys).join(" ");
 }

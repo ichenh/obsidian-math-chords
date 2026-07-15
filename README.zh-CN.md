@@ -2,21 +2,25 @@
 
 [English](README.md)
 
-[![Version](https://img.shields.io/badge/version-0.2.2-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
-**Math Chords** 为 Obsidian 提供 **LaTeX 公式快捷键**：按 leader 键（默认 `Alt+M`），再按短序列即可插入分数、希腊字母、积分等片段，无需手打 `\frac`、`\alpha` 等命令。还支持可选的 **行内公式实时预览**、**公式内大括号跳转** 和 **行间公式环境包裹**。
+**Math Chords** 是一个用于在 Obsidian Markdown 笔记中编写和规范化 LaTeX 数学内容的插件。它主要处理两类实际问题：一是常用 LaTeX 结构需要逐字符输入；二是从 AI 工具、论文或 LaTeX 文档复制的内容常使用 `\(...\)`、`\[...\]`，与 Obsidian 通常使用的 `$...$`、`$$...$$` 定界符不一致。
+
+直接输入公式时，可先按可配置的 leader 键（默认 `Alt+M`），再按短序列插入分数、希腊字母、积分等结构。处理外部文本时，可通过命令转换选区或当前文件中的 LaTeX 定界符，也可选择在粘贴时自动转换。
+
+转换过程只替换定界符，不改写公式内容、空白或换行，并排除不适合文本转换的 Markdown 区域。插件另外提供可选的行内预览、公式内大括号跳转和行间公式环境包裹。
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.2.2。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.3.0。** 见 [CHANGELOG](CHANGELOG.md)。
 
 **需要 Obsidian 1.5.0+。** 以键盘操作为主，建议在桌面端使用。
 
 > **社区插件市场说明：** Obsidian 社区插件列表里的插件简介来自 `manifest.json`，**固定为英文**（浏览页的按钮、标签等会随软件语言变化）。安装后，**设置 → Math Chords** 及命令名称会跟随 Obsidian 显示语言（含简体中文、繁体中文等）。
 >
-> 市场英文简介大意：**用快捷键输入 LaTeX 公式**（分数、希腊字母、积分等 100+ 片段；行内预览、行间环境包裹；设置界面支持 70+ 种语言）。
+> 市场英文简介大意：在 Obsidian 中输入并规范化 LaTeX 数学内容，支持 leader 快捷片段、受保护区域感知的定界符转换、预览、大括号跳转和行间环境。
 
 ![Math Chords 演示：leader 快捷键插入 LaTeX 并实时预览](docs/demo.gif)
 
@@ -30,6 +34,7 @@
 - [快捷键参考](#快捷键参考)
 - [行间公式环境包裹](#行间公式环境包裹)
 - [配置](#配置)
+- [LaTeX 定界符转换](#latex-定界符转换)
 - [设置](#设置)
 - [更新快捷键](#更新快捷键)
 - [项目结构](#项目结构)
@@ -43,13 +48,14 @@
 
 | 功能 | 说明 |
 | :--- | :--- |
-| **快捷键** | 按可配置的 leader 键，再按按键序列插入 LaTeX 片段。 |
+| **结构化输入** | 按可配置的 leader 键，再按按键序列插入常用 LaTeX 结构和符号。 |
 | **光标占位符** | 命令模板中的 `$$` 标记光标（或选区）位置，例如 `\frac{$$}{}`。 |
 | **自动 `$…$` 包裹** | 可选：在公式区域外插入时，自动用行内公式定界符包裹。 |
 | **行内实时预览** | 光标位于 `$…$` 内时，在公式上方用 Obsidian 原生 **MathJax** 渲染预览（默认开启）。 |
 | **公式内大括号跳转** | 在 `$…$` / `$$…$$` 内用可配置按键在 `{…}` 参数位之间跳转（默认 `Alt+→` / `Alt+←`；默认开启）。 |
 | **行间公式环境** | 通过模糊搜索选择 `\begin{…}…\end{…}` 包裹块内容；必要时先插入 `$$…$$`。 |
-| **内置数学命令** | 插入行内/行间公式；可选的智能切换在已有公式块内取消包裹或互相转换（见设置项 **Smart math toggle**）。 |
+| **内置数学命令** | 包裹选中文本、插入行内/行间公式，或移除同类型包裹；可选的智能切换允许在行内和行间公式之间转换。 |
+| **LaTeX 定界符转换** | 将选区、当前文件或粘贴文本中的 `\(...\)` / `\[...\]` 转为 `$...$` / `$$...$$`，同时排除受保护的 Markdown 区域。 |
 | **YAML + 设置界面** | 编辑 `shortcuts.yaml` 或使用设置页；修改后立即重建快捷键查找树。 |
 | **界面本地化** | 11 种主流语言内置于 `main.js`（含简/繁中文）。其余 61 种 [Obsidian 官方语言](https://github.com/obsidianmd/obsidian-translations#existing-languages) 需在插件目录放置 `locales-extras.json`（社区插件安装不会自动下载该文件）。 |
 | **非破坏性合并** | 加载时合并缺失的默认快捷键，不会覆盖你的自定义绑定。 |
@@ -100,8 +106,8 @@ npm run build
 3. 继续按快捷键，例如 **`F`** → `\frac{}{}`，光标落在分子处。
 4. 希腊字母：**`G` `A`** → `\alpha`（leader 之后的按键）。
 5. 行间公式：**`D`** → `$$\n\n$$`。
-6. 智能切换（默认开启）：在公式块内，行内/行间命令会取消包裹或互相转换，而非重复插入；可在设置 **Smart math toggle** 中关闭。
-7. 可选：在 **设置 → 快捷键** 中为 **Insert inline math**、**Insert display math**、**Wrap display math with environment** 绑定热键（插件不注册默认热键）。
+6. 仅有光标且位于公式块内时，同类型命令始终移除现有包裹；**Smart math toggle**（默认开启）另外允许用另一种命令在行内与行间公式之间转换。非空选区始终由所调用的命令包裹。
+7. 选中使用 LaTeX 定界符的公式，运行 **Convert LaTeX Delimiters in Selection**；默认快捷键为 Windows/Linux 的 `Ctrl+Alt+M` 或 macOS 的 `Cmd+Alt+M`。也可运行当前文件转换命令。
 8. 按 leader 之后的 **`Shift+E`**（默认），或运行命令 **Wrap display math with environment** 选择环境；若光标不在 `$$…$$` 内，会先插入行间公式块。
 
 > **说明：** 下文快捷键表只列出 **leader 之后** 的按键。默认 leader 为 `Alt+M`。
@@ -219,8 +225,17 @@ npm run build
 
 1. 按 leader 之后配置的快捷键（默认 **`Shift+E`**），或在命令面板运行 **Wrap display math with environment**。
 2. 从模糊搜索列表中选择环境。
-3. 插件会包裹**整个块内容**（不仅是选区），例如  
-   `$$\alpha+\beta$$` → `$$\begin{aligned}\alpha+\beta\end{aligned}$$`
+3. 插件会包裹**整个块内容**（不仅是选区），并让定界符和环境标记各自位于独立行。
+
+   ```latex
+   $$
+   \begin{aligned}
+   \alpha+\beta
+   \end{aligned}
+   $$
+   ```
+
+需要创建行间公式时，创建公式块与添加环境会作为一次编辑事务提交，因此一次撤销即可完整回退。取消选择器不会修改笔记。
 
 在 **设置 → Math Chords** 的 **Enable environment wrap**（启用环境包裹）中配置环境与触发按键；也可在 **设置 → 快捷键** 中为上述命令绑定热键。
 
@@ -259,6 +274,20 @@ npm run build
 
 - 按键规范为小写 `修饰键+基键` 顺序：`ctrl` → `alt` → `shift` → `meta`。
 - 字母默认小写，除非显式写 `Shift`（如 `Shift+A`）。
+- 字面量 `+` 可以作为基键。若当前键盘布局需要按 Shift 才能输入某个标点，会优先匹配显式的 `Shift+标点` 绑定；不存在该绑定时再匹配标点本身。
+
+## LaTeX 定界符转换
+
+Math Chords 可以只替换标准 LaTeX 数学定界符，并原样保留公式内容、空白和换行：
+
+- `\(...\)` → `$...$`
+- `\[...\]` → `$$...$$`
+
+对选中文本使用 **Convert LaTeX Delimiters in Selection**，或对当前 Markdown 笔记使用 **Convert LaTeX Delimiters in Current File**。整文件命令完成后会显示转换的行间公式与行内公式数量。每条命令只提交一次编辑事务，因此一次撤销即可回退整个转换。
+
+转换器不会修改 YAML frontmatter、围栏代码块、行内代码、HTML 注释、HTML `<pre>` / `<code>` 块以及已有 `$...$` / `$$...$$` 数学区域中的定界符。已有 Markdown 数学区域按有效定界符规则识别，不会把普通货币文本误判为公式。多个编辑器选区会在同一次事务中处理。
+
+若希望粘贴时也执行相同的上下文感知转换，可开启 **Automatically convert pasted LaTeX math delimiters**；该设置默认关闭。如果其他编辑器扩展已经处理了当前粘贴事件，本插件不会再次接管。
 
 ---
 
@@ -279,17 +308,22 @@ npm run build
 | Next / previous brace keys（下/上一大括号键） | `Alt+→` / `Alt+←` | 大括号跳转快捷键（启用后生效）。 |
 | Leader key（Leader 键） | `Alt+M` | 快捷键前缀；YAML 中 `keys` 为 leader 之后的部分。 |
 | Auto-wrap outside math（公式外自动包裹） | 开 | 非公式区域插入时自动加 `$…$`。 |
-| Smart math toggle（智能公式切换） | 开 | 在已有公式块内，行内/行间命令会取消包裹或转换，而非插入新块。 |
-| Enable environment wrap（启用环境包裹） | 开 | 环境选择器；必要时先插入 `$$…$$`。 |
+| Smart math toggle（智能公式切换） | 开 | 允许用另一种公式命令转换现有公式块；同类型命令始终移除包裹。 |
+| Automatically convert pasted LaTeX math delimiters（自动转换粘贴的 LaTeX 数学定界符） | 关 | 安全转换粘贴文本中的 `\(...\)` / `\[...\]`。 |
+| Enable environment wrap（启用环境包裹） | 开 | 环境选择器；必要时在一次事务中创建并包裹 `$$…$$`。 |
 | Environment wrap keys（环境包裹快捷键） | `Shift+E` | leader 之后触发环境选择器的按键。 |
 | Math environments（数学环境） | 4 个内置 | 可编辑的环境列表。 |
 
-**内置命令**（在 **设置 → 快捷键** 中自行绑定）：**Insert inline math**、**Insert display math**、**Wrap display math with environment**。
+**内置命令**（可在 **设置 → 快捷键** 中绑定或修改）：**Insert inline math**、**Insert display math**、**Wrap display math with environment**、**Convert LaTeX Delimiters in Selection**、**Convert LaTeX Delimiters in Current File**。
 
-- `Insert inline math`：在非公式区域插入 `$…$`；开启 **Smart math toggle** 时，在行内公式内取消包裹，在行间公式内转换为行内。
-- `Insert display math`：在非公式区域插入 `$$…$$`；开启 **Smart math toggle** 时，在行间公式内取消包裹，在行内公式内转换为行间。
+选区转换命令默认使用 Windows/Linux 的 `Ctrl+Alt+M` 或 macOS 的 `Cmd+Alt+M`；其余命令不注册默认快捷键。
 
-**Shortcut management（快捷键管理）：** 搜索、添加、编辑、删除；**Reload** 重新读取 YAML；**Merge defaults** 追加缺失的内置项，不覆盖已有绑定。
+- `Insert inline math`：将非空选区包裹为 `$…$`；仅有光标时，在公式外插入行内公式、在行内公式内移除包裹，或在开启 **Smart math toggle** 后将行间公式转为行内。
+- `Insert display math`：将非空选区包裹为 `$$…$$`；仅有光标时，在公式外插入行间公式、在行间公式内移除包裹，或在开启 **Smart math toggle** 后将行内公式转为行间。
+
+关闭跨类型转换后，在现有公式块内调用另一种公式命令会保持笔记不变并显示提示，不会生成无效的嵌套定界符。行间公式转为行内公式时，会移除包裹旁的一组换行，并将内容中其余换行替换为空格，因为 Markdown 行内公式无法可靠地跨行。
+
+**Shortcut management（快捷键管理）：** 快捷键按分组显示为紧凑、响应式列表。每一行保留易读名称和原始 LaTeX 命令，同时提供动态生成的 MathJax 预览与键帽式按键序列。搜索会匹配按键、名称、命令和分组，且不会重建整个设置页。添加和编辑使用独立对话框，删除前需要确认。**Reload** 重新读取 YAML；**Merge defaults** 追加缺失的内置项，不覆盖已有绑定。公式预览只用于界面展示，不会写入 `shortcuts.yaml`。
 
 ---
 
@@ -319,6 +353,11 @@ math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-
 │   ├── main.ts             # 插件入口
 │   ├── leader.ts           # Leader 快捷键状态机
 │   ├── braceNav.ts         # 公式内大括号跳转
+│   ├── delimiterConverter.ts # 纯函数形式的受保护定界符转换
+│   ├── delimiterEditor.ts  # 定界符转换的 Obsidian 编辑事务
+│   ├── markdownProtection.ts # 共享 Markdown 保护区解析器
+│   ├── mathToggle.ts       # 纯函数形式的行内/行间切换与转换规划
+│   ├── mathEnvPlan.ts      # 纯函数形式的单事务环境包裹规划
 │   ├── defaults.ts         # 默认快捷键目录
 │   ├── config.ts           # YAML 读写与合并
 │   ├── l10n/               # 内置语言包 + 按需加载 extras
@@ -328,13 +367,19 @@ math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-
 ├── shortcuts.yaml          # 随仓库分发的默认快捷键（102 条）
 ├── styles.css              # 预览与设置样式
 ├── manifest.json           # Obsidian 插件清单
-├── esbuild.config.mjs      # 构建配置
-└── scripts/seed-yaml.cjs   # 从 defaults.ts 生成 YAML
+├── scripts/                 # 生成、共享脚本工具与校验逻辑
+├── AGENTS.md                # 统一的 Codex、工程与工作流规范
+├── CONTRIBUTING.zh-CN.md    # 贡献流程与提交要求
+├── .editorconfig            # 编辑器编码与空白规则
+├── .gitattributes           # 换行与二进制文件规则
+└── esbuild.config.mjs       # 构建配置
 ```
 
 ---
 
 ## 开发
+
+开发环境需要 Node.js `20.19+` 或 `22.12+`，具体约束见 `package.json`。
 
 ```bash
 npm install
@@ -342,28 +387,39 @@ npm run dev    # 监听模式构建
 npm run build  # 类型检查 + 生产构建
 npm test       # Vitest 单元测试
 npm run seed   # 从 src/defaults.ts 重写 shortcuts.yaml
+npm run check:shortcuts # 检查 shortcuts.yaml 是否与 src/defaults.ts 一致
 npm run seed:locales  # 从 scripts/locale-catalog.json 生成内置 TS 语言包与 locales-extras.json
+npm run check:locales # 检查语言键结构及全部生成物
+npm run check:release # 检查元数据、Changelog 与 README 版本引用
+npm run check  # 完整执行构建、测试、生成物与元数据检查
 ```
 
-模块划分与约束见 [`.cursorrules`](.cursorrules)。
+统一的 Codex 指导以及模块、安全、生成和发布规范见 [`AGENTS.md`](AGENTS.md)。
+仓库目前不需要项目级 Codex 运行配置，因此不提供 `.codex/config.toml`。
 
-欢迎提交 Pull Request，提交前请运行 `npm run build` 和 `npm test`。
+欢迎提交 Pull Request。请遵循 [中文贡献指南](CONTRIBUTING.zh-CN.md)，提交前运行
+`npm run check`；涉及编辑器集成的行为还应在 Obsidian 中完成相应手动测试。
+
+未来可能开展的工作及其设计约束记录在[路线图](ROADMAP.zh-CN.md)中。
 
 ### 发布
 
-1. 更新 `manifest.json`、`package.json` 中的 `version`，并在 `versions.json` 中添加映射。
-2. 更新 `CHANGELOG.md`。
-3. 提交后打 tag（不要加 `v` 前缀），例如 `git tag 0.2.0 && git push origin 0.2.0`。
-4. [release 工作流](.github/workflows/release.yml) 会自动构建并附上 `main.js`、`manifest.json`、`styles.css` 和 `locales-extras.json`，并为 `main.js`、`styles.css` 生成 artifact attestations。
+1. 维护者确认发布后，统一更新 `package.json`、`package-lock.json` 和 `manifest.json` 中的版本，并在 `versions.json` 中添加最低 Obsidian 版本映射。
+2. 将 Changelog 的 `Unreleased` 内容转为带日期的发布章节，并在其上方重新建立空的 `Unreleased` 章节；同时更新中英文 README 的版本徽章和当前版本说明。
+3. 运行 `npm run check`，复核发布资产，并完成相关的 Obsidian 应用内验收。
+4. 提交后打精确版本 tag（不要加 `v` 前缀），例如 `git tag 0.3.0 && git push origin 0.3.0`。
+5. [release 工作流](.github/workflows/release.yml) 会重新执行完整检查、构建并附上 `main.js`、`manifest.json`、`styles.css` 和 `locales-extras.json`，同时为全部资产生成 artifact attestations；不会删除或重建已有 Release。
 
 ---
 
 ## AI 辅助说明
 
-本仓库在人工审阅下使用 **AI 辅助编程工具**（Cursor IDE 与大语言模型）进行开发与维护。
+本仓库曾使用 Cursor 和大语言模型等 **AI 辅助开发工具**，目前主要使用 OpenAI Codex 进行维护。这些工具用于部分草拟、重构、测试设计、文档整理和一致性检查；功能范围、架构取舍、合入内容与发布决定仍由维护者负责。
 
-- 完整说明：[AI-ASSISTANCE.md](AI-ASSISTANCE.md)
-- 贡献者若使用 AI，请在 PR 中说明，并审阅全部输出。
+- AI 辅助不能替代代码审阅、自动化检查及必要的 Obsidian 手动测试。
+- 贡献者必须理解并审阅所提交的每项修改，并对正确性、许可证兼容性、内容来源及私密信息保护负责。
+- 若 AI 工具对修改产生实质影响，应在 Pull Request 中如实说明。
+- 使用范围、验证方式和贡献要求详见 [AI 辅助开发说明](AI-ASSISTANCE.zh-CN.md)。
 
 ---
 

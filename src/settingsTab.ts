@@ -1,9 +1,22 @@
-import { App, Modal, Notice, PluginSettingTab, Setting, setIcon } from "obsidian";
-import { normalizeCommand } from "./config";
+import {
+  App,
+  finishRenderMath,
+  loadMathJax,
+  Modal,
+  Notice,
+  PluginSettingTab,
+  renderMath,
+  Setting,
+  setIcon,
+  TextComponent,
+} from "obsidian";
 import { runWithNotice } from "./errors";
+import { normalizeCommand, validateMathEnvironment } from "./inputValidation";
+import { isValidKeySequence } from "./keys";
 import { t } from "./l10n/locale";
-import { validateMathEnvironment } from "./mathEnv";
 import type ObsidianMathChordsPlugin from "./main";
+import { normalizeChordSetting, normalizeSequenceSetting } from "./settings";
+import { buildShortcutPreview, shortcutMatchesSearch } from "./shortcutPresentation";
 import type { MathEnvironment, Shortcut } from "./types";
 import { shortcutStorageKey } from "./trie";
 
@@ -16,9 +29,198 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
+  private configureKeyInput(
+    text: TextComponent,
+    currentValue: string,
+    fallback: string,
+    normalize: (raw: unknown, fallback: string) => string,
+    update: (value: string) => void,
+  ): void {
+    let value = currentValue;
+    text.setValue(value).onChange((raw) => {
+      value = raw.trim();
+    });
+    text.inputEl.addEventListener("blur", () => {
+      const normalized = normalize(value || fallback, fallback);
+      value = normalized;
+      update(normalized);
+      this.plugin.refreshInteractiveState();
+      if (text.getValue() !== normalized) text.setValue(normalized);
+      void runWithNotice(
+        () => this.plugin.saveSettings(),
+        t("noticeCouldNotSaveSettings"),
+      );
+    });
+  }
+
+  private renderShortcutManager(containerEl: HTMLElement): void {
+    new Setting(containerEl).setName(t("shortcutManagementHeading")).setHeading();
+
+    const managerEl = containerEl.createDiv({ cls: "obsidian-math-chords-shortcuts" });
+    let applyFilter = (): void => undefined;
+
+    const toolbar = new Setting(managerEl)
+      .setName(t("searchName"))
+      .setDesc(t("shortcutManagementDesc"))
+      .addText((text) => {
+        text
+          .setPlaceholder(t("searchPlaceholder"))
+          .setValue(this.search)
+          .onChange((value) => {
+            this.search = value;
+            applyFilter();
+          });
+        text.inputEl.addClass("obsidian-math-chords-search-input");
+      })
+      .addButton((button) =>
+        button
+          .setButtonText(t("addButton"))
+          .setCta()
+          .onClick(() => {
+            new ShortcutEditorModal(this.app, null, (entry) => {
+              if (!entry) return;
+              void runWithNotice(async () => {
+                const next = new Map(this.plugin.shortcuts);
+                next.set(shortcutStorageKey(entry), entry);
+                await this.plugin.persistShortcuts(next);
+                this.display();
+              }, t("noticeCouldNotSaveYaml"));
+            }).open();
+          }),
+      );
+    toolbar.settingEl.addClass("obsidian-math-chords-shortcut-toolbar");
+
+    const summaryEl = managerEl.createDiv({ cls: "obsidian-math-chords-shortcut-summary" });
+    summaryEl.setAttr("aria-live", "polite");
+
+    const groupsEl = managerEl.createDiv({ cls: "obsidian-math-chords-shortcut-groups" });
+    const emptyEl = managerEl.createDiv({
+      cls: "obsidian-math-chords-empty-state is-hidden",
+      text: t("noMatchingShortcuts"),
+    });
+    const previewRequests: ShortcutPreviewRequest[] = [];
+
+    const grouped = new Map<string, Array<[string, Shortcut]>>();
+    for (const item of this.plugin.shortcuts.entries()) {
+      const group = item[1].group?.trim() || t("ungroupedGroup");
+      const entries = grouped.get(group) ?? [];
+      entries.push(item);
+      grouped.set(group, entries);
+    }
+
+    interface RenderedShortcut {
+      entry: Shortcut;
+      rowEl: HTMLElement;
+    }
+    interface RenderedGroup {
+      sectionEl: HTMLElement;
+      countEl: HTMLElement;
+      rows: RenderedShortcut[];
+    }
+    const renderedGroups: RenderedGroup[] = [];
+
+    for (const [groupName, entries] of grouped) {
+      const sectionEl = groupsEl.createEl("section", {
+        cls: "obsidian-math-chords-shortcut-group",
+      });
+      const groupHeader = sectionEl.createDiv({ cls: "obsidian-math-chords-group-header" });
+      groupHeader.createEl("h4", {
+        cls: "obsidian-math-chords-group-title",
+        text: groupName,
+      });
+      const countEl = groupHeader.createSpan({ cls: "obsidian-math-chords-group-count" });
+      const listEl = sectionEl.createDiv({ cls: "obsidian-math-chords-shortcut-list" });
+      listEl.setAttr("role", "list");
+
+      const rows: RenderedShortcut[] = [];
+      for (const [key, entry] of entries) {
+        const rowEl = listEl.createDiv({ cls: "obsidian-math-chords-shortcut-row" });
+        rowEl.setAttr("role", "listitem");
+
+        const identityEl = rowEl.createDiv({ cls: "obsidian-math-chords-shortcut-identity" });
+        const previewEl = identityEl.createDiv({ cls: "obsidian-math-chords-shortcut-preview" });
+        previewEl.setAttr("aria-hidden", "true");
+        previewEl.createSpan({
+          cls: "obsidian-math-chords-shortcut-preview-loading",
+          text: "…",
+        });
+        previewRequests.push({ containerEl: previewEl, command: entry.command });
+
+        const textEl = identityEl.createDiv({ cls: "obsidian-math-chords-shortcut-text" });
+        textEl.createDiv({
+          cls: "obsidian-math-chords-shortcut-name",
+          text: entry.name?.trim() || t("unnamedShortcut"),
+        });
+        textEl.createEl("code", {
+          cls: "obsidian-math-chords-shortcut-command",
+          text: entry.command,
+        });
+
+        const keysEl = rowEl.createDiv({ cls: "obsidian-math-chords-shortcut-keys" });
+        for (const keyPart of entry.keys.trim().split(/\s+/u)) {
+          keysEl.createEl("kbd", { text: keyPart });
+        }
+
+        const actionsEl = rowEl.createDiv({ cls: "obsidian-math-chords-row-actions" });
+        createIconButton(actionsEl, "pencil", t("editButton"), () => {
+          new ShortcutEditorModal(this.app, entry, (updated) => {
+            if (!updated) return;
+            void runWithNotice(async () => {
+              const next = new Map(this.plugin.shortcuts);
+              if (key !== shortcutStorageKey(updated)) next.delete(key);
+              next.set(shortcutStorageKey(updated), updated);
+              await this.plugin.persistShortcuts(next);
+              this.display();
+            }, t("noticeCouldNotSaveYaml"));
+          }).open();
+        });
+        createIconButton(actionsEl, "trash-2", t("deleteButton"), () => {
+          new ConfirmDeleteModal(
+            this.app,
+            t("deleteShortcutHeading"),
+            t("deleteShortcutDesc", entry.name?.trim() || entry.keys),
+            () => {
+              void runWithNotice(async () => {
+                const next = new Map(this.plugin.shortcuts);
+                next.delete(key);
+                await this.plugin.persistShortcuts(next);
+                this.display();
+              }, t("noticeCouldNotSaveYaml"));
+            },
+          ).open();
+        }, true);
+        rows.push({ entry, rowEl });
+      }
+      renderedGroups.push({ sectionEl, countEl, rows });
+    }
+
+    applyFilter = () => {
+      let visibleTotal = 0;
+      for (const group of renderedGroups) {
+        let visibleInGroup = 0;
+        for (const { entry, rowEl } of group.rows) {
+          const visible = shortcutMatchesSearch(entry, this.search);
+          rowEl.toggleClass("is-hidden", !visible);
+          if (visible) visibleInGroup++;
+        }
+        group.sectionEl.toggleClass("is-hidden", visibleInGroup === 0);
+        group.countEl.setText(String(visibleInGroup));
+        visibleTotal += visibleInGroup;
+      }
+
+      const total = this.plugin.shortcuts.size;
+      summaryEl.setText(t("shortcutCount", String(visibleTotal), String(total)));
+      emptyEl.toggleClass("is-hidden", visibleTotal !== 0);
+    };
+
+    applyFilter();
+    void renderShortcutPreviews(previewRequests, managerEl);
+  }
+
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
+    containerEl.addClass("obsidian-math-chords-settings");
 
     containerEl.createEl("p", {
       cls: "obsidian-math-chords-intro",
@@ -31,6 +233,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.enabled).onChange(async (value) => {
           this.plugin.settings.enabled = value;
+          this.plugin.refreshInteractiveState();
           await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
         }),
       );
@@ -41,6 +244,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.showHintPopup).onChange(async (value) => {
           this.plugin.settings.showHintPopup = value;
+          this.plugin.refreshInteractiveState();
           await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
         }),
       );
@@ -51,6 +255,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.showInlinePreview).onChange(async (value) => {
           this.plugin.settings.showInlinePreview = value;
+          this.plugin.refreshInteractiveState();
           await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
         }),
       );
@@ -74,24 +279,26 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         .setName(t("placeholderNavNextName"))
         .setDesc(t("placeholderNavNextDesc"))
         .addText((text) =>
-          text
-            .setValue(this.plugin.settings.mathBraceNavNextKey)
-            .onChange(async (value) => {
-              this.plugin.settings.mathBraceNavNextKey = value.trim() || "Alt+ArrowRight";
-              await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
-            }),
+          this.configureKeyInput(
+            text,
+            this.plugin.settings.mathBraceNavNextKey,
+            "Alt+ArrowRight",
+            normalizeChordSetting,
+            (value) => (this.plugin.settings.mathBraceNavNextKey = value),
+          ),
         );
 
       new Setting(nested)
         .setName(t("placeholderNavPrevName"))
         .setDesc(t("placeholderNavPrevDesc"))
         .addText((text) =>
-          text
-            .setValue(this.plugin.settings.mathBraceNavPrevKey)
-            .onChange(async (value) => {
-              this.plugin.settings.mathBraceNavPrevKey = value.trim() || "Alt+ArrowLeft";
-              await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
-            }),
+          this.configureKeyInput(
+            text,
+            this.plugin.settings.mathBraceNavPrevKey,
+            "Alt+ArrowLeft",
+            normalizeChordSetting,
+            (value) => (this.plugin.settings.mathBraceNavPrevKey = value),
+          ),
         );
     }
 
@@ -99,10 +306,13 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       .setName(t("leaderKeyName"))
       .setDesc(t("leaderKeyDesc"))
       .addText((text) =>
-        text.setValue(this.plugin.settings.leaderKey).onChange(async (value) => {
-          this.plugin.settings.leaderKey = value.trim() || "Alt+M";
-          await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
-        }),
+        this.configureKeyInput(
+          text,
+          this.plugin.settings.leaderKey,
+          "Alt+M",
+          normalizeChordSetting,
+          (value) => (this.plugin.settings.leaderKey = value),
+        ),
       );
 
     new Setting(containerEl)
@@ -123,6 +333,18 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
           this.plugin.settings.smartMathToggle = value;
           await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
         }),
+      );
+
+    new Setting(containerEl)
+      .setName(t("autoConvertPasteName"))
+      .setDesc(t("autoConvertPasteDesc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.autoConvertPastedLatexDelimiters)
+          .onChange(async (value) => {
+            this.plugin.settings.autoConvertPastedLatexDelimiters = value;
+            await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
+          }),
       );
 
     new Setting(containerEl)
@@ -159,6 +381,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.mathEnvWrapEnabled).onChange(async (value) => {
           this.plugin.settings.mathEnvWrapEnabled = value;
+          this.plugin.refreshInteractiveState();
           await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
         }),
       );
@@ -167,10 +390,13 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       .setName(t("mathEnvWrapKeysName"))
       .setDesc(t("mathEnvWrapKeysDesc"))
       .addText((text) =>
-        text.setValue(this.plugin.settings.mathEnvWrapKeys).onChange(async (value) => {
-          this.plugin.settings.mathEnvWrapKeys = value.trim() || "Shift+E";
-          await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
-        }),
+        this.configureKeyInput(
+          text,
+          this.plugin.settings.mathEnvWrapKeys,
+          "Shift+E",
+          normalizeSequenceSetting,
+          (value) => (this.plugin.settings.mathEnvWrapKeys = value),
+        ),
       );
 
     new Setting(containerEl)
@@ -188,12 +414,29 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         }),
       );
 
-    const envTable = containerEl.createEl("table", { cls: "obsidian-math-chords-table" });
+    const envTableWrap = containerEl.createDiv({ cls: "obsidian-math-chords-table-wrap" });
+    const envTable = envTableWrap.createEl("table", {
+      cls: "obsidian-math-chords-table obsidian-math-chords-environment-table",
+    });
+    const envColumns = envTable.createEl("colgroup");
+    for (const columnClass of [
+      "obsidian-math-chords-env-col-order",
+      "obsidian-math-chords-env-col-name",
+      "obsidian-math-chords-env-col-code",
+      "obsidian-math-chords-env-col-code",
+      "obsidian-math-chords-env-col-actions",
+    ]) {
+      envColumns.createEl("col", { cls: columnClass });
+    }
     const envHeader = envTable.createEl("thead").createEl("tr");
     envHeader.createEl("th", { cls: "obsidian-math-chords-drag-header", text: t("tableOrder") });
-    for (const label of [t("tableName"), t("tableBegin"), t("tableEnd"), t("tableActions")]) {
-      envHeader.createEl("th", { text: label });
-    }
+    envHeader.createEl("th", { text: t("tableName") });
+    envHeader.createEl("th", { text: t("tableBegin") });
+    envHeader.createEl("th", { text: t("tableEnd") });
+    envHeader.createEl("th", {
+      cls: "obsidian-math-chords-actions-header",
+      text: t("tableActions"),
+    });
 
     const envBody = envTable.createEl("tbody");
     for (let index = 0; index < this.plugin.settings.mathEnvironments.length; index++) {
@@ -204,12 +447,20 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       handle.setAttr("draggable", "true");
       handle.setAttr("aria-label", t("dragToReorder"));
       setIcon(handle, "grip-vertical");
-      row.createEl("td", { text: entry.name });
-      row.createEl("td", { text: entry.begin });
-      row.createEl("td", { text: entry.end });
+      row.createEl("td", { cls: "obsidian-math-chords-env-name", text: entry.name });
+      row.createEl("td", { cls: "obsidian-math-chords-env-code" }).createEl("code", {
+        text: entry.begin,
+      });
+      row.createEl("td", { cls: "obsidian-math-chords-env-code" }).createEl("code", {
+        text: entry.end,
+      });
 
-      const actions = row.createEl("td");
-      actions.createEl("button", { text: t("editButton"), cls: "mod-small" }).addEventListener("click", () => {
+      const actionsCell = row.createEl("td", {
+        cls: "obsidian-math-chords-actions-cell",
+      });
+      const actions = actionsCell.createDiv({ cls: "obsidian-math-chords-row-actions" });
+
+      createIconButton(actions, "pencil", t("editButton"), () => {
         new MathEnvironmentEditorModal(this.app, entry, (updated) => {
           if (!updated) return;
           void runWithNotice(async () => {
@@ -220,13 +471,20 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         }).open();
       });
 
-      actions.createEl("button", { text: t("deleteButton"), cls: "mod-small" }).addEventListener("click", () => {
-        void runWithNotice(async () => {
-          this.plugin.settings.mathEnvironments.splice(index, 1);
-          await this.plugin.saveSettings();
-          this.display();
-        }, t("noticeCouldNotSaveSettings"));
-      });
+      createIconButton(actions, "trash-2", t("deleteButton"), () => {
+        new ConfirmDeleteModal(
+          this.app,
+          t("deleteMathEnvHeading"),
+          t("deleteMathEnvDesc", entry.name),
+          () => {
+            void runWithNotice(async () => {
+              this.plugin.settings.mathEnvironments.splice(index, 1);
+              await this.plugin.saveSettings();
+              this.display();
+            }, t("noticeCouldNotSaveSettings"));
+          },
+        ).open();
+      }, true);
     }
 
     attachTableRowDragReorder(envBody, (from, to) => {
@@ -239,79 +497,85 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       }, t("noticeCouldNotSaveSettings"));
     });
 
-    new Setting(containerEl).setName(t("shortcutManagementHeading")).setHeading();
-
-    new Setting(containerEl)
-      .setName(t("searchName"))
-      .addText((text) =>
-        text
-          .setPlaceholder(t("searchPlaceholder"))
-          .setValue(this.search)
-          .onChange((value) => {
-            this.search = value;
-            this.display();
-          }),
-      )
-      .addButton((button) =>
-        button.setButtonText(t("addButton")).onClick(() => {
-          new ShortcutEditorModal(this.app, null, (entry) => {
-            if (!entry) return;
-            void runWithNotice(async () => {
-              this.plugin.shortcuts.set(shortcutStorageKey(entry), entry);
-              await this.plugin.persistShortcuts();
-              this.display();
-            }, t("noticeCouldNotSaveYaml"));
-          }).open();
-        }),
-      );
-
-    const table = containerEl.createEl("table", { cls: "obsidian-math-chords-table" });
-    const header = table.createEl("thead").createEl("tr");
-    for (const label of [
-      t("tableKeys"),
-      t("tableCommand"),
-      t("tableName"),
-      t("tableGroup"),
-      t("tableActions"),
-    ]) {
-      header.createEl("th", { text: label });
-    }
-
-    const tbody = table.createEl("tbody");
-    const query = this.search.trim().toLowerCase();
-
-    for (const [key, entry] of this.plugin.shortcuts.entries()) {
-      const haystack = `${entry.keys} ${entry.command} ${entry.name ?? ""} ${entry.group ?? ""}`.toLowerCase();
-      if (query && !haystack.includes(query)) continue;
-
-      const row = tbody.createEl("tr");
-      row.createEl("td", { text: entry.keys });
-      row.createEl("td", { text: entry.command });
-      row.createEl("td", { text: entry.name ?? "" });
-      row.createEl("td", { text: entry.group ?? "" });
-
-      const actions = row.createEl("td");
-      actions.createEl("button", { text: t("editButton"), cls: "mod-small" }).addEventListener("click", () => {
-        new ShortcutEditorModal(this.app, entry, (updated) => {
-          if (!updated) return;
-          if (key !== shortcutStorageKey(updated)) this.plugin.shortcuts.delete(key);
-          void runWithNotice(async () => {
-            this.plugin.shortcuts.set(shortcutStorageKey(updated), updated);
-            await this.plugin.persistShortcuts();
-            this.display();
-          }, t("noticeCouldNotSaveYaml"));
-        }).open();
-      });
-
-      actions.createEl("button", { text: t("deleteButton"), cls: "mod-small" }).addEventListener("click", () => {
-        void runWithNotice(async () => {
-          this.plugin.shortcuts.delete(key);
-          await this.plugin.persistShortcuts();
-          this.display();
-        }, t("noticeCouldNotSaveYaml"));
-      });
-    }
+    this.renderShortcutManager(containerEl);
   }
+}
+
+interface ShortcutPreviewRequest {
+  containerEl: HTMLElement;
+  command: string;
+}
+
+async function renderShortcutPreviews(
+  requests: ShortcutPreviewRequest[],
+  ownerEl: HTMLElement,
+): Promise<void> {
+  try {
+    await loadMathJax();
+  } catch {
+    if (!ownerEl.parentElement) return;
+    for (const { containerEl } of requests) {
+      if (!containerEl.parentElement) continue;
+      containerEl.empty();
+      containerEl.createSpan({ text: "—" });
+    }
+    return;
+  }
+
+  // display() may have rebuilt the settings tab while MathJax was loading.
+  // Never populate preview nodes that belong to the discarded view.
+  if (!ownerEl.parentElement) return;
+
+  for (const { containerEl, command } of requests) {
+    if (!containerEl.parentElement) continue;
+    containerEl.empty();
+    renderShortcutPreview(containerEl, command);
+  }
+
+  try {
+    await finishRenderMath();
+  } catch {
+    // Names and LaTeX source remain visible even if stylesheet flushing fails.
+  }
+}
+
+function renderShortcutPreview(containerEl: HTMLElement, command: string): void {
+  const preview = buildShortcutPreview(command);
+  if (preview.fallback) {
+    containerEl.createEl("code", { text: preview.fallback });
+    return;
+  }
+  if (!preview.latex) {
+    containerEl.createSpan({ text: "—" });
+    return;
+  }
+
+  try {
+    const mathEl = renderMath(preview.latex, false);
+    mathEl.addClass("obsidian-math-chords-shortcut-preview-math");
+    containerEl.appendChild(mathEl);
+  } catch {
+    containerEl.createSpan({ text: "—" });
+  }
+}
+
+function createIconButton(
+  containerEl: HTMLElement,
+  icon: string,
+  label: string,
+  onClick: () => void,
+  destructive = false,
+): HTMLButtonElement {
+  const button = containerEl.createEl("button", {
+    cls: "clickable-icon obsidian-math-chords-icon-button",
+  });
+  button.type = "button";
+  button.setAttr("aria-label", label);
+  button.setAttr("title", label);
+  button.toggleClass("is-destructive", destructive);
+  setIcon(button, icon);
+  button.addEventListener("click", onClick);
+  return button;
 }
 
 function attachTableRowDragReorder(
@@ -354,6 +618,42 @@ function attachTableRowDragReorder(
       onReorder(dragFrom, index);
     });
   });
+}
+
+class ConfirmDeleteModal extends Modal {
+  constructor(
+    app: App,
+    private readonly heading: string,
+    private readonly description: string,
+    private readonly onConfirm: () => void,
+  ) {
+    super(app);
+  }
+
+  onOpen(): void {
+    const { contentEl } = this;
+    contentEl.empty();
+    new Setting(contentEl).setName(this.heading).setHeading();
+    contentEl.createEl("p", {
+      cls: "obsidian-math-chords-confirm-description",
+      text: this.description,
+    });
+    new Setting(contentEl)
+      .addButton((button) => button.setButtonText(t("cancelButton")).onClick(() => this.close()))
+      .addButton((button) =>
+        button
+          .setButtonText(t("deleteButton"))
+          .setWarning()
+          .onClick(() => {
+            this.close();
+            this.onConfirm();
+          }),
+      );
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
+  }
 }
 
 class ShortcutEditorModal extends Modal {
@@ -415,6 +715,10 @@ class ShortcutEditorModal extends Modal {
           .onClick(() => {
             if (!this.entry.keys.trim() || !this.entry.command.trim()) {
               new Notice(t("noticeKeysAndCommandRequired"));
+              return;
+            }
+            if (!isValidKeySequence(this.entry.keys)) {
+              new Notice(t("noticeInvalidKeySequence"));
               return;
             }
             this.entry.command = normalizeCommand(this.entry.command);

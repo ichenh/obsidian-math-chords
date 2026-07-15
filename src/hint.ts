@@ -22,6 +22,9 @@ export class HintPopup {
     leaderKey: string,
     pending?: Shortcut | null,
   ): void {
+    if (this.rootEl.ownerDocument !== view.dom.ownerDocument) {
+      view.dom.ownerDocument.body.appendChild(this.rootEl);
+    }
     this.rootEl.removeClass("is-hidden");
     this.titleEl.setText(formatSequence(sequence, leaderKey));
     this.listEl.empty();
@@ -63,11 +66,24 @@ export class HintPopup {
   private position(view: EditorView): void {
     const head = view.state.selection.main.head;
     const coords = view.coordsAtPos(head);
-    if (!coords) return;
+    if (!coords) {
+      this.hide();
+      return;
+    }
+
+    const ownerWindow = view.dom.ownerDocument.defaultView ?? window;
+    const width = this.rootEl.offsetWidth;
+    const height = this.rootEl.offsetHeight;
+    const left = Math.max(8, Math.min(coords.left, ownerWindow.innerWidth - width - 8));
+    const below = coords.bottom + 8;
+    const top =
+      below + height <= ownerWindow.innerHeight - 8
+        ? below
+        : Math.max(8, coords.top - height - 8);
 
     this.rootEl.setCssProps({
-      "--mc-hint-top": `${coords.bottom + 8}px`,
-      "--mc-hint-left": `${coords.left}px`,
+      "--mc-hint-top": `${top}px`,
+      "--mc-hint-left": `${left}px`,
     });
   }
 }

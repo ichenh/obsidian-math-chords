@@ -1,6 +1,7 @@
 import { parseYaml, stringifyYaml } from "obsidian";
-import { parseKeysField } from "./keys";
+import { isValidKeySequence, parseKeysField } from "./keys";
 import { DEFAULT_SHORTCUTS } from "./defaults";
+import { normalizeCommand } from "./inputValidation";
 import type { Shortcut } from "./types";
 
 export interface LoadShortcutsResult {
@@ -9,7 +10,7 @@ export interface LoadShortcutsResult {
 }
 
 export function shortcutSequenceKey(shortcut: Shortcut): string {
-  return shortcut.keys.trim().toLowerCase();
+  return parseKeysField(shortcut.keys).join(" ");
 }
 
 /** Keep existing entries; append defaults whose key sequence is not yet present. */
@@ -30,26 +31,17 @@ export function mergeShortcuts(
   return { merged: [...existing, ...added], added };
 }
 
-/** Collapse YAML-style doubled backslashes before LaTeX control sequences. */
-export function normalizeCommand(command: string): string {
-  let result = command;
-  let prev: string;
-  do {
-    prev = result;
-    result = result.replace(/\\(\\(?:[a-zA-Z]|[{}[\]().|&%#^_~]))/g, "$1");
-  } while (result !== prev);
-  return result;
-}
-
 export function validateShortcut(raw: unknown): Shortcut | null {
   if (!raw || typeof raw !== "object") return null;
   const entry = raw as Record<string, unknown>;
   if (typeof entry.keys !== "string" || typeof entry.command !== "string") return null;
-  if (parseKeysField(entry.keys).length === 0) return null;
+  if (!isValidKeySequence(entry.keys)) return null;
+  const command = normalizeCommand(entry.command);
+  if (!command.trim()) return null;
 
   return {
     keys: entry.keys.trim(),
-    command: normalizeCommand(entry.command),
+    command,
     name: typeof entry.name === "string" ? entry.name : undefined,
     group: typeof entry.group === "string" ? entry.group : undefined,
   };
@@ -58,8 +50,21 @@ export function validateShortcut(raw: unknown): Shortcut | null {
 export function parseShortcutsYaml(yaml: string): Shortcut[] {
   if (!yaml.trim()) return [];
   const data: unknown = parseYaml(yaml);
-  if (!Array.isArray(data)) return [];
-  return data.map(validateShortcut).filter((shortcut): shortcut is Shortcut => shortcut !== null);
+  if (!Array.isArray(data)) throw new Error("shortcuts.yaml must contain a YAML array.");
+
+  const seen = new Set<string>();
+  return data.map((entry, index) => {
+    const shortcut = validateShortcut(entry);
+    if (!shortcut) {
+      throw new Error(`shortcuts.yaml entry ${index + 1} is invalid.`);
+    }
+    const sequence = shortcutSequenceKey(shortcut);
+    if (seen.has(sequence)) {
+      throw new Error(`shortcuts.yaml entry ${index + 1} duplicates key sequence "${sequence}".`);
+    }
+    seen.add(sequence);
+    return shortcut;
+  });
 }
 
 export function stringifyShortcutsYaml(shortcuts: Shortcut[]): string {
@@ -67,27 +72,23 @@ export function stringifyShortcutsYaml(shortcuts: Shortcut[]): string {
 }
 
 export async function loadShortcuts(
-  read: () => Promise<string>,
+  read: () => Promise<string | null>,
   write: (content: string) => Promise<void>,
 ): Promise<LoadShortcutsResult> {
-  try {
-    const yaml = await read();
+  const yaml = await read();
+  if (yaml !== null) {
     const shortcuts = parseShortcutsYaml(yaml);
-    if (shortcuts.length > 0) {
-      const { merged, added } = mergeShortcuts(shortcuts, DEFAULT_SHORTCUTS);
-      if (added.length > 0) {
-        try {
-          await write(stringifyShortcutsYaml(merged));
-        } catch (error) {
-          console.error("Math Chords: could not merge shortcuts into shortcuts.yaml.", error);
-          return { shortcuts, mergedCount: 0 };
-        }
-        return { shortcuts: merged, mergedCount: added.length };
+    const { merged, added } = mergeShortcuts(shortcuts, DEFAULT_SHORTCUTS);
+    if (added.length > 0) {
+      try {
+        await write(stringifyShortcutsYaml(merged));
+      } catch (error) {
+        console.error("Math Chords: could not merge shortcuts into shortcuts.yaml.", error);
+        return { shortcuts, mergedCount: 0 };
       }
-      return { shortcuts, mergedCount: 0 };
+      return { shortcuts: merged, mergedCount: added.length };
     }
-  } catch {
-    // Missing or unreadable file — seed defaults below.
+    return { shortcuts, mergedCount: 0 };
   }
 
   const seeded = stringifyShortcutsYaml(DEFAULT_SHORTCUTS);

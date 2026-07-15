@@ -5,6 +5,7 @@ import {
   findMathRegionAt,
   hasUnclosedDisplayMath,
   isValidMathRegion,
+  MAX_DOC_LENGTH,
 } from "./math";
 import { logAndNotice } from "./errors";
 import { t } from "./l10n/locale";
@@ -186,8 +187,10 @@ class InlinePreviewLayer {
   private mathFlushTimer: number | null = null;
   private renderGeneration = 0;
   private lastAnchor: DOMRect | null = null;
+  private readonly ownerWindow: Window;
 
   constructor(private readonly ownerDocument: Document) {
+    this.ownerWindow = ownerDocument.defaultView ?? window;
     this.host = ownerDocument.body.createDiv({
       cls: "obsidian-math-chords-inline-preview-host is-hidden",
     });
@@ -197,7 +200,7 @@ class InlinePreviewLayer {
 
   destroy(): void {
     if (this.mathFlushTimer) {
-      window.clearTimeout(this.mathFlushTimer);
+      this.ownerWindow.clearTimeout(this.mathFlushTimer);
       this.mathFlushTimer = null;
     }
     this.host.remove();
@@ -221,7 +224,7 @@ class InlinePreviewLayer {
       this.positionHost();
       this.adaptSize();
     } else {
-      this.appendMath(trimmed);
+      if (!this.tryAppendMath(trimmed)) return;
       this.positionHost();
       this.adaptSize();
       this.scheduleMathFlush(generation, trimmed);
@@ -232,14 +235,22 @@ class InlinePreviewLayer {
     const anchor = this.lastAnchor;
     if (!anchor) return;
 
-    const win = this.ownerDocument.defaultView ?? window;
+    const win = this.ownerWindow;
     const left = Math.max(8, Math.min(anchor.left, win.innerWidth - 80));
-    const bottom = win.innerHeight - anchor.top + PREVIEW_GAP;
 
     this.host.removeClass("is-hidden");
+    const height = this.host.offsetHeight;
+    const fitsAbove = anchor.top >= height + PREVIEW_GAP + 8;
+    const top = Math.max(
+      8,
+      Math.min(anchor.bottom + PREVIEW_GAP, win.innerHeight - height - 8),
+    );
     this.host.setCssProps({
       "--mc-preview-left": `${left}px`,
-      "--mc-preview-bottom": `${bottom}px`,
+      "--mc-preview-top": fitsAbove ? "auto" : `${top}px`,
+      "--mc-preview-bottom": fitsAbove
+        ? `${win.innerHeight - anchor.top + PREVIEW_GAP}px`
+        : "auto",
     });
   }
 
@@ -248,7 +259,7 @@ class InlinePreviewLayer {
     const anchor = this.lastAnchor;
     if (!anchor) return;
 
-    const win = this.ownerDocument.defaultView ?? window;
+    const win = this.ownerWindow;
     const maxWidth = Math.min(win.innerWidth * 0.92, 640);
     const contentWidth = Math.ceil(this.panel.scrollWidth);
     const needsScroll = contentWidth > maxWidth;
@@ -269,9 +280,20 @@ class InlinePreviewLayer {
     this.body.appendChild(mathEl);
   }
 
+  private tryAppendMath(latex: string): boolean {
+    try {
+      this.appendMath(latex);
+      return true;
+    } catch (error) {
+      this.hide();
+      logAndNotice(t("noticeCouldNotRenderPreview"), error);
+      return false;
+    }
+  }
+
   private scheduleMathFlush(generation: number, latex: string): void {
-    if (this.mathFlushTimer) window.clearTimeout(this.mathFlushTimer);
-    this.mathFlushTimer = window.setTimeout(() => {
+    if (this.mathFlushTimer) this.ownerWindow.clearTimeout(this.mathFlushTimer);
+    this.mathFlushTimer = this.ownerWindow.setTimeout(() => {
       this.mathFlushTimer = null;
       void this.flushAndRetryIfEmpty(generation, latex);
     }, 0);
@@ -287,13 +309,15 @@ class InlinePreviewLayer {
     if (generation !== this.renderGeneration || this.host.hasClass("is-hidden")) return;
 
     await new Promise<void>((resolve) => {
-      window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()));
+      this.ownerWindow.requestAnimationFrame(() =>
+        this.ownerWindow.requestAnimationFrame(() => resolve()),
+      );
     });
     if (generation !== this.renderGeneration || this.host.hasClass("is-hidden")) return;
 
     if (!this.isMathVisible()) {
       this.body.empty();
-      this.appendMath(latex);
+      if (!this.tryAppendMath(latex)) return;
       try {
         await finishRenderMath();
       } catch (error) {
@@ -317,14 +341,16 @@ export function createInlineMathPreviewPlugin(ctx: InlinePreviewContext) {
     class {
       private layer: InlinePreviewLayer | null = null;
       private rafId = 0;
+      private readonly ownerWindow: Window;
 
       constructor(private readonly view: EditorView) {
+        this.ownerWindow = view.dom.ownerDocument.defaultView ?? window;
         this.layer = new InlinePreviewLayer(view.dom.ownerDocument);
       }
 
       destroy(): void {
         if (this.rafId) {
-          window.cancelAnimationFrame(this.rafId);
+          this.ownerWindow.cancelAnimationFrame(this.rafId);
           this.rafId = 0;
         }
         this.layer?.destroy();
@@ -349,8 +375,8 @@ export function createInlineMathPreviewPlugin(ctx: InlinePreviewContext) {
           return;
         }
 
-        if (this.rafId) window.cancelAnimationFrame(this.rafId);
-        this.rafId = window.requestAnimationFrame(() => {
+        if (this.rafId) this.ownerWindow.cancelAnimationFrame(this.rafId);
+        this.rafId = this.ownerWindow.requestAnimationFrame(() => {
           this.rafId = 0;
           this.refresh();
         });
@@ -363,6 +389,10 @@ export function createInlineMathPreviewPlugin(ctx: InlinePreviewContext) {
         }
 
         const text = this.view.state.doc.toString();
+        if (text.length > MAX_DOC_LENGTH) {
+          this.layer.hide();
+          return;
+        }
         if (hasUnclosedDisplayMath(text)) {
           this.layer.hide();
           return;

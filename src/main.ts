@@ -10,23 +10,34 @@ import { createInlineMathPreviewPlugin } from "./mathPreview";
 import { ObsidianMathChordsSettingTab } from "./settingsTab";
 import { jumpToBrace } from "./braceNav";
 import { expandSnippet, insertDisplayMath, insertInlineMath } from "./snippet";
+import { planMathToggle } from "./mathToggle";
 import {
-  extractMathContent,
   findMathRegionAt,
   resolveSnippetInsertPosition,
   shouldAutoWrapSnippet,
 } from "./math";
-import { openEnvironmentPicker, wrapDisplayMathWithEnvironment } from "./mathEnv";
-import { logAndNotice, runWithNotice } from "./errors";
+import { openEnvironmentPicker } from "./mathEnv";
+import { runWithNotice } from "./errors";
 import { initLocale, t } from "./l10n/locale";
 import type { Shortcut } from "./types";
+import {
+  convertLatexDelimitersInDocument,
+  convertLatexDelimitersInSelections,
+  pasteConvertedLatexDelimiters,
+} from "./delimiterEditor";
+import { offsetToTextPosition, replaceTextRange } from "./textPosition";
 
 export default class ObsidianMathChordsPlugin extends Plugin {
   settings: ObsidianMathChordsSettings = { ...DEFAULT_SETTINGS };
-  shortcuts = new Map<string, Shortcut>();
-  trie: TrieNode = buildTrie([]);
+  shortcuts = new Map(
+    DEFAULT_SHORTCUTS.map((shortcut) => [shortcutStorageKey(shortcut), shortcut]),
+  );
+  trie: TrieNode = buildTrie(DEFAULT_SHORTCUTS);
 
   private leaderController: LeaderController | null = null;
+  private readonly keydownDocuments = new Map<Document, () => void>();
+  private settingsWriteChain: Promise<void> = Promise.resolve();
+  private shortcutWriteChain: Promise<void> = Promise.resolve();
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -45,16 +56,34 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       onMathEnvWrap: (view) => this.openMathEnvironmentPicker(view),
     });
 
-    this.registerDomEvent(window.activeDocument, "keydown", this.onDocumentKeyDown, true);
+    this.registerKeydownDocument(window.activeDocument);
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      this.registerKeydownDocument(leaf.view.containerEl.ownerDocument);
+    });
+    this.registerEvent(
+      this.app.workspace.on("window-open", (_workspaceWindow, win) => {
+        this.registerKeydownDocument(win.document);
+      }),
+    );
+    this.registerEvent(
+      this.app.workspace.on("window-close", (_workspaceWindow, win) => {
+        this.unregisterKeydownDocument(win.document);
+      }),
+    );
+    this.register(() => {
+      for (const cleanup of this.keydownDocuments.values()) cleanup();
+      this.keydownDocuments.clear();
+    });
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
         this.leaderController?.reset();
       }),
     );
+    this.registerEvent(this.app.workspace.on("editor-paste", this.onEditorPaste));
 
     this.registerEditorExtension([
       createInlineMathPreviewPlugin({
-        isEnabled: () => this.settings.enabled && this.settings.showInlinePreview,
+        isEnabled: () => this.settings.showInlinePreview,
         isActiveView: (view) => this.isActiveEditorView(view),
       }),
     ]);
@@ -75,6 +104,19 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       id: "wrap-display-math-environment",
       name: t("cmdWrapDisplayMathEnv"),
       editorCallback: (editor) => this.openMathEnvironmentPickerForEditor(editor),
+    });
+
+    this.addCommand({
+      id: "convert-latex-delimiters-selection",
+      name: t("cmdConvertLatexDelimitersSelection"),
+      hotkeys: [{ modifiers: ["Mod", "Alt"], key: "M" }],
+      editorCallback: (editor) => this.convertLatexDelimitersInSelection(editor),
+    });
+
+    this.addCommand({
+      id: "convert-latex-delimiters-current-file",
+      name: t("cmdConvertLatexDelimitersCurrentFile"),
+      editorCallback: (editor) => this.convertLatexDelimitersInCurrentFile(editor),
     });
 
     this.addSettingTab(new ObsidianMathChordsSettingTab(this.app, this));
@@ -127,6 +169,30 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     }
   };
 
+  private registerKeydownDocument(document: Document): void {
+    if (this.keydownDocuments.has(document)) return;
+    document.addEventListener("keydown", this.onDocumentKeyDown, true);
+    this.keydownDocuments.set(document, () => {
+      document.removeEventListener("keydown", this.onDocumentKeyDown, true);
+    });
+  }
+
+  private unregisterKeydownDocument(document: Document): void {
+    this.keydownDocuments.get(document)?.();
+    this.keydownDocuments.delete(document);
+  }
+
+  private onEditorPaste = (event: ClipboardEvent, editor: Editor): void => {
+    if (event.defaultPrevented) return;
+    if (!this.settings.autoConvertPastedLatexDelimiters) return;
+    const pastedText = event.clipboardData?.getData("text/plain");
+    if (!pastedText) return;
+
+    if (!pasteConvertedLatexDelimiters(editor, pastedText)) return;
+
+    event.preventDefault();
+  };
+
   private isActiveEditorView(view: EditorView): boolean {
     const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!markdownView) return false;
@@ -144,12 +210,15 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   }
 
   async saveSettings(): Promise<void> {
-    try {
-      await this.saveData(this.settings);
-    } catch (error) {
-      logAndNotice(t("noticeCouldNotSaveSettings"), error);
-      throw error;
-    }
+    const snapshot: ObsidianMathChordsSettings = {
+      ...this.settings,
+      mathEnvironments: this.settings.mathEnvironments.map((environment) => ({
+        ...environment,
+      })),
+    };
+    const write = this.settingsWriteChain.then(() => this.saveData(snapshot));
+    this.settingsWriteChain = write.catch(() => undefined);
+    await write;
   }
 
   yamlPath(): string {
@@ -159,7 +228,10 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   async reloadShortcuts(): Promise<void> {
     const path = this.yamlPath();
     const { shortcuts, mergedCount } = await loadShortcuts(
-      () => this.app.vault.adapter.read(path),
+      async () =>
+        (await this.app.vault.adapter.exists(path))
+          ? this.app.vault.adapter.read(path)
+          : null,
       (content) => this.app.vault.adapter.write(path, content),
     );
 
@@ -178,33 +250,41 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     const { merged, added } = mergeShortcuts(list, DEFAULT_SHORTCUTS);
     if (added.length === 0) return 0;
 
+    await this.enqueueShortcutWrite(merged);
     this.shortcuts = new Map(merged.map((shortcut) => [shortcutStorageKey(shortcut), shortcut]));
-    try {
-      await saveShortcuts(
-        (content) => this.app.vault.adapter.write(this.yamlPath(), content),
-        merged,
-      );
-    } catch (error) {
-      logAndNotice(t("noticeCouldNotSaveYaml"), error);
-      throw error;
-    }
     this.rebuildTrie();
     return added.length;
   }
 
-  async persistShortcuts(): Promise<void> {
-    const list = [...this.shortcuts.values()];
-    try {
-      await saveShortcuts((content) => this.app.vault.adapter.write(this.yamlPath(), content), list);
-    } catch (error) {
-      logAndNotice(t("noticeCouldNotSaveYaml"), error);
-      throw error;
-    }
+  async persistShortcuts(next = this.shortcuts): Promise<void> {
+    const list = [...next.values()];
+    await this.enqueueShortcutWrite(list);
+    this.shortcuts = new Map(next);
     this.rebuildTrie();
   }
 
   rebuildTrie(): void {
     this.trie = buildTrie([...this.shortcuts.values()]);
+  }
+
+  refreshInteractiveState(): void {
+    this.leaderController?.reset();
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      if (!(leaf.view instanceof MarkdownView)) return;
+      this.getEditorView(leaf.view.editor)?.dispatch({});
+    });
+  }
+
+  private async enqueueShortcutWrite(shortcuts: Shortcut[]): Promise<void> {
+    const snapshot = shortcuts.map((shortcut) => ({ ...shortcut }));
+    const write = this.shortcutWriteChain.then(() =>
+      saveShortcuts(
+        (content) => this.app.vault.adapter.write(this.yamlPath(), content),
+        snapshot,
+      ),
+    );
+    this.shortcutWriteChain = write.catch(() => undefined);
+    await write;
   }
 
   private getEditorView(editor: Editor): EditorView | null {
@@ -223,9 +303,8 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   }
 
   insertInlineMath(editor: Editor): void {
-    if (this.toggleMathBlock(editor, "inline")) {
-      return;
-    }
+    const toggle = this.toggleMathBlock(editor, "inline");
+    if (toggle !== "insert") return;
 
     const selection = editor.getSelection();
     const { text, anchor, head } = insertInlineMath(selection);
@@ -239,9 +318,8 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   }
 
   insertDisplayMath(editor: Editor): void {
-    if (this.toggleMathBlock(editor, "display")) {
-      return;
-    }
+    const toggle = this.toggleMathBlock(editor, "display");
+    if (toggle !== "insert") return;
 
     const selection = editor.getSelection();
     const { text, anchor, head } = insertDisplayMath(selection);
@@ -254,43 +332,56 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     );
   }
 
-  private toggleMathBlock(editor: Editor, targetKind: "inline" | "display"): boolean {
-    if (!this.settings.smartMathToggle) return false;
+  private convertLatexDelimitersInSelection(editor: Editor): void {
+    if (convertLatexDelimitersInSelections(editor) === null) {
+      new Notice(t("noticeNoTextSelected"));
+    }
+  }
 
+  private convertLatexDelimitersInCurrentFile(editor: Editor): void {
+    const conversion = convertLatexDelimitersInDocument(editor);
+    new Notice(
+      t(
+        "noticeConvertedLatexDelimiters",
+        String(conversion.displayCount),
+        String(conversion.inlineCount),
+      ),
+    );
+  }
+
+  private toggleMathBlock(
+    editor: Editor,
+    targetKind: "inline" | "display",
+  ): "insert" | "applied" | "blocked" {
     const doc = editor.getValue();
-    const offset = editor.posToOffset(editor.getCursor());
-    const region = findMathRegionAt(doc, offset);
-    if (!region) return false;
-
-    const rawContent = extractMathContent(doc, region);
-    let text = rawContent;
-    let caretOffsetInText = offset - (region.kind === "display" ? region.from + 2 : region.from + 1);
-    if (caretOffsetInText < 0) caretOffsetInText = 0;
-    if (caretOffsetInText > rawContent.length) caretOffsetInText = rawContent.length;
-
-    if (targetKind === "inline" && region.kind === "display") {
-      const hasOuterBlankLine = rawContent.startsWith("\n") && rawContent.endsWith("\n");
-      if (hasOuterBlankLine) {
-        text = rawContent.slice(1, -1);
-        caretOffsetInText = Math.max(0, Math.min(text.length, caretOffsetInText - 1));
-      }
+    const anchor = editor.posToOffset(editor.getCursor("anchor"));
+    const head = editor.posToOffset(editor.getCursor("head"));
+    const plan = planMathToggle(
+      doc,
+      anchor,
+      head,
+      targetKind,
+      this.settings.smartMathToggle,
+    );
+    if (plan.type === "insert") return "insert";
+    if (plan.type === "blocked") {
+      new Notice(t("noticeEnableSmartMathToggle"));
+      return "blocked";
     }
 
-    if (region.kind === targetKind) {
-      editor.replaceRange(text, editor.offsetToPos(region.from), editor.offsetToPos(region.to));
-      const caret = region.from + Math.min(caretOffsetInText, text.length);
-      const pos = editor.offsetToPos(caret);
-      editor.setSelection(pos, pos);
-      return true;
-    }
-
-    const wrapped = targetKind === "display" ? `$$\n${text}\n$$` : `$${text}$`;
-    const caretBase = targetKind === "display" ? region.from + 3 : region.from + 1;
-    editor.replaceRange(wrapped, editor.offsetToPos(region.from), editor.offsetToPos(region.to));
-    const caret = caretBase + Math.min(caretOffsetInText, text.length);
-    const pos = editor.offsetToPos(caret);
-    editor.setSelection(pos, pos);
-    return true;
+    const nextDocument = replaceTextRange(doc, plan.from, plan.to, plan.text);
+    const caret = offsetToTextPosition(nextDocument, plan.caret);
+    editor.transaction({
+      changes: [
+        {
+          from: editor.offsetToPos(plan.from),
+          to: editor.offsetToPos(plan.to),
+          text: plan.text,
+        },
+      ],
+      selection: { from: caret },
+    });
+    return "applied";
   }
 
   private insertShortcut(view: EditorView, shortcut: Shortcut): void {
@@ -345,8 +436,6 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       return;
     }
 
-    openEnvironmentPicker(this.app, editor, this.settings.mathEnvironments, (env, region) => {
-      wrapDisplayMathWithEnvironment(editor, region, env);
-    });
+    openEnvironmentPicker(this.app, editor, this.settings.mathEnvironments);
   }
 }

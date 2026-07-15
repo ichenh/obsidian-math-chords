@@ -1,119 +1,170 @@
 import type { MathRegion } from "./types";
+import {
+  editableRanges,
+  findNonMathProtectedRanges,
+  type TextRange,
+} from "./markdownProtection";
 
 export const MAX_DOC_LENGTH = 100_000;
 
 function isEscaped(text: string, index: number): boolean {
   let slashes = 0;
-  for (let i = index - 1; i >= 0 && text[i] === "\\"; i--) slashes++;
+  for (let i = index - 1; i >= 0 && text[i] === "\\"; i -= 1) slashes += 1;
   return slashes % 2 === 1;
 }
 
-function findDisplayRegion(text: string, offset: number): MathRegion | null {
-  const pairs: Array<{ open: number; close: number }> = [];
-  for (let i = 0; i < text.length - 1; i++) {
-    if (text[i] === "$" && text[i + 1] === "$" && !isEscaped(text, i)) {
-      const open = i;
-      i += 2;
-      while (i < text.length - 1) {
-        if (text[i] === "$" && text[i + 1] === "$" && !isEscaped(text, i)) {
-          pairs.push({ open, close: i + 2 });
-          i += 1;
-          break;
-        }
-        i++;
-      }
-    }
-  }
-
-  for (const pair of pairs) {
-    if (offset >= pair.open && offset <= pair.close) {
-      return { from: pair.open, to: pair.close, kind: "display" };
-    }
-  }
-  return null;
+function isExactDollarRun(text: string, index: number, length: 1 | 2): boolean {
+  if (text.slice(index, index + length) !== "$".repeat(length)) return false;
+  return text[index - 1] !== "$" && text[index + length] !== "$";
 }
 
-function findInlineRegion(text: string, offset: number): MathRegion | null {
-  for (let i = 0; i < text.length; i++) {
-    if (text[i] !== "$" || isEscaped(text, i)) continue;
-    if (i < text.length - 1 && text[i + 1] === "$") {
-      i++;
+function isInlineOpen(text: string, index: number, to: number): boolean {
+  if (!isExactDollarRun(text, index, 1) || isEscaped(text, index)) return false;
+  const next = text[index + 1];
+  return index + 1 < to && next !== undefined && !/\s/.test(next);
+}
+
+function isInlineClose(text: string, index: number): boolean {
+  if (!isExactDollarRun(text, index, 1) || isEscaped(text, index)) return false;
+  const previous = text[index - 1];
+  return previous !== undefined && !/\s/.test(previous);
+}
+
+function findDisplayClose(text: string, from: number, to: number): number {
+  let cursor = from;
+  while ((cursor = text.indexOf("$$", cursor)) >= 0 && cursor + 2 <= to) {
+    if (isExactDollarRun(text, cursor, 2) && !isEscaped(text, cursor)) return cursor;
+    cursor += 2;
+  }
+  return -1;
+}
+
+function findInlineClose(text: string, from: number, to: number): number {
+  for (let cursor = from; cursor < to; cursor += 1) {
+    if (text[cursor] === "\n" || text[cursor] === "\r") return -1;
+    if (text[cursor] === "$" && isInlineClose(text, cursor)) return cursor;
+  }
+  return -1;
+}
+
+function scanMathChunk(text: string, from: number, to: number): MathRegion[] {
+  const regions: MathRegion[] = [];
+  let cursor = from;
+
+  while (cursor < to) {
+    if (
+      cursor + 2 <= to &&
+      isExactDollarRun(text, cursor, 2) &&
+      !isEscaped(text, cursor)
+    ) {
+      const close = findDisplayClose(text, cursor + 2, to);
+      if (close >= 0) {
+        regions.push({ from: cursor, to: close + 2, kind: "display" });
+        cursor = close + 2;
+        continue;
+      }
+      cursor += 2;
       continue;
     }
 
-    const open = i;
-    i++;
-    while (i < text.length) {
-      if (text[i] === "$" && !isEscaped(text, i)) {
-        if (i < text.length - 1 && text[i + 1] === "$") break;
-        const close = i + 1;
-        if (offset >= open && offset <= close) {
-          return { from: open, to: close, kind: "inline" };
-        }
-        break;
+    if (text[cursor] === "$" && isInlineOpen(text, cursor, to)) {
+      const close = findInlineClose(text, cursor + 1, to);
+      if (close >= 0) {
+        regions.push({ from: cursor, to: close + 1, kind: "inline" });
+        cursor = close + 1;
+        continue;
       }
-      i++;
     }
+    cursor += 1;
   }
-  return null;
+
+  return regions;
+}
+
+/** All matched Markdown math regions outside Markdown code/frontmatter regions. */
+export function scanMarkdownMathRegions(
+  text: string,
+  protectedRanges: TextRange[] = findNonMathProtectedRanges(text),
+): MathRegion[] {
+  return editableRanges(text.length, protectedRanges).flatMap((range) =>
+    scanMathChunk(text, range.from, range.to),
+  );
 }
 
 export function findMathRegionAt(text: string, offset: number): MathRegion | null {
   if (text.length > MAX_DOC_LENGTH) return null;
-  if (offset < 0 || offset > text.length) return null;
+  return findMathRegionAtForEdit(text, offset);
+}
 
-  return findDisplayRegion(text, offset) ?? findInlineRegion(text, offset);
+/** Full scan for explicit user actions where a false "outside math" result could corrupt text. */
+export function findMathRegionAtForEdit(text: string, offset: number): MathRegion | null {
+  if (offset < 0 || offset > text.length) return null;
+  return (
+    scanMarkdownMathRegions(text).find(
+      (region) => {
+        const bounds = getMathContentBounds(region);
+        return offset >= bounds.from && offset <= bounds.to;
+      },
+    ) ?? null
+  );
 }
 
 export function isInMath(text: string, offset: number): boolean {
   return findMathRegionAt(text, offset) !== null;
 }
 
-/** True when an inline `$…` opener before `offset` has no closing `$` before `offset`. */
+/** True when a valid inline opener before offset has no same-line close. */
 export function hasUnclosedInlineMathBefore(text: string, offset: number): boolean {
-  if (offset <= 0 || text.length > MAX_DOC_LENGTH) return false;
+  if (offset <= 0) return false;
+  const end = Math.min(offset, text.length);
+  const protectedRanges = findNonMathProtectedRanges(text);
 
-  let inlineOpen = false;
-  for (let i = 0; i < offset; i++) {
-    if (text[i] !== "$" || isEscaped(text, i)) continue;
-
-    if (i < text.length - 1 && text[i + 1] === "$") {
-      i += 2;
-      while (i < offset - 1) {
-        if (text[i] === "$" && text[i + 1] === "$" && !isEscaped(text, i)) {
-          i += 2;
-          break;
-        }
-        i++;
+  for (const chunk of editableRanges(text.length, protectedRanges, 0, end)) {
+    let cursor = chunk.from;
+    while (cursor < chunk.to) {
+      if (
+        cursor + 2 <= chunk.to &&
+        isExactDollarRun(text, cursor, 2) &&
+        !isEscaped(text, cursor)
+      ) {
+        const close = findDisplayClose(text, cursor + 2, chunk.to);
+        cursor = close >= 0 ? close + 2 : chunk.to;
+        continue;
       }
-      i--;
-      continue;
+      if (text[cursor] === "$" && isInlineOpen(text, cursor, chunk.to)) {
+        const close = findInlineClose(text, cursor + 1, chunk.to);
+        if (close < 0) return true;
+        cursor = close + 1;
+        continue;
+      }
+      cursor += 1;
     }
-
-    inlineOpen = !inlineOpen;
   }
-  return inlineOpen;
+  return false;
 }
 
 function touchesInlineMathClose(text: string, offset: number): boolean {
   if (offset <= 0 || offset > text.length) return false;
-  const prev = findMathRegionAt(text, offset - 1);
-  return prev?.kind === "inline" && offset >= prev.to;
+  return scanMarkdownMathRegions(text).some(
+    (region) =>
+      region.kind === "inline" && (region.to === offset || region.to === offset - 1),
+  );
 }
 
 /** Whether `wrapOutsideMath` should add `$…$` around a snippet at `[from, to]`. */
 export function shouldAutoWrapSnippet(text: string, from: number, to: number): boolean {
-  if (text.length > MAX_DOC_LENGTH) return true;
-
-  const start = Math.max(0, from);
-  const end = Math.min(to, text.length);
-  for (let offset = start; offset <= end; offset++) {
-    if (findMathRegionAt(text, offset)) return false;
+  const start = Math.max(0, Math.min(from, to));
+  const end = Math.min(text.length, Math.max(from, to));
+  if (
+    scanMarkdownMathRegions(text).some(
+      (region) => start <= region.to && end >= region.from,
+    )
+  ) {
+    return false;
   }
 
   if (hasUnclosedInlineMathBefore(text, from)) return false;
   if (from === to && touchesInlineMathClose(text, from)) return false;
-
   return true;
 }
 
@@ -124,10 +175,11 @@ export function resolveSnippetInsertPosition(
   to: number,
 ): { from: number; to: number } {
   if (from !== to) return { from, to };
-  if (touchesInlineMathClose(text, from)) {
-    const prev = findMathRegionAt(text, from - 1)!;
-    return { from: prev.to - 1, to: prev.to - 1 };
-  }
+  const region = scanMarkdownMathRegions(text).find(
+    (entry) =>
+      entry.kind === "inline" && (entry.to === from || entry.to === from - 1),
+  );
+  if (region) return { from: region.to - 1, to: region.to - 1 };
   return { from, to };
 }
 
@@ -145,28 +197,28 @@ export function extractMathContent(text: string, region: MathRegion): string {
 
 export function isValidMathRegion(text: string, region: MathRegion): boolean {
   if (region.from < 0 || region.to > text.length || region.from >= region.to) return false;
-
-  if (region.kind === "display") {
-    return (
-      text.slice(region.from, region.from + 2) === "$$" &&
-      text.slice(region.to - 2, region.to) === "$$"
-    );
-  }
-
-  if (text[region.from] !== "$" || text[region.to - 1] !== "$") return false;
-  if (region.from > 0 && text[region.from - 1] === "$") return false;
-  if (region.to < text.length && text[region.to] === "$") return false;
-  return true;
+  return scanMarkdownMathRegions(text).some(
+    (candidate) =>
+      candidate.from === region.from &&
+      candidate.to === region.to &&
+      candidate.kind === region.kind,
+  );
 }
 
-/** True when the document contains an opening `$$` without a matching close. */
+/** True when normal Markdown text contains an opening `$$` without a close. */
 export function hasUnclosedDisplayMath(text: string): boolean {
-  let open = false;
-  for (let i = 0; i < text.length - 1; i++) {
-    if (text[i] === "$" && text[i + 1] === "$" && !isEscaped(text, i)) {
-      open = !open;
-      i++;
+  const protectedRanges = findNonMathProtectedRanges(text);
+  for (const chunk of editableRanges(text.length, protectedRanges)) {
+    let cursor = chunk.from;
+    while ((cursor = text.indexOf("$$", cursor)) >= 0 && cursor + 2 <= chunk.to) {
+      if (!isExactDollarRun(text, cursor, 2) || isEscaped(text, cursor)) {
+        cursor += 2;
+        continue;
+      }
+      const close = findDisplayClose(text, cursor + 2, chunk.to);
+      if (close < 0) return true;
+      cursor = close + 2;
     }
   }
-  return open;
+  return false;
 }

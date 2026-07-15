@@ -5,31 +5,36 @@ on:
     tags:
       - "*"
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
       id-token: write
       attestations: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "24"
           cache: npm
 
       - run: npm ci
-      - run: npm run build
-      - run: npm test
+      - run: npm run check
 
       - name: Generate artifact attestations
-        uses: actions/attest@v4
+        uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
         with:
           subject-path: |
             main.js
+            manifest.json
             styles.css
             locales-extras.json
 
@@ -39,8 +44,9 @@ jobs:
         run: |
           tag="${GITHUB_REF#refs/tags/}"
           awk "/^## \\[$tag\\] /{flag=1;next} /^## \\[/ && flag{exit} flag" CHANGELOG.md > release-notes.md
-          gh release delete "$tag" --yes 2>/dev/null || true
+          test -s release-notes.md
           gh release create "$tag" \
             --title="Math Chords $tag" \
+            --verify-tag \
             --notes-file release-notes.md \
             main.js manifest.json styles.css locales-extras.json

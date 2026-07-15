@@ -1,22 +1,30 @@
 import type { MathEnvironment } from "./types";
-import { parseChord } from "./keys";
-import { validateMathEnvironment } from "./mathEnv";
+import { isValidChord, isValidKeySequence } from "./keys";
+import { validateMathEnvironment } from "./inputValidation";
 
 export const DEFAULT_MATH_BRACE_NAV_NEXT = "Alt+ArrowRight";
 export const DEFAULT_MATH_BRACE_NAV_PREV = "Alt+ArrowLeft";
 
 function isValidNavChord(chord: string): boolean {
-  const parsed = parseChord(chord);
-  if (!parsed) return false;
-  const parts = parsed.split("+");
-  const base = parts[parts.length - 1];
-  return base.length > 0 && !["ctrl", "alt", "shift", "meta"].includes(base);
+  return isValidChord(chord);
 }
 
 function normalizeNavKey(raw: unknown, fallback: string): string {
   if (typeof raw !== "string") return fallback;
   const trimmed = raw.trim();
   return trimmed && isValidNavChord(trimmed) ? trimmed : fallback;
+}
+
+export function normalizeChordSetting(raw: unknown, fallback: string): string {
+  if (typeof raw !== "string") return fallback;
+  const trimmed = raw.trim();
+  return isValidChord(trimmed) ? trimmed : fallback;
+}
+
+export function normalizeSequenceSetting(raw: unknown, fallback: string): string {
+  if (typeof raw !== "string") return fallback;
+  const trimmed = raw.trim();
+  return isValidKeySequence(trimmed) ? trimmed : fallback;
 }
 
 export const DEFAULT_MATH_ENVIRONMENTS: MathEnvironment[] = [
@@ -36,6 +44,7 @@ export interface ObsidianMathChordsSettings {
   leaderKey: string;
   wrapOutsideMath: boolean;
   smartMathToggle: boolean;
+  autoConvertPastedLatexDelimiters: boolean;
   mathEnvWrapEnabled: boolean;
   mathEnvWrapKeys: string;
   mathEnvironments: MathEnvironment[];
@@ -51,6 +60,7 @@ export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
   leaderKey: "Alt+M",
   wrapOutsideMath: true,
   smartMathToggle: true,
+  autoConvertPastedLatexDelimiters: false,
   mathEnvWrapEnabled: true,
   mathEnvWrapKeys: "Shift+E",
   mathEnvironments: DEFAULT_MATH_ENVIRONMENTS.map((env) => ({ ...env })),
@@ -60,11 +70,20 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
   const legacy = data ?? {};
   const raw = { ...DEFAULT_SETTINGS, ...legacy };
 
-  const environments = Array.isArray(raw.mathEnvironments)
-    ? raw.mathEnvironments
+  const savedEnvironments = Array.isArray(legacy.mathEnvironments)
+    ? legacy.mathEnvironments
+    : null;
+  const validSavedEnvironments = savedEnvironments
+    ? savedEnvironments
         .map((entry) => validateMathEnvironment(entry))
         .filter((entry): entry is MathEnvironment => entry !== null)
-    : [];
+    : null;
+  const environments =
+    savedEnvironments?.length === 0
+      ? []
+      : validSavedEnvironments && validSavedEnvironments.length > 0
+        ? validSavedEnvironments
+        : DEFAULT_MATH_ENVIRONMENTS.map((env) => ({ ...env }));
 
   return {
     enabled: raw.enabled !== false,
@@ -84,17 +103,15 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
       raw.mathBraceNavPrevKey ?? legacy.placeholderNavPrevKey,
       DEFAULT_MATH_BRACE_NAV_PREV,
     ),
-    leaderKey: typeof raw.leaderKey === "string" && raw.leaderKey.trim() ? raw.leaderKey.trim() : DEFAULT_SETTINGS.leaderKey,
+    leaderKey: normalizeChordSetting(raw.leaderKey, DEFAULT_SETTINGS.leaderKey),
     wrapOutsideMath: raw.wrapOutsideMath !== false,
     smartMathToggle: raw.smartMathToggle !== false,
+    autoConvertPastedLatexDelimiters: raw.autoConvertPastedLatexDelimiters === true,
     mathEnvWrapEnabled: raw.mathEnvWrapEnabled !== false,
-    mathEnvWrapKeys:
-      typeof raw.mathEnvWrapKeys === "string" && raw.mathEnvWrapKeys.trim()
-        ? raw.mathEnvWrapKeys.trim()
-        : DEFAULT_SETTINGS.mathEnvWrapKeys,
-    mathEnvironments:
-      environments.length > 0
-        ? environments
-        : DEFAULT_MATH_ENVIRONMENTS.map((env) => ({ ...env })),
+    mathEnvWrapKeys: normalizeSequenceSetting(
+      raw.mathEnvWrapKeys,
+      DEFAULT_SETTINGS.mathEnvWrapKeys,
+    ),
+    mathEnvironments: environments,
   };
 }

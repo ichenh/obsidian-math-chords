@@ -5,6 +5,7 @@
   width: fit-content;
   max-width: min(92vw, 640px);
   left: var(--mc-preview-left, 8px);
+  top: var(--mc-preview-top, auto);
   bottom: var(--mc-preview-bottom, 8px);
 }
 
@@ -58,7 +59,7 @@
 .obsidian-math-chords-hint-popup {
   position: fixed;
   z-index: 1000;
-  min-width: 220px;
+  min-width: min(220px, calc(100vw - 16px));
   max-width: min(420px, 92vw);
   padding: 8px 10px;
   border: 1px solid var(--background-modifier-border);
@@ -131,13 +132,41 @@
 }
 
 .obsidian-math-chords-settings-nested {
-  margin-left: 2em;
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 1px solid var(--background-modifier-border);
+}
+
+.obsidian-math-chords-settings {
+  padding-bottom: 32px;
+}
+
+.obsidian-math-chords-table-wrap {
+  width: 100%;
+  margin-top: 12px;
+  overflow-x: auto;
+  scrollbar-gutter: stable;
 }
 
 .obsidian-math-chords-table {
   width: 100%;
-  margin-top: 12px;
   border-collapse: collapse;
+}
+
+.obsidian-math-chords-environment-table {
+  min-width: 640px;
+}
+
+.obsidian-math-chords-env-col-order {
+  width: 52px;
+}
+
+.obsidian-math-chords-env-col-name {
+  width: 18%;
+}
+
+.obsidian-math-chords-env-col-actions {
+  width: 76px;
 }
 
 .obsidian-math-chords-table th,
@@ -151,6 +180,34 @@
 .obsidian-math-chords-table th {
   color: var(--text-muted);
   font-size: 12px;
+  font-weight: var(--font-semibold);
+}
+
+.obsidian-math-chords-table code {
+  font-size: var(--font-smallest);
+  white-space: nowrap;
+}
+
+.obsidian-math-chords-environment-table .obsidian-math-chords-drag-header,
+.obsidian-math-chords-environment-table .obsidian-math-chords-drag-cell {
+  text-align: center;
+}
+
+.obsidian-math-chords-environment-table .obsidian-math-chords-actions-header,
+.obsidian-math-chords-environment-table .obsidian-math-chords-actions-cell {
+  text-align: right;
+}
+
+.obsidian-math-chords-env-name {
+  font-weight: var(--font-medium);
+}
+
+.obsidian-math-chords-env-code {
+  color: var(--text-muted);
+}
+
+.obsidian-math-chords-actions-cell .obsidian-math-chords-row-actions {
+  justify-content: flex-end;
 }
 
 .obsidian-math-chords-intro {
@@ -158,19 +215,41 @@
   color: var(--text-muted);
   font-size: 14px;
   line-height: 1.5;
+  text-wrap: pretty;
 }
 
-.obsidian-math-chords-table td:last-child {
+.obsidian-math-chords-row-actions {
   display: flex;
-  gap: 8px;
+  flex: 0 0 auto;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.obsidian-math-chords-icon-button {
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border: 0;
+}
+
+.obsidian-math-chords-icon-button.is-destructive:hover,
+.obsidian-math-chords-icon-button.is-destructive:focus-visible {
+  color: var(--text-error);
+}
+
+.obsidian-math-chords-icon-button:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 .obsidian-math-chords-drag-header {
-  width: 2.5em;
+  width: 52px;
 }
 
 .obsidian-math-chords-drag-cell {
-  width: 2.5em;
+  width: 52px;
   padding-left: 4px;
   padding-right: 4px;
   vertical-align: middle;
@@ -193,4 +272,215 @@
 
 .obsidian-math-chords-table tr.is-drop-target td {
   box-shadow: inset 0 2px 0 var(--interactive-accent);
+}
+
+.obsidian-math-chords-shortcut-toolbar {
+  align-items: flex-start;
+}
+
+.obsidian-math-chords-shortcut-toolbar .setting-item-control {
+  flex-wrap: wrap;
+}
+
+.obsidian-math-chords-search-input {
+  width: clamp(180px, 32vw, 320px);
+}
+
+.obsidian-math-chords-shortcut-summary {
+  margin: 12px 0 4px;
+  color: var(--text-muted);
+  font-size: var(--font-smallest);
+  font-variant-numeric: tabular-nums;
+}
+
+.obsidian-math-chords-shortcut-groups {
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.obsidian-math-chords-shortcut-group {
+  padding-top: 20px;
+}
+
+.obsidian-math-chords-group-header {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 6px;
+  padding: 0 8px;
+}
+
+.obsidian-math-chords-group-title {
+  margin: 0;
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+}
+
+.obsidian-math-chords-group-count {
+  color: var(--text-faint);
+  font-size: var(--font-smallest);
+  font-variant-numeric: tabular-nums;
+}
+
+.obsidian-math-chords-shortcut-list {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.obsidian-math-chords-shortcut-row {
+  display: grid;
+  grid-template-columns: minmax(248px, 1fr) minmax(96px, auto) auto;
+  gap: 18px;
+  align-items: center;
+  min-height: 64px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.obsidian-math-chords-shortcut-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.obsidian-math-chords-shortcut-identity {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.obsidian-math-chords-shortcut-preview {
+  display: flex;
+  width: 64px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+  line-height: 1;
+}
+
+.obsidian-math-chords-shortcut-preview code {
+  color: var(--text-muted);
+  font-size: var(--font-smallest);
+}
+
+.obsidian-math-chords-shortcut-preview-loading {
+  color: var(--text-faint);
+}
+
+.obsidian-math-chords-shortcut-preview-math,
+.obsidian-math-chords-shortcut-preview .mjx-container {
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-size: 1.16em;
+}
+
+.obsidian-math-chords-shortcut-text {
+  min-width: 0;
+}
+
+.obsidian-math-chords-shortcut-name {
+  overflow: hidden;
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-medium);
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.obsidian-math-chords-shortcut-command {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--font-smallest);
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.obsidian-math-chords-shortcut-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.obsidian-math-chords-shortcut-keys kbd {
+  min-width: 26px;
+  padding: 2px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s, 4px);
+  background: var(--background-secondary);
+  box-shadow: inset 0 -1px 0 var(--background-modifier-border);
+  color: var(--text-normal);
+  font-family: var(--font-interface);
+  font-size: var(--font-smallest);
+  font-weight: var(--font-medium);
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.obsidian-math-chords-empty-state {
+  padding: 32px 16px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  text-align: center;
+}
+
+.obsidian-math-chords-confirm-description {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.obsidian-math-chords-settings .is-hidden {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .obsidian-math-chords-settings-nested {
+    margin-left: 8px;
+    padding-left: 12px;
+  }
+
+  .obsidian-math-chords-shortcut-toolbar {
+    display: block;
+  }
+
+  .obsidian-math-chords-shortcut-toolbar .setting-item-control {
+    justify-content: flex-start;
+    margin-top: 10px;
+  }
+
+  .obsidian-math-chords-search-input {
+    width: min(100%, 320px);
+  }
+
+  .obsidian-math-chords-shortcut-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 12px;
+  }
+
+  .obsidian-math-chords-shortcut-identity {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .obsidian-math-chords-shortcut-keys {
+    grid-column: 1;
+    grid-row: 2;
+    justify-content: flex-start;
+    margin-left: 76px;
+  }
+
+  .obsidian-math-chords-shortcut-row > .obsidian-math-chords-row-actions {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
 }
