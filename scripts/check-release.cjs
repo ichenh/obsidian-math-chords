@@ -11,6 +11,7 @@ const versions = readJson("versions.json");
 const changelog = readText("CHANGELOG.md");
 const readme = readText("README.md");
 const readmeZh = readText("README.zh-CN.md");
+const mainSource = readText("src/main.ts");
 const errors = [];
 const releaseAssets = ["main.js", "manifest.json", "styles.css", "locales-extras.json"];
 
@@ -44,6 +45,11 @@ if (typeof pkg.description !== "string" || pkg.description.length === 0) {
   errors.push("package description must be a non-empty string");
 } else if (pkg.description.length > 250) {
   errors.push("package description exceeds Obsidian's 250-character limit");
+} else if (/\bobsidian\b/iu.test(pkg.description)) {
+  errors.push('plugin description must not include the redundant word "Obsidian"');
+}
+if (/\bhotkeys\s*:/u.test(mainSource)) {
+  errors.push("plugin commands must not register default hotkeys");
 }
 if (versions[pkg.version] !== manifest.minAppVersion) {
   errors.push(`versions.json must map ${pkg.version} to minAppVersion ${manifest.minAppVersion}`);

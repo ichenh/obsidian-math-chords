@@ -123,12 +123,12 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       const sectionEl = groupsEl.createEl("section", {
         cls: "obsidian-math-chords-shortcut-group",
       });
-      const groupHeader = sectionEl.createDiv({ cls: "obsidian-math-chords-group-header" });
-      groupHeader.createEl("h4", {
-        cls: "obsidian-math-chords-group-title",
-        text: groupName,
+      const groupHeader = new Setting(sectionEl).setName(groupName).setHeading();
+      groupHeader.settingEl.addClass("obsidian-math-chords-group-header");
+      groupHeader.nameEl.addClass("obsidian-math-chords-group-title");
+      const countEl = groupHeader.nameEl.createSpan({
+        cls: "obsidian-math-chords-group-count",
       });
-      const countEl = groupHeader.createSpan({ cls: "obsidian-math-chords-group-count" });
       const listEl = sectionEl.createDiv({ cls: "obsidian-math-chords-shortcut-list" });
       listEl.setAttr("role", "list");
 

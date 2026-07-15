@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-[![Version](https://img.shields.io/badge/version-0.3.0-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.3.1-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
@@ -14,7 +14,7 @@
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.3.0。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.3.1。** 见 [CHANGELOG](CHANGELOG.md)。
 
 **需要 Obsidian 1.5.0+。** 以键盘操作为主，建议在桌面端使用。
 
@@ -107,7 +107,7 @@ npm run build
 4. 希腊字母：**`G` `A`** → `\alpha`（leader 之后的按键）。
 5. 行间公式：**`D`** → `$$\n\n$$`。
 6. 仅有光标且位于公式块内时，同类型命令始终移除现有包裹；**Smart math toggle**（默认开启）另外允许用另一种命令在行内与行间公式之间转换。非空选区始终由所调用的命令包裹。
-7. 选中使用 LaTeX 定界符的公式，运行 **Convert LaTeX Delimiters in Selection**；默认快捷键为 Windows/Linux 的 `Ctrl+Alt+M` 或 macOS 的 `Cmd+Alt+M`。也可运行当前文件转换命令。
+7. 选中使用 LaTeX 定界符的公式，运行 **Convert LaTeX Delimiters in Selection**；也可运行当前文件转换命令。需要时可在 **设置 → 快捷键** 中自行绑定。
 8. 按 leader 之后的 **`Shift+E`**（默认），或运行命令 **Wrap display math with environment** 选择环境；若光标不在 `$$…$$` 内，会先插入行间公式块。
 
 > **说明：** 下文快捷键表只列出 **leader 之后** 的按键。默认 leader 为 `Alt+M`。
@@ -316,7 +316,7 @@ Math Chords 可以只替换标准 LaTeX 数学定界符，并原样保留公式�
 
 **内置命令**（可在 **设置 → 快捷键** 中绑定或修改）：**Insert inline math**、**Insert display math**、**Wrap display math with environment**、**Convert LaTeX Delimiters in Selection**、**Convert LaTeX Delimiters in Current File**。
 
-选区转换命令默认使用 Windows/Linux 的 `Ctrl+Alt+M` 或 macOS 的 `Cmd+Alt+M`；其余命令不注册默认快捷键。
+所有内置命令均不注册默认快捷键；需要时可在 **设置 → 快捷键** 中自行绑定。
 
 - `Insert inline math`：将非空选区包裹为 `$…$`；仅有光标时，在公式外插入行内公式、在行内公式内移除包裹，或在开启 **Smart math toggle** 后将行间公式转为行内。
 - `Insert display math`：将非空选区包裹为 `$$…$$`；仅有光标时，在公式外插入行间公式、在行间公式内移除包裹，或在开启 **Smart math toggle** 后将行内公式转为行间。

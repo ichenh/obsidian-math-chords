@@ -109,7 +109,6 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     this.addCommand({
       id: "convert-latex-delimiters-selection",
       name: t("cmdConvertLatexDelimitersSelection"),
-      hotkeys: [{ modifiers: ["Mod", "Alt"], key: "M" }],
       editorCallback: (editor) => this.convertLatexDelimitersInSelection(editor),
     });
 

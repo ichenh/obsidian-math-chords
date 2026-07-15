@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-15
+
+### Fixed
+
+- Removed the redundant product name from the plugin description to satisfy the community directory metadata rules.
+- Shortcut group headings now use Obsidian's `Setting.setHeading()` API for consistent settings-page structure and styling.
+- Removed the selection converter's registered default hotkey; all built-in command hotkeys are now assigned explicitly by users in Obsidian settings.
+- Release validation now rejects redundant product naming and registered default command hotkeys before publication.
+
 ## [0.3.0] - 2026-07-15
 
 ### Added

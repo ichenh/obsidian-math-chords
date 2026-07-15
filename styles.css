@@ -302,15 +302,15 @@
 }
 
 .obsidian-math-chords-group-header {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
   margin-bottom: 6px;
   padding: 0 8px;
+  border: 0;
 }
 
 .obsidian-math-chords-group-title {
-  margin: 0;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
   color: var(--text-normal);
   font-size: var(--font-ui-small);
   font-weight: var(--font-semibold);

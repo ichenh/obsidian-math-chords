@@ -2,7 +2,7 @@
 
 [中文文档](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.3.0-blue)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.3.1-blue)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
 
@@ -14,7 +14,7 @@ The converter changes delimiters only. It preserves formula content, whitespace,
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.3.0.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.3.1.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
@@ -105,10 +105,10 @@ Copy `main.js`, `manifest.json`, `styles.css`, `locales-extras.json`, and `short
 4. For Greek letters: **`G` `A`** → `\alpha` (after the leader).
 5. For display math: **`D`** → `$$\n\n$$`.
 6. With only a caret inside math, pressing the matching inline/display command removes that wrapper. **Smart math toggle** (on by default) additionally lets the other command convert between inline and display math. A non-empty selection is always wrapped by the requested command.
-7. Select LaTeX-delimited math and run **Convert LaTeX Delimiters in Selection** (default hotkey `Ctrl+Alt+M` on Windows/Linux or `Cmd+Alt+M` on macOS), or use the whole-file command.
+7. Select LaTeX-delimited math and run **Convert LaTeX Delimiters in Selection**, or use the whole-file command. Assign either command under **Settings → Hotkeys** if desired.
 8. Press **`Shift+E`** (default, after the leader) or run **Wrap display math with environment** to pick an environment. If the caret is not already inside `$$…$$`, a display block is inserted first.
 
-> **Note:** Shortcut tables list keys **after** the leader. The default leader is `Alt+M`. Built-in commands can be reassigned under **Settings → Hotkeys**; only the selection delimiter converter has a registered default hotkey.
+> **Note:** Shortcut tables list keys **after** the leader. The default leader is `Alt+M`. Built-in commands do not register default hotkeys; assign them under **Settings → Hotkeys** if desired.
 
 ---
 
@@ -316,7 +316,7 @@ Open **Settings → Math Chords**. The settings UI follows your Obsidian display
 
 **Built-in commands** (assign or reassign under **Settings → Hotkeys**): **Insert inline math**, **Insert display math**, **Wrap display math with environment**, **Convert LaTeX Delimiters in Selection**, **Convert LaTeX Delimiters in Current File**.
 
-The selection converter defaults to `Ctrl+Alt+M` on Windows/Linux and `Cmd+Alt+M` on macOS. The other commands have no default hotkey.
+No built-in command registers a default hotkey. Assign any desired bindings under **Settings → Hotkeys**.
 
 - `Insert inline math`: wrap a non-empty selection in `$…$`; with only a caret, insert inline math outside math, remove an existing inline wrapper, or convert display math when **Smart math toggle** is on.
 - `Insert display math`: wrap a non-empty selection in `$$…$$`; with only a caret, insert display math outside math, remove an existing display wrapper, or convert inline math when **Smart math toggle** is on.
