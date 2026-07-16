@@ -34,6 +34,8 @@ export const locale: Record<TranslationKey, string> = {
   mathEnvironmentsName: "数式環境",
   shortcutManagementHeading: "ショートカット管理",
   formulaPanelTitle: "数式パネル",
+  formulaPanelEnabledName: "数式パネルを有効化",
+  formulaPanelEnabledDesc: "リボンに Sigma ボタンを表示し、コマンドから検索可能な数式サイドバーを開けるようにします。",
   shortcutManagementDesc: "グループ別に参照するか、キー、名前、コマンド、グループを検索できます。数式プレビューは各 LaTeX スニペットから生成されます。",
   searchName: "検索",
   searchPlaceholder: "キー、名前、コマンド、グループ",

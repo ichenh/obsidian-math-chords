@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-07-16
+
+### Changed
+
+- Adopted Obsidian 1.13's declarative settings definitions for settings search while retaining the imperative settings-page fallback for the declared Obsidian 1.5.0 minimum.
+- Added a default-on formula-panel setting that removes the sigma ribbon action, closes open formula-panel leaves, and prevents command-based reopening when disabled; re-enabling it restores the action.
+- Moved formula-panel drag handles to the left of group names and reordered settings from core input behavior through editing aids, imported-LaTeX handling, environments, and shortcut management.
+- Rendered the three matrix-group shortcuts with compact, representative 2-by-2 matrix or two-row cases content in shortcut previews, with extra scaling for cases to prevent clipping and no change to inserted LaTeX.
+- Kept compact order and name columns visible while horizontally scrolling the math-environment table, using a direction-aware shadow only after scrolling and automatically releasing the columns below 440px.
+- Reworked shortcut-management search into a component-responsive toolbar with full-width search, a stable add action, and clean stacking on very narrow settings panes.
+- Made shortcut rows respond to their own container width so previews, key badges, names, commands, and edit actions remain accessible across split and very narrow settings panes.
+- Switched settings dialogs to Obsidian's native modal titles so headings align with the fields and descriptive text below them.
+
 ## [0.3.3] - 2026-07-16
 
 ### Added

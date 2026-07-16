@@ -4,7 +4,7 @@ import { validateMathEnvironment } from "./inputValidation";
 
 export const DEFAULT_MATH_BRACE_NAV_NEXT = "Alt+ArrowRight";
 export const DEFAULT_MATH_BRACE_NAV_PREV = "Alt+ArrowLeft";
-export const SETTINGS_SCHEMA_VERSION = 3;
+export const SETTINGS_SCHEMA_VERSION = 4;
 export const FORMULA_PANEL_ENVIRONMENT_GROUP_ID = "__math_environments__";
 
 export const DEFAULT_FORMULA_PANEL_GROUP_ORDER = [
@@ -53,6 +53,7 @@ export interface ObsidianMathChordsSettings {
   enabled: boolean;
   showHintPopup: boolean;
   showInlinePreview: boolean;
+  formulaPanelEnabled: boolean;
   mathBraceNavEnabled: boolean;
   mathBraceNavNextKey: string;
   mathBraceNavPrevKey: string;
@@ -72,6 +73,7 @@ export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
   enabled: true,
   showHintPopup: true,
   showInlinePreview: true,
+  formulaPanelEnabled: true,
   mathBraceNavEnabled: true,
   mathBraceNavNextKey: DEFAULT_MATH_BRACE_NAV_NEXT,
   mathBraceNavPrevKey: DEFAULT_MATH_BRACE_NAV_PREV,
@@ -152,6 +154,7 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
     enabled: raw.enabled !== false,
     showHintPopup: raw.showHintPopup !== false,
     showInlinePreview: raw.showInlinePreview !== false,
+    formulaPanelEnabled: raw.formulaPanelEnabled !== false,
     mathBraceNavEnabled:
       typeof migrated.mathBraceNavEnabled === "boolean"
         ? migrated.mathBraceNavEnabled

@@ -26,7 +26,7 @@ The converter changes delimiters only. It preserves formula content, whitespace,
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.3.3.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.3.4.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
@@ -128,7 +128,7 @@ Copy `main.js`, `manifest.json`, `styles.css`, `locales-extras.json`, and `short
 
 ## Formula panel
 
-Select the **sigma (Σ)** ribbon icon or run **Open formula panel** from Obsidian's command palette. The right sidebar groups the same shortcuts loaded from `shortcuts.yaml`; search matches keys, names, LaTeX commands, and groups. Click a rendered formula to insert it into the most recently active Markdown editor. The summary counts all panel **items**, including shortcut formulas and math environments. Groups start in a frequency-oriented order; use the grip button to drag them into a personal order, the adjacent chevron to collapse or expand one group, or the summary action to collapse or expand all groups at once. Group order and collapsed state persist across restarts.
+Select the **sigma (Σ)** ribbon icon or run **Open formula panel** from Obsidian's command palette. The optional panel is enabled by default; disabling it removes the ribbon action, closes the open panel, and makes its command unavailable until re-enabled. The right sidebar groups the same shortcuts loaded from `shortcuts.yaml`; search matches keys, names, LaTeX commands, and groups. Click a rendered formula to insert it into the most recently active Markdown editor. The summary counts all panel **items**, including shortcut formulas and math environments. Groups start in a frequency-oriented order; use the grip button to the left of a group name to drag it into a personal order, the chevron on the right to collapse or expand one group, or the summary action to collapse or expand all groups at once. Group order and collapsed state persist across restarts.
 
 Panel insertion uses the same selection replacement, `$$` caret marker, auto-wrap, display-math action, and cursor-placement rules as leader shortcuts. Reloading, merging, adding, editing, or deleting shortcuts refreshes open formula panels automatically. If no Markdown note is open, the plugin leaves the workspace unchanged and shows a notice.
 
@@ -235,7 +235,7 @@ The **Math environments** group reads the editable environment list from setting
 
 **Fonts** (`T` prefix): `T B` `\mathbf{}`, `T C` `\mathcal{}`, `T R` `\mathrm{}`, `T Shift+R` `\mathbb{}`, `T T` `\text{}`
 
-**Matrices** (`M` prefix): `M P` pmatrix, `M B` bmatrix, `M C` cases
+**Matrices** (`M` prefix): `M P` pmatrix, `M B` bmatrix, `M C` cases. Their UI previews use compact 2-by-2 matrices or a two-row cases example; insertion still places the caret in an empty environment.
 
 The full list lives in [`shortcuts.yaml`](shortcuts.yaml) (102 default shortcuts).
 
@@ -259,7 +259,7 @@ With the caret inside `$$…$$`, or anywhere else in the note (a block is create
 
 Creating a display block when needed and adding the environment are committed as one editor transaction, so one Undo reverts the command. Cancelling the picker does not modify the note.
 
-Configure environments (name / `\begin{…}` / `\end{…}`) and the trigger keys under **Display-math environment wrap** in **Settings → Math Chords**, or assign a hotkey to the command in **Settings → Hotkeys**.
+Configure environments (name / `\begin{…}` / `\end{…}`) and the trigger keys under **Display-math environment wrap** in **Settings → Math Chords**, or assign a hotkey to the command in **Settings → Hotkeys**. On narrow settings panes, the environment table scrolls horizontally; compact order and name columns remain visible when space permits and are released on very narrow panes.
 
 Default environments: `aligned`, `matrix`, `cases`, `gathered`.
 
@@ -317,7 +317,7 @@ Enable **Automatically convert pasted LaTeX math delimiters** to apply the same 
 
 ## Settings
 
-Open **Settings → Math Chords**. The settings UI follows your Obsidian display language when a translation is available.
+Open **Settings → Math Chords**. The settings UI follows your Obsidian display language when a translation is available. On Obsidian 1.13.0 and later, individual Math Chords settings are also indexed by Obsidian's settings search.
 
 **Bundled in `main.js`** (no extra file; works after community-plugin install): English, 简体中文, 繁體中文, 日本語, 한국어, Deutsch, Français, Español, Русский, Português (BR), Italiano.
 
@@ -326,13 +326,14 @@ Open **Settings → Math Chords**. The settings UI follows your Obsidian display
 | Setting | Default | Description |
 | :--- | :--- | :--- |
 | Enable plugin | on | Master switch for leader shortcuts. |
-| Show shortcut hints | on | Which-key panel after the leader. |
-| Inline math live preview | on | MathJax preview above `$…$`. |
-| Brace navigation in math | on | Jump between `{…}` inside math; defaults `Alt+→` / `Alt+←`. |
-| Next / previous brace keys | `Alt+→` / `Alt+←` | Chords for brace navigation (when enabled). |
 | Leader key | `Alt+M` | Global prefix before shortcut keys; `keys` in YAML are what follows it. |
+| Show shortcut hints | on | Which-key panel after the leader. |
 | Auto-wrap outside math | on | Auto-insert `$…$` around snippets when not in math. |
 | Smart math toggle | on | Allow inline/display commands to convert an existing block to the other kind. Matching commands always remove their wrapper. |
+| Inline math live preview | on | MathJax preview above `$…$`. |
+| Enable formula panel | on | Show the sigma ribbon action and make the searchable sidebar command available. Disabling it removes the action, closes the panel, and disables the command. |
+| Brace navigation in math | on | Jump between `{…}` inside math; defaults `Alt+→` / `Alt+←`. |
+| Next / previous brace keys | `Alt+→` / `Alt+←` | Chords for brace navigation (when enabled). |
 | Automatically convert pasted LaTeX math delimiters | off | Safely convert `\(...\)` / `\[...\]` in pasted text. |
 | Enable environment wrap | on | Environment picker; creates and wraps `$$…$$` in one transaction when needed. |
 | Environment wrap keys | `Shift+E` | Keys after the leader for the picker. |
@@ -347,7 +348,7 @@ No built-in command registers a default hotkey. Assign any desired bindings unde
 
 When cross-kind conversion is disabled, invoking the other math command inside an existing block leaves the note unchanged and shows a notice instead of creating invalid nested delimiters. Converting display math to inline math removes one wrapper-adjacent line break and replaces remaining internal line breaks with spaces, because inline Markdown math cannot span lines reliably.
 
-**Shortcut management:** shortcuts are grouped into compact, responsive sections. Each row keeps the readable name and raw LaTeX command while adding a derived MathJax preview and keycap-style sequence. Visible previews render on demand so opening settings does not eagerly typeset the entire catalog. Search matches keys, names, commands, and groups without rebuilding the settings page. Add and edit operations remain available in focused dialogs; deletions require confirmation. **Reload** re-reads YAML, and **Merge defaults** appends missing built-in shortcuts without overwriting yours. Formula previews are presentation-only and are never written to `shortcuts.yaml`.
+**Shortcut management:** shortcuts are grouped into compact, container-responsive sections. Each row keeps the readable name and raw LaTeX command while adding a derived MathJax preview and keycap-style sequence; narrow panes move keys and actions onto dedicated rows instead of clipping them. Visible previews render on demand so opening settings does not eagerly typeset the entire catalog. Search matches keys, names, commands, and groups without rebuilding the settings page. Add and edit operations use aligned native dialogs; deletions require confirmation. **Reload** re-reads YAML, and **Merge defaults** appends missing built-in shortcuts without overwriting yours. Formula previews are presentation-only and are never written to `shortcuts.yaml`.
 
 ---
 

@@ -34,6 +34,8 @@ export const locale: Record<TranslationKey, string> = {
   mathEnvironmentsName: "Environnements mathématiques",
   shortcutManagementHeading: "Gestion des raccourcis",
   formulaPanelTitle: "Palette de formules",
+  formulaPanelEnabledName: "Activer le panneau de formules",
+  formulaPanelEnabledDesc: "Afficher le bouton Sigma dans le ruban et autoriser la commande à ouvrir la barre latérale de formules avec recherche.",
   shortcutManagementDesc: "Parcourez par groupe ou recherchez des touches, noms, commandes et groupes. Les aperçus sont générés depuis chaque extrait LaTeX.",
   searchName: "Rechercher",
   searchPlaceholder: "Touches, nom, commande ou groupe",

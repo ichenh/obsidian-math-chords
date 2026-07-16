@@ -28,6 +28,21 @@ describe("buildShortcutPreview", () => {
   });
 
   it.each([
+    ["pmatrix", "1 & 2 \\\\ 3 & 4", "matrix"],
+    ["bmatrix", "1 & 2 \\\\ 3 & 4", "matrix"],
+    ["cases", "x, & x > 0 \\\\ 0, & x = 0", "cases"],
+  ])(
+    "uses representative multi-row content for the default %s shortcut",
+    (environment, content, variant) => {
+      const preview = buildShortcutPreview(
+        `\\begin{${environment}}\n$$\n\\end{${environment}}`,
+      );
+      expect(preview.latex).toBe(`\\begin{${environment}}${content}\\end{${environment}}`);
+      expect(preview.variant).toBe(variant);
+    },
+  );
+
+  it.each([
     ["Angle brackets", "\\left\\langle$$\\right\\rangle", "\\left\\langle{x}\\right\\rangle"],
     ["Floor", "\\left\\lfloor$$\\right\\rfloor", "\\left\\lfloor{x}\\right\\rfloor"],
     ["Ceiling", "\\left\\lceil$$\\right\\rceil", "\\left\\lceil{x}\\right\\rceil"],

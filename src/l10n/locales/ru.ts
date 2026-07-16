@@ -34,6 +34,8 @@ export const locale: Record<TranslationKey, string> = {
   mathEnvironmentsName: "Математические окружения",
   shortcutManagementHeading: "Управление сочетаниями",
   formulaPanelTitle: "Панель формул",
+  formulaPanelEnabledName: "Включить панель формул",
+  formulaPanelEnabledDesc: "Показывать кнопку Sigma на ленте и разрешить команде открывать боковую панель формул с поиском.",
   shortcutManagementDesc: "Просматривайте по группам или ищите клавиши, названия, команды и группы. Предпросмотр создаётся из каждого фрагмента LaTeX.",
   searchName: "Поиск",
   searchPlaceholder: "Клавиши, название, команда или группа",

@@ -45,6 +45,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
 
   private leaderController: LeaderController | null = null;
   private lastMarkdownEditor: Editor | null = null;
+  private formulaPanelRibbonEl: HTMLElement | null = null;
   private readonly keydownDocuments = new Map<Document, () => void>();
   private settingsWriteChain: Promise<void> = Promise.resolve();
   private shortcutWriteChain: Promise<void> = Promise.resolve();
@@ -58,12 +59,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       FORMULA_PANEL_VIEW_TYPE,
       (leaf) => new FormulaPanelView(leaf, this),
     );
-    this.addRibbonIcon("sigma", t("formulaPanelTitle"), () => {
-      void runWithNotice(
-        () => this.toggleFormulaPanel(),
-        t("noticeCouldNotOpenFormulaPanel"),
-      );
-    });
+    this.updateFormulaPanelAvailability();
 
     this.leaderController = new LeaderController({
       isEnabled: () => this.settings.enabled,
@@ -115,11 +111,14 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     this.addCommand({
       id: "open-formula-panel",
       name: t("cmdOpenFormulaPanel"),
-      callback: () => {
+      checkCallback: (checking) => {
+        if (!this.settings.formulaPanelEnabled) return false;
+        if (checking) return true;
         void runWithNotice(
           () => this.activateFormulaPanel(),
           t("noticeCouldNotOpenFormulaPanel"),
         );
+        return true;
       },
     });
 
@@ -305,6 +304,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   }
 
   async activateFormulaPanel(): Promise<void> {
+    if (!this.settings.formulaPanelEnabled) return;
     const activeMarkdown = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (activeMarkdown) this.lastMarkdownEditor = activeMarkdown.editor;
 
@@ -318,6 +318,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   }
 
   async toggleFormulaPanel(): Promise<void> {
+    if (!this.settings.formulaPanelEnabled) return;
     const leaves = this.app.workspace.getLeavesOfType(FORMULA_PANEL_VIEW_TYPE);
     if (leaves.length > 0) {
       for (const leaf of leaves) leaf.detach();
@@ -402,10 +403,33 @@ export default class ObsidianMathChordsPlugin extends Plugin {
 
   refreshInteractiveState(): void {
     this.leaderController?.reset();
+    this.updateFormulaPanelAvailability();
     this.app.workspace.iterateAllLeaves((leaf) => {
       if (!(leaf.view instanceof MarkdownView)) return;
       this.getEditorView(leaf.view.editor)?.dispatch({});
     });
+  }
+
+  private updateFormulaPanelAvailability(): void {
+    if (this.settings.formulaPanelEnabled) {
+      if (!this.formulaPanelRibbonEl?.isConnected) {
+        this.formulaPanelRibbonEl = this.addRibbonIcon(
+          "sigma",
+          t("formulaPanelTitle"),
+          () => {
+            void runWithNotice(
+              () => this.toggleFormulaPanel(),
+              t("noticeCouldNotOpenFormulaPanel"),
+            );
+          },
+        );
+      }
+      return;
+    }
+
+    this.formulaPanelRibbonEl?.remove();
+    this.formulaPanelRibbonEl = null;
+    this.app.workspace.detachLeavesOfType(FORMULA_PANEL_VIEW_TYPE);
   }
 
   private async enqueueShortcutWrite(shortcuts: Shortcut[]): Promise<void> {

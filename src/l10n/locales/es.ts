@@ -34,6 +34,8 @@ export const locale: Record<TranslationKey, string> = {
   mathEnvironmentsName: "Entornos matemáticos",
   shortcutManagementHeading: "Gestión de atajos",
   formulaPanelTitle: "Panel de fórmulas",
+  formulaPanelEnabledName: "Activar el panel de fórmulas",
+  formulaPanelEnabledDesc: "Mostrar el botón Sigma de la cinta y permitir que el comando abra la barra lateral de fórmulas con búsqueda.",
   shortcutManagementDesc: "Explora por grupo o busca teclas, nombres, comandos y grupos. Las vistas previas se generan a partir de cada fragmento LaTeX.",
   searchName: "Buscar",
   searchPlaceholder: "Teclas, nombre, comando o grupo",

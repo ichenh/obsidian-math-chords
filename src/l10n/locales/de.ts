@@ -34,6 +34,8 @@ export const locale: Record<TranslationKey, string> = {
   mathEnvironmentsName: "Mathe-Umgebungen",
   shortcutManagementHeading: "Kurzbefehl-Verwaltung",
   formulaPanelTitle: "Formelpalette",
+  formulaPanelEnabledName: "Formelpalette aktivieren",
+  formulaPanelEnabledDesc: "Die Sigma-Schaltfläche im Menüband anzeigen und das Öffnen der durchsuchbaren Formelseitenleiste per Befehl erlauben.",
   shortcutManagementDesc: "Nach Gruppe durchsuchen oder Tasten, Namen, Befehle und Gruppen filtern. Formelvorschauen werden aus den LaTeX-Fragmenten erzeugt.",
   searchName: "Suchen",
   searchPlaceholder: "Tasten, Name, Befehl oder Gruppe",

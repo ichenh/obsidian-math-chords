@@ -13,6 +13,11 @@ import {
 describe("settings normalization", () => {
   it("assigns the current schema to old or missing settings", () => {
     expect(normalizeSettings(null).schemaVersion).toBe(SETTINGS_SCHEMA_VERSION);
+    expect(normalizeSettings(null).formulaPanelEnabled).toBe(true);
+  });
+
+  it("preserves an explicitly disabled formula panel", () => {
+    expect(normalizeSettings({ formulaPanelEnabled: false }).formulaPanelEnabled).toBe(false);
   });
 
   it("migrates legacy brace navigation keys without retaining aliases", () => {

@@ -182,17 +182,10 @@ export class FormulaPanelView extends ItemView {
       const headerEl = sectionEl.createDiv({
         cls: "obsidian-math-chords-formula-panel-heading",
       });
-      const headingEl = headerEl.createEl("h4", {
-        cls: "obsidian-math-chords-formula-panel-title",
-        text: group.name,
+      const labelEl = headerEl.createDiv({
+        cls: "obsidian-math-chords-formula-panel-group-label",
       });
-      const countEl = headingEl.createSpan({
-        cls: "obsidian-math-chords-formula-panel-count",
-      });
-      const controlsEl = headerEl.createDiv({
-        cls: "obsidian-math-chords-formula-panel-group-controls",
-      });
-      const dragButton = controlsEl.createEl("button", {
+      const dragButton = labelEl.createEl("button", {
         cls: "clickable-icon obsidian-math-chords-formula-panel-group-button",
         attr: {
           type: "button",
@@ -202,6 +195,16 @@ export class FormulaPanelView extends ItemView {
         },
       });
       setIcon(dragButton, "grip-vertical");
+      const headingEl = labelEl.createEl("h4", {
+        cls: "obsidian-math-chords-formula-panel-title",
+        text: group.name,
+      });
+      const countEl = headingEl.createSpan({
+        cls: "obsidian-math-chords-formula-panel-count",
+      });
+      const controlsEl = headerEl.createDiv({
+        cls: "obsidian-math-chords-formula-panel-group-controls",
+      });
       const collapsed = collapsedGroups.has(group.id);
       const collapseButton = controlsEl.createEl("button", {
         cls: "clickable-icon obsidian-math-chords-formula-panel-group-button",

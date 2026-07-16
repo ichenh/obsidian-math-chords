@@ -34,6 +34,8 @@ export const locale: Record<TranslationKey, string> = {
   mathEnvironmentsName: "수식 환경",
   shortcutManagementHeading: "단축키 관리",
   formulaPanelTitle: "수식 패널",
+  formulaPanelEnabledName: "수식 패널 활성화",
+  formulaPanelEnabledDesc: "리본에 Sigma 버튼을 표시하고 명령으로 검색 가능한 수식 사이드바를 열 수 있게 합니다.",
   shortcutManagementDesc: "그룹별로 찾아보거나 키, 이름, 명령 및 그룹을 검색합니다. 수식 미리보기는 각 LaTeX 스니펫에서 생성됩니다.",
   searchName: "검색",
   searchPlaceholder: "키, 이름, 명령 또는 그룹",

@@ -12,6 +12,7 @@ const changelog = readText("CHANGELOG.md");
 const readme = readText("README.md");
 const readmeZh = readText("README.zh-CN.md");
 const mainSource = readText("src/main.ts");
+const settingsTabSource = readText("src/settingsTab.ts");
 const errors = [];
 const releaseAssets = ["main.js", "manifest.json", "styles.css", "locales-extras.json"];
 const releaseBadgeUrl =
@@ -52,6 +53,9 @@ if (typeof pkg.description !== "string" || pkg.description.length === 0) {
 }
 if (/\bhotkeys\s*:/u.test(mainSource)) {
   errors.push("plugin commands must not register default hotkeys");
+}
+if (!/\bgetSettingDefinitions\s*\(/u.test(settingsTabSource)) {
+  errors.push("settings tab must expose declarative definitions for Obsidian settings search");
 }
 if (versions[pkg.version] !== manifest.minAppVersion) {
   errors.push(`versions.json must map ${pkg.version} to minAppVersion ${manifest.minAppVersion}`);

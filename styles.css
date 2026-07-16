@@ -141,7 +141,12 @@
   padding-bottom: 32px;
 }
 
+.obsidian-math-chords-declarative-block {
+  display: block;
+}
+
 .obsidian-math-chords-table-wrap {
+  container-type: inline-size;
   width: 100%;
   margin-top: 12px;
   overflow-x: auto;
@@ -154,15 +159,20 @@
 }
 
 .obsidian-math-chords-environment-table {
+  --mc-env-order-width: 44px;
+  --mc-env-name-width: 96px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
   min-width: 640px;
 }
 
 .obsidian-math-chords-env-col-order {
-  width: 52px;
+  width: var(--mc-env-order-width);
 }
 
 .obsidian-math-chords-env-col-name {
-  width: 18%;
+  width: var(--mc-env-name-width);
 }
 
 .obsidian-math-chords-env-col-actions {
@@ -190,7 +200,67 @@
 
 .obsidian-math-chords-environment-table .obsidian-math-chords-drag-header,
 .obsidian-math-chords-environment-table .obsidian-math-chords-drag-cell {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 2;
+  background: var(--background-primary);
   text-align: center;
+}
+
+.obsidian-math-chords-environment-table .obsidian-math-chords-env-name-header,
+.obsidian-math-chords-environment-table .obsidian-math-chords-env-name {
+  position: sticky;
+  inset-inline-start: var(--mc-env-order-width);
+  z-index: 2;
+  overflow: hidden;
+  width: var(--mc-env-name-width);
+  max-width: var(--mc-env-name-width);
+  background: var(--background-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.obsidian-math-chords-table-wrap.is-scrolled-x
+  .obsidian-math-chords-environment-table
+  .obsidian-math-chords-env-name-header,
+.obsidian-math-chords-table-wrap.is-scrolled-x
+  .obsidian-math-chords-environment-table
+  .obsidian-math-chords-env-name {
+  box-shadow: 10px 0 12px -12px var(--text-muted);
+}
+
+.obsidian-math-chords-table-wrap.is-scrolled-x:dir(rtl)
+  .obsidian-math-chords-environment-table
+  .obsidian-math-chords-env-name-header,
+.obsidian-math-chords-table-wrap.is-scrolled-x:dir(rtl)
+  .obsidian-math-chords-environment-table
+  .obsidian-math-chords-env-name {
+  box-shadow: -10px 0 12px -12px var(--text-muted);
+}
+
+.obsidian-math-chords-environment-table .obsidian-math-chords-drag-header,
+.obsidian-math-chords-environment-table .obsidian-math-chords-env-name-header {
+  z-index: 3;
+}
+
+@container (max-width: 439px) {
+  .obsidian-math-chords-environment-table .obsidian-math-chords-drag-header,
+  .obsidian-math-chords-environment-table .obsidian-math-chords-drag-cell,
+  .obsidian-math-chords-environment-table .obsidian-math-chords-env-name-header,
+  .obsidian-math-chords-environment-table .obsidian-math-chords-env-name {
+    position: static;
+  }
+
+  .obsidian-math-chords-environment-table .obsidian-math-chords-env-name-header,
+  .obsidian-math-chords-environment-table .obsidian-math-chords-env-name,
+  .obsidian-math-chords-table-wrap.is-scrolled-x
+    .obsidian-math-chords-environment-table
+    .obsidian-math-chords-env-name-header,
+  .obsidian-math-chords-table-wrap.is-scrolled-x
+    .obsidian-math-chords-environment-table
+    .obsidian-math-chords-env-name {
+    box-shadow: none;
+  }
 }
 
 .obsidian-math-chords-environment-table .obsidian-math-chords-actions-header,
@@ -275,15 +345,44 @@
 }
 
 .obsidian-math-chords-shortcut-toolbar {
-  align-items: flex-start;
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.obsidian-math-chords-shortcut-toolbar .setting-item-info,
+.obsidian-math-chords-shortcut-toolbar .setting-item-control {
+  width: 100%;
+  min-width: 0;
 }
 
 .obsidian-math-chords-shortcut-toolbar .setting-item-control {
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  justify-content: stretch;
+}
+
+.obsidian-math-chords-shortcut-toolbar .setting-item-description {
+  max-width: 72ch;
 }
 
 .obsidian-math-chords-search-input {
-  width: clamp(180px, 32vw, 320px);
+  width: 100%;
+  min-width: 0;
+}
+
+@container (max-width: 359px) {
+  .obsidian-math-chords-shortcut-toolbar .setting-item-control {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .obsidian-math-chords-add-shortcut-button {
+    width: 100%;
+  }
 }
 
 .obsidian-math-chords-shortcut-summary {
@@ -291,6 +390,10 @@
   color: var(--text-muted);
   font-size: var(--font-smallest);
   font-variant-numeric: tabular-nums;
+}
+
+.obsidian-math-chords-shortcuts {
+  container-type: inline-size;
 }
 
 .obsidian-math-chords-shortcut-groups {
@@ -375,6 +478,25 @@
   margin: 0;
   overflow: hidden;
   font-size: 1.16em;
+}
+
+.obsidian-math-chords-shortcut-preview.is-matrix-preview,
+.obsidian-math-chords-formula-panel-preview.is-matrix-preview {
+  font-size: 0.9em;
+}
+
+.obsidian-math-chords-shortcut-preview.is-cases-preview,
+.obsidian-math-chords-formula-panel-preview.is-cases-preview {
+  font-size: 0.76em;
+}
+
+.obsidian-math-chords-shortcut-preview:is(.is-matrix-preview, .is-cases-preview)
+  .obsidian-math-chords-shortcut-preview-math,
+.obsidian-math-chords-shortcut-preview:is(.is-matrix-preview, .is-cases-preview) .mjx-container,
+.obsidian-math-chords-formula-panel-preview:is(.is-matrix-preview, .is-cases-preview)
+  .obsidian-math-chords-shortcut-preview-math,
+.obsidian-math-chords-formula-panel-preview:is(.is-matrix-preview, .is-cases-preview) .mjx-container {
+  font-size: 1em;
 }
 
 .obsidian-math-chords-shortcut-text {
@@ -511,6 +633,13 @@
   margin: 0 2px 8px;
 }
 
+.obsidian-math-chords-formula-panel-group-label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 2px;
+}
+
 .obsidian-math-chords-formula-panel-title {
   display: flex;
   min-width: 0;
@@ -640,20 +769,9 @@
     margin-left: 8px;
     padding-left: 12px;
   }
+}
 
-  .obsidian-math-chords-shortcut-toolbar {
-    display: block;
-  }
-
-  .obsidian-math-chords-shortcut-toolbar .setting-item-control {
-    justify-content: flex-start;
-    margin-top: 10px;
-  }
-
-  .obsidian-math-chords-search-input {
-    width: min(100%, 320px);
-  }
-
+@container (max-width: 599px) {
   .obsidian-math-chords-shortcut-row {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 6px 12px;
@@ -674,5 +792,42 @@
   .obsidian-math-chords-shortcut-row > .obsidian-math-chords-row-actions {
     grid-column: 2;
     grid-row: 1 / span 2;
+  }
+}
+
+@container (max-width: 419px) {
+  .obsidian-math-chords-shortcut-row {
+    gap: 8px 10px;
+  }
+
+  .obsidian-math-chords-shortcut-identity {
+    grid-column: 1 / -1;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .obsidian-math-chords-shortcut-preview {
+    width: 52px;
+  }
+
+  .obsidian-math-chords-shortcut-keys {
+    margin-left: 62px;
+  }
+
+  .obsidian-math-chords-shortcut-row > .obsidian-math-chords-row-actions {
+    grid-row: 2;
+  }
+}
+
+@container (max-width: 319px) {
+  .obsidian-math-chords-shortcut-keys {
+    grid-column: 1 / -1;
+    margin-left: 62px;
+  }
+
+  .obsidian-math-chords-shortcut-row > .obsidian-math-chords-row-actions {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-content: flex-end;
   }
 }

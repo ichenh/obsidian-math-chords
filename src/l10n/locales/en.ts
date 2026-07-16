@@ -42,6 +42,9 @@ export const en = {
 
   shortcutManagementHeading: "Shortcut management",
   formulaPanelTitle: "Formula panel",
+  formulaPanelEnabledName: "Enable formula panel",
+  formulaPanelEnabledDesc:
+    "Show the sigma ribbon action and allow the command to open the searchable formula sidebar.",
   shortcutManagementDesc:
     "Browse by group or search keys, names, commands, and groups. Formula previews are generated from each LaTeX snippet.",
   searchName: "Search",

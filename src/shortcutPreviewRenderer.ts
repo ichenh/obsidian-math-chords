@@ -101,6 +101,8 @@ export function scheduleShortcutPreviews(
 
 function renderShortcutPreview(containerEl: HTMLElement, command: string): void {
   const preview = buildShortcutPreview(command);
+  containerEl.toggleClass("is-matrix-preview", preview.variant === "matrix");
+  containerEl.toggleClass("is-cases-preview", preview.variant === "cases");
   if (preview.fallback) {
     containerEl.createEl("code", { text: preview.fallback });
     return;

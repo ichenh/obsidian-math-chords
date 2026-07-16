@@ -26,7 +26,7 @@
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.3.3。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.3.4。** 见 [CHANGELOG](CHANGELOG.md)。
 
 **需要 Obsidian 1.5.0+。** 以键盘操作为主，建议在桌面端使用。
 
@@ -130,7 +130,7 @@ npm run build
 
 ## 公式面板
 
-点击 Ribbon 中的 **sigma（Σ）** 图标，或从 Obsidian 命令面板运行 **Open formula panel（打开公式面板）**。右侧栏会按照 `shortcuts.yaml` 中实际加载的快捷键分组显示公式；搜索可匹配按键、名称、LaTeX 命令和分组。点击公式后，会插入到最近使用且仍然打开的 Markdown 编辑器。统计栏将快捷公式与数学环境统一称为“条目”。各组首次按照日常使用频率排列；可拖曳标题右侧的手柄调整个人顺序，点击相邻箭头单独收起或展开分组，也可使用统计栏右侧按钮一键收起或展开全部分组。分组顺序和收起状态会跨重启保存。
+点击 Ribbon 中的 **sigma（Σ）** 图标，或从 Obsidian 命令面板运行 **Open formula panel（打开公式面板）**。公式面板默认启用；关闭该选项会移除 Ribbon 入口、关闭已打开的面板并停用相关命令，重新启用后恢复。右侧栏会按照 `shortcuts.yaml` 中实际加载的快捷键分组显示公式；搜索可匹配按键、名称、LaTeX 命令和分组。点击公式后，会插入到最近使用且仍然打开的 Markdown 编辑器。统计栏将快捷公式与数学环境统一称为“条目”。各组首次按照日常使用频率排列；可拖曳分组名称左侧的手柄调整个人顺序，点击右侧箭头单独收起或展开分组，也可使用统计栏右侧按钮一键收起或展开全部分组。分组顺序和收起状态会跨重启保存。
 
 面板插入与 leader 快捷键共用选区替换、`$$` 光标标记、公式外自动包裹、行间公式动作及光标定位规则。重新加载、合并、新增、编辑或删除快捷键后，已打开的公式面板会自动刷新。若当前没有可用的 Markdown 笔记，插件不会修改工作区，并会显示提示。
 
@@ -237,7 +237,7 @@ npm run build
 
 **字体**（`T` 前缀）：`T B` `\mathbf{}`，`T C` `\mathcal{}`，`T R` `\mathrm{}`，`T Shift+R` `\mathbb{}`，`T T` `\text{}`
 
-**矩阵**（`M` 前缀）：`M P` pmatrix，`M B` bmatrix，`M C` cases
+**矩阵**（`M` 前缀）：`M P` pmatrix，`M B` bmatrix，`M C` cases。界面预览使用紧凑的 2×2 矩阵或两行 cases 示例；实际插入时仍会生成空环境并将光标放入其中。
 
 完整列表见 [`shortcuts.yaml`](shortcuts.yaml)（102 条默认快捷键）。
 
@@ -261,7 +261,7 @@ npm run build
 
 需要创建行间公式时，创建公式块与添加环境会作为一次编辑事务提交，因此一次撤销即可完整回退。取消选择器不会修改笔记。
 
-在 **设置 → Math Chords** 的 **Enable environment wrap**（启用环境包裹）中配置环境与触发按键；也可在 **设置 → 快捷键** 中为上述命令绑定热键。
+在 **设置 → Math Chords** 的 **Enable environment wrap**（启用环境包裹）中配置环境与触发按键；也可在 **设置 → 快捷键** 中为上述命令绑定热键。设置栏较窄时，环境表格可以横向滚动；空间允许时会保留紧凑的顺序和名称列，极窄时则取消固定以避免遮挡主要内容。
 
 默认环境：`aligned`、`matrix`、`cases`、`gathered`。
 
@@ -317,7 +317,7 @@ Math Chords 可以只替换标准 LaTeX 数学定界符，并原样保留公式�
 
 ## 设置
 
-打开 **设置 → Math Chords**。在有可用翻译时，设置界面会跟随 Obsidian 的显示语言。
+打开 **设置 → Math Chords**。在有可用翻译时，设置界面会跟随 Obsidian 的显示语言。在 Obsidian 1.13.0 及更高版本中，各项 Math Chords 设置也会被 Obsidian 的设置搜索单独索引。
 
 **内置于 `main.js`**（无需额外文件；社区插件安装即可）：English、简体中文、繁體中文、日本語、한국어、Deutsch、Français、Español、Русский、Português (BR)、Italiano。
 
@@ -326,13 +326,14 @@ Math Chords 可以只替换标准 LaTeX 数学定界符，并原样保留公式�
 | 设置项 | 默认值 | 说明 |
 | :--- | :--- | :--- |
 | Enable plugin（启用插件） | 开 | leader 快捷键总开关。 |
-| Show shortcut hints（显示快捷键提示） | 开 | leader 后显示 which-key 面板。 |
-| Inline math live preview（行内公式实时预览） | 开 | 在 `$…$` 上方 MathJax 预览。 |
-| Brace navigation in math（公式内大括号跳转） | 开 | 在公式内 `{…}` 之间跳转；默认 `Alt+→` / `Alt+←`。 |
-| Next / previous brace keys（下/上一大括号键） | `Alt+→` / `Alt+←` | 大括号跳转快捷键（启用后生效）。 |
 | Leader key（Leader 键） | `Alt+M` | 快捷键前缀；YAML 中 `keys` 为 leader 之后的部分。 |
+| Show shortcut hints（显示快捷键提示） | 开 | leader 后显示 which-key 面板。 |
 | Auto-wrap outside math（公式外自动包裹） | 开 | 非公式区域插入时自动加 `$…$`。 |
 | Smart math toggle（智能公式切换） | 开 | 允许用另一种公式命令转换现有公式块；同类型命令始终移除包裹。 |
+| Inline math live preview（行内公式实时预览） | 开 | 在 `$…$` 上方 MathJax 预览。 |
+| Enable formula panel（启用公式面板） | 开 | 显示 sigma Ribbon 入口并启用可搜索侧边栏命令；关闭时移除入口、关闭面板并停用命令。 |
+| Brace navigation in math（公式内大括号跳转） | 开 | 在公式内 `{…}` 之间跳转；默认 `Alt+→` / `Alt+←`。 |
+| Next / previous brace keys（下/上一大括号键） | `Alt+→` / `Alt+←` | 大括号跳转快捷键（启用后生效）。 |
 | Automatically convert pasted LaTeX math delimiters（自动转换粘贴的 LaTeX 数学定界符） | 关 | 安全转换粘贴文本中的 `\(...\)` / `\[...\]`。 |
 | Enable environment wrap（启用环境包裹） | 开 | 环境选择器；必要时在一次事务中创建并包裹 `$$…$$`。 |
 | Environment wrap keys（环境包裹快捷键） | `Shift+E` | leader 之后触发环境选择器的按键。 |
@@ -347,7 +348,7 @@ Math Chords 可以只替换标准 LaTeX 数学定界符，并原样保留公式�
 
 关闭跨类型转换后，在现有公式块内调用另一种公式命令会保持笔记不变并显示提示，不会生成无效的嵌套定界符。行间公式转为行内公式时，会移除包裹旁的一组换行，并将内容中其余换行替换为空格，因为 Markdown 行内公式无法可靠地跨行。
 
-**Shortcut management（快捷键管理）：** 快捷键按分组显示为紧凑、响应式列表。每一行保留易读名称和原始 LaTeX 命令，同时提供动态生成的 MathJax 预览与键帽式按键序列。公式预览仅在条目接近可视区域时渲染，打开设置页不会一次性排版整个目录。搜索会匹配按键、名称、命令和分组，且不会重建整个设置页。添加和编辑使用独立对话框，删除前需要确认。**Reload** 重新读取 YAML；**Merge defaults** 追加缺失的内置项，不覆盖已有绑定。公式预览只用于界面展示，不会写入 `shortcuts.yaml`。
+**Shortcut management（快捷键管理）：** 快捷键按分组显示为紧凑、基于容器宽度响应的列表。每一行保留易读名称和原始 LaTeX 命令，同时提供动态生成的 MathJax 预览与键帽式按键序列；设置栏较窄时，按键和操作按钮会移动到独立行，不会被挤压隐藏。公式预览仅在条目接近可视区域时渲染，打开设置页不会一次性排版整个目录。搜索会匹配按键、名称、命令和分组，且不会重建整个设置页。添加和编辑使用标题对齐的原生对话框，删除前需要确认。**Reload** 重新读取 YAML；**Merge defaults** 追加缺失的内置项，不覆盖已有绑定。公式预览只用于界面展示，不会写入 `shortcuts.yaml`。
 
 ---
 

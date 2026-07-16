@@ -99,6 +99,9 @@ Avoid circular dependencies.
 - Use `window.activeDocument` or an element's `ownerDocument` for popout-window DOM
   behavior. CodeMirror access through `editor.cm` is read-only; mutations use the
   Obsidian editor abstraction.
+- Keep `PluginSettingTab.getSettingDefinitions()` as the Obsidian 1.13+ settings-search
+  source while retaining `display()` as the imperative fallback for the declared
+  Obsidian 1.5.0 minimum. Do not call 1.13-only runtime APIs from the fallback path.
 
 ## Development and verification
 

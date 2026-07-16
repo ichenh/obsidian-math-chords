@@ -112,7 +112,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Aktiveer formulepaneel",
+    "formulaPanelEnabledDesc": "Wys die Sigma-lintknoppie en laat die opdrag die deursoekbare formulesybalk oopmaak."
   },
   "zh": {
     "intro": "Math Chords 主要处理两类任务：高效输入常用 LaTeX 结构，以及将从 AI 工具、论文或 LaTeX 文档复制的数学内容规范为适合 Obsidian Markdown 的格式。你可以在下方配置 leader 快捷键、安全定界符转换、粘贴处理、MathJax 预览、大括号跳转、行内/行间公式切换和数学环境。",
@@ -227,7 +229,9 @@
     "formulaPanelItemCount": "%1 / %2 个条目",
     "noMatchingFormulas": "没有匹配此搜索的公式或环境。",
     "expandAllGroups": "展开全部分组",
-    "collapseAllGroups": "收起全部分组"
+    "collapseAllGroups": "收起全部分组",
+    "formulaPanelEnabledName": "启用公式面板",
+    "formulaPanelEnabledDesc": "显示 Sigma 功能区按钮，并允许通过命令打开可搜索的公式侧边栏。"
   },
   "zh-TW": {
     "intro": "Math Chords 主要處理兩類工作：有效率地輸入常用 LaTeX 結構，以及將從 AI 工具、論文或 LaTeX 文件複製的數學內容規範為適合 Obsidian Markdown 的格式。你可以在下方設定 leader 快捷鍵、安全定界符轉換、貼上處理、MathJax 預覽、大括號導覽、行內/行間公式切換和數學環境。",
@@ -342,7 +346,9 @@
     "formulaPanelItemCount": "%1 / %2 個項目",
     "noMatchingFormulas": "沒有符合此搜尋的公式或環境。",
     "expandAllGroups": "展開全部分組",
-    "collapseAllGroups": "收合全部分組"
+    "collapseAllGroups": "收合全部分組",
+    "formulaPanelEnabledName": "啟用公式面板",
+    "formulaPanelEnabledDesc": "顯示 Sigma 功能區按鈕，並允許透過命令開啟可搜尋的公式側邊欄。"
   },
   "fr": {
     "intro": "Math Chords répond à deux besoins : saisir efficacement les structures LaTeX courantes et normaliser pour Obsidian Markdown les contenus mathématiques copiés depuis des outils d’IA, des articles ou des sources LaTeX. Configurez ci-dessous les raccourcis leader, la conversion sûre des délimiteurs, le traitement du collage, l’aperçu MathJax, la navigation entre accolades, la bascule en ligne/bloc et les environnements mathématiques.",
@@ -457,7 +463,9 @@
     "formulaPanelItemCount": "%1 éléments sur %2",
     "noMatchingFormulas": "Aucune formule ni aucun environnement ne correspond à cette recherche.",
     "expandAllGroups": "Développer tous les groupes",
-    "collapseAllGroups": "Réduire tous les groupes"
+    "collapseAllGroups": "Réduire tous les groupes",
+    "formulaPanelEnabledName": "Activer le panneau de formules",
+    "formulaPanelEnabledDesc": "Afficher le bouton Sigma dans le ruban et autoriser la commande à ouvrir la barre latérale de formules avec recherche."
   },
   "de": {
     "intro": "Math Chords unterstützt zwei Aufgaben: wiederkehrende LaTeX-Strukturen effizient einzugeben und mathematische Inhalte aus KI-Werkzeugen, Fachartikeln oder LaTeX-Quellen für Obsidian Markdown zu vereinheitlichen. Unten lassen sich Leader-Kürzel, sichere Trennzeichenkonvertierung, Einfügeverarbeitung, MathJax-Vorschau, Klammernavigation, Inline-/Blockumschaltung und Mathematikumgebungen konfigurieren.",
@@ -572,7 +580,9 @@
     "formulaPanelItemCount": "%1 von %2 Elementen",
     "noMatchingFormulas": "Keine Formeln oder Umgebungen entsprechen dieser Suche.",
     "expandAllGroups": "Alle Gruppen erweitern",
-    "collapseAllGroups": "Alle Gruppen reduzieren"
+    "collapseAllGroups": "Alle Gruppen reduzieren",
+    "formulaPanelEnabledName": "Formelpalette aktivieren",
+    "formulaPanelEnabledDesc": "Die Sigma-Schaltfläche im Menüband anzeigen und das Öffnen der durchsuchbaren Formelseitenleiste per Befehl erlauben."
   },
   "es": {
     "intro": "Math Chords resuelve dos tareas: introducir eficazmente estructuras LaTeX habituales y normalizar para Obsidian Markdown el contenido matemático copiado de herramientas de IA, artículos o fuentes LaTeX. Configura abajo los atajos leader, la conversión segura de delimitadores, el tratamiento del pegado, la vista previa MathJax, la navegación entre llaves, el cambio entre fórmulas en línea y de bloque y los entornos matemáticos.",
@@ -687,7 +697,9 @@
     "formulaPanelItemCount": "%1 de %2 elementos",
     "noMatchingFormulas": "Ninguna fórmula o entorno coincide con esta búsqueda.",
     "expandAllGroups": "Expandir todos los grupos",
-    "collapseAllGroups": "Contraer todos los grupos"
+    "collapseAllGroups": "Contraer todos los grupos",
+    "formulaPanelEnabledName": "Activar el panel de fórmulas",
+    "formulaPanelEnabledDesc": "Mostrar el botón Sigma de la cinta y permitir que el comando abra la barra lateral de fórmulas con búsqueda."
   },
   "it": {
     "intro": "Math Chords gestisce due attività: inserire in modo efficiente le strutture LaTeX ricorrenti e normalizzare per Obsidian Markdown i contenuti matematici copiati da strumenti di IA, articoli o sorgenti LaTeX. Qui sotto puoi configurare scorciatoie leader, conversione sicura dei delimitatori, gestione dell’incolla, anteprima MathJax, navigazione tra parentesi graffe, commutazione inline/display e ambienti matematici.",
@@ -802,7 +814,9 @@
     "formulaPanelItemCount": "%1 di %2 elementi",
     "noMatchingFormulas": "Nessuna formula o ambiente corrisponde alla ricerca.",
     "expandAllGroups": "Espandi tutti i gruppi",
-    "collapseAllGroups": "Comprimi tutti i gruppi"
+    "collapseAllGroups": "Comprimi tutti i gruppi",
+    "formulaPanelEnabledName": "Abilita pannello delle formule",
+    "formulaPanelEnabledDesc": "Mostra il pulsante Sigma nella barra e consente al comando di aprire la barra laterale ricercabile delle formule."
   },
   "nl": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -917,7 +931,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Formulepaneel inschakelen",
+    "formulaPanelEnabledDesc": "Toon de Sigma-knop in het lint en sta toe dat de opdracht de doorzoekbare formulezijbalk opent."
   },
   "pt": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1032,7 +1048,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Ativar painel de fórmulas",
+    "formulaPanelEnabledDesc": "Mostrar o botão Sigma na faixa e permitir que o comando abra a barra lateral de fórmulas pesquisável."
   },
   "pt-BR": {
     "intro": "O Math Chords atende a duas tarefas: inserir estruturas LaTeX recorrentes com eficiência e normalizar para o Markdown do Obsidian conteúdos matemáticos copiados de ferramentas de IA, artigos ou fontes LaTeX. Configure abaixo atalhos leader, conversão segura de delimitadores, tratamento de colagem, pré-visualização MathJax, navegação entre chaves, alternância inline/bloco e ambientes matemáticos.",
@@ -1147,7 +1165,9 @@
     "formulaPanelItemCount": "%1 de %2 itens",
     "noMatchingFormulas": "Nenhuma fórmula ou ambiente corresponde à pesquisa.",
     "expandAllGroups": "Expandir todos os grupos",
-    "collapseAllGroups": "Recolher todos os grupos"
+    "collapseAllGroups": "Recolher todos os grupos",
+    "formulaPanelEnabledName": "Ativar painel de fórmulas",
+    "formulaPanelEnabledDesc": "Mostrar o botão Sigma na faixa e permitir que o comando abra a barra lateral pesquisável de fórmulas."
   },
   "ru": {
     "intro": "Math Chords решает две задачи: ускоряет ввод часто используемых структур LaTeX и приводит к формату Obsidian Markdown математический текст, скопированный из ИИ-инструментов, статей или исходников LaTeX. Ниже можно настроить leader-сочетания, безопасное преобразование разделителей, обработку вставки, предпросмотр MathJax, навигацию по фигурным скобкам, переключение строчных и выкладных формул и математические окружения.",
@@ -1262,7 +1282,9 @@
     "formulaPanelItemCount": "%1 из %2 элементов",
     "noMatchingFormulas": "Нет формул или окружений, соответствующих поиску.",
     "expandAllGroups": "Развернуть все группы",
-    "collapseAllGroups": "Свернуть все группы"
+    "collapseAllGroups": "Свернуть все группы",
+    "formulaPanelEnabledName": "Включить панель формул",
+    "formulaPanelEnabledDesc": "Показывать кнопку Sigma на ленте и разрешить команде открывать боковую панель формул с поиском."
   },
   "ja": {
     "intro": "Math Chords は、よく使う LaTeX 構造を効率よく入力することと、AI ツール・論文・LaTeX ソースからコピーした数式を Obsidian Markdown 向けに整えることの二つを支援します。以下で leader ショートカット、安全な区切り記号変換、貼り付け処理、MathJax プレビュー、波括弧ナビゲーション、インライン／ディスプレイ切替、数式環境を設定できます。",
@@ -1377,7 +1399,9 @@
     "formulaPanelItemCount": "%2 件中 %1 件の項目",
     "noMatchingFormulas": "検索に一致する数式または環境はありません。",
     "expandAllGroups": "すべてのグループを展開",
-    "collapseAllGroups": "すべてのグループを折りたたむ"
+    "collapseAllGroups": "すべてのグループを折りたたむ",
+    "formulaPanelEnabledName": "数式パネルを有効化",
+    "formulaPanelEnabledDesc": "リボンに Sigma ボタンを表示し、コマンドから検索可能な数式サイドバーを開けるようにします。"
   },
   "ko": {
     "intro": "Math Chords는 자주 쓰는 LaTeX 구조를 효율적으로 입력하고, AI 도구·논문·LaTeX 원본에서 복사한 수학 내용을 Obsidian Markdown에 맞게 정규화하는 두 가지 작업을 지원합니다. 아래에서 leader 단축키, 안전한 구분 기호 변환, 붙여넣기 처리, MathJax 미리보기, 중괄호 탐색, 인라인/디스플레이 전환, 수학 환경을 설정할 수 있습니다.",
@@ -1492,7 +1516,9 @@
     "formulaPanelItemCount": "%2개 중 %1개 항목",
     "noMatchingFormulas": "검색과 일치하는 수식 또는 환경이 없습니다.",
     "expandAllGroups": "모든 그룹 펼치기",
-    "collapseAllGroups": "모든 그룹 접기"
+    "collapseAllGroups": "모든 그룹 접기",
+    "formulaPanelEnabledName": "수식 패널 활성화",
+    "formulaPanelEnabledDesc": "리본에 Sigma 버튼을 표시하고 명령으로 검색 가능한 수식 사이드바를 열 수 있게 합니다."
   },
   "pl": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1607,7 +1633,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Włącz panel formuł",
+    "formulaPanelEnabledDesc": "Pokaż przycisk Sigma na wstążce i zezwól poleceniu na otwieranie przeszukiwalnego paska bocznego formuł."
   },
   "cs": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1722,7 +1750,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Povolit panel vzorců",
+    "formulaPanelEnabledDesc": "Zobrazit tlačítko Sigma na pásu karet a umožnit příkazu otevřít prohledávatelný postranní panel vzorců."
   },
   "sv": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1837,7 +1867,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Aktivera formelpanelen",
+    "formulaPanelEnabledDesc": "Visa Sigma-knappen i menyfliksområdet och tillåt kommandot att öppna det sökbara formelfältet."
   },
   "da": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1952,7 +1984,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Aktivér formelpanelet",
+    "formulaPanelEnabledDesc": "Vis Sigma-knappen på båndet, og tillad kommandoen at åbne den søgbare formelsidebjælke."
   },
   "fi": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2067,7 +2101,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Ota kaavapaneeli käyttöön",
+    "formulaPanelEnabledDesc": "Näytä Sigma-painike valintanauhassa ja salli komennon avata haettava kaavasivupalkki."
   },
   "no": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2182,7 +2218,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Aktiver formelpanelet",
+    "formulaPanelEnabledDesc": "Vis Sigma-knappen på båndet, og la kommandoen åpne det søkbare formelsidepanelet."
   },
   "ro": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2297,7 +2335,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Activează panoul de formule",
+    "formulaPanelEnabledDesc": "Afișează butonul Sigma în panglică și permite comenzii să deschidă bara laterală de formule cu căutare."
   },
   "uk": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2412,7 +2452,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Увімкнути панель формул",
+    "formulaPanelEnabledDesc": "Показувати кнопку Sigma на стрічці й дозволити команді відкривати бічну панель формул із пошуком."
   },
   "vi": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2527,7 +2569,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Bật bảng công thức",
+    "formulaPanelEnabledDesc": "Hiển thị nút Sigma trên dải công cụ và cho phép lệnh mở thanh bên công thức có thể tìm kiếm."
   },
   "id": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2642,7 +2686,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Aktifkan panel rumus",
+    "formulaPanelEnabledDesc": "Tampilkan tombol Sigma pada pita dan izinkan perintah membuka bilah sisi rumus yang dapat dicari."
   },
   "ar": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2757,7 +2803,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "تمكين لوحة الصيغ",
+    "formulaPanelEnabledDesc": "إظهار زر Sigma في الشريط والسماح للأمر بفتح الشريط الجانبي للصيغ القابل للبحث."
   },
   "he": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2872,7 +2920,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "הפעלת חלונית הנוסחאות",
+    "formulaPanelEnabledDesc": "הצגת לחצן Sigma ברצועה ואפשרות לפתוח באמצעות הפקודה את סרגל הצד של הנוסחאות הניתן לחיפוש."
   },
   "th": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2987,7 +3037,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "เปิดใช้แผงสูตร",
+    "formulaPanelEnabledDesc": "แสดงปุ่ม Sigma บนแถบเครื่องมือและอนุญาตให้คำสั่งเปิดแถบด้านข้างสูตรที่ค้นหาได้"
   },
   "tr": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3102,7 +3154,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Formül panelini etkinleştir",
+    "formulaPanelEnabledDesc": "Şeritte Sigma düğmesini göster ve komutun aranabilir formül kenar çubuğunu açmasına izin ver."
   },
   "en-GB": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3217,7 +3271,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Enable formula panel",
+    "formulaPanelEnabledDesc": "Show the Sigma ribbon button and allow the command to open the searchable formula sidebar."
   },
   "hi": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3332,7 +3388,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "सूत्र पैनल सक्षम करें",
+    "formulaPanelEnabledDesc": "रिबन में Sigma बटन दिखाएँ और कमांड को खोज योग्य सूत्र साइडबार खोलने दें।"
   },
   "fa": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3447,7 +3505,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "فعال‌کردن پنل فرمول",
+    "formulaPanelEnabledDesc": "دکمهٔ Sigma را در نوار نشان دهید و اجازه دهید فرمان، نوار کناری قابل جست‌وجوی فرمول‌ها را باز کند."
   },
   "nn": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3562,7 +3622,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Slå på formelpanelet",
+    "formulaPanelEnabledDesc": "Vis Sigma-knappen på bandet, og lat kommandoen opne det søkbare formelsidepanelet."
   },
   "hu": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3677,7 +3739,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Képletpanel engedélyezése",
+    "formulaPanelEnabledDesc": "A Sigma gomb megjelenítése a szalagon, és a kereshető képlet-oldalsáv megnyitásának engedélyezése a paranccsal."
   },
   "am": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3792,7 +3856,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "የቀመር ፓነልን አንቃ",
+    "formulaPanelEnabledDesc": "የSigma አዝራሩን በሪባን ላይ አሳይ እና ትዕዛዙ ሊፈለግ የሚችል የቀመር የጎን አሞሌ እንዲከፍት ፍቀድ።"
   },
   "az": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3907,7 +3973,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Düstur panelini aktivləşdir",
+    "formulaPanelEnabledDesc": "Lentdə Sigma düyməsini göstər və əmrin axtarış edilə bilən düstur yan panelini açmasına icazə ver."
   },
   "be": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4022,7 +4090,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Уключыць панэль формул",
+    "formulaPanelEnabledDesc": "Паказваць кнопку Sigma на стужцы і дазволіць камандзе адкрываць бакавую панэль формул з пошукам."
   },
   "bg": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4137,7 +4207,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Активиране на панела с формули",
+    "formulaPanelEnabledDesc": "Показване на бутона Sigma в лентата и разрешаване на командата да отваря страничния панел с формули и търсене."
   },
   "bn": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4252,7 +4324,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "সূত্র প্যানেল সক্রিয় করুন",
+    "formulaPanelEnabledDesc": "রিবনে Sigma বোতাম দেখান এবং কমান্ডকে অনুসন্ধানযোগ্য সূত্র সাইডবার খুলতে দিন।"
   },
   "ca": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4367,7 +4441,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Activa el tauler de fórmules",
+    "formulaPanelEnabledDesc": "Mostra el botó Sigma de la cinta i permet que l'ordre obri la barra lateral de fórmules amb cerca."
   },
   "dv": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4482,7 +4558,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "ފޯމިއުލާ ޕެނަލް ހުޅުވާ",
+    "formulaPanelEnabledDesc": "ރިބަންގައި Sigma ބަޓަން ދައްކާ، ހޯދާލެވޭ ފޯމިއުލާ ސައިޑްބާ ކޮމާންޑުން ހުޅުވަން ހުއްދަދޭ."
   },
   "el": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4597,7 +4675,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Ενεργοποίηση πίνακα τύπων",
+    "formulaPanelEnabledDesc": "Εμφάνιση του κουμπιού Sigma στην κορδέλα και δυνατότητα ανοίγματος της πλευρικής γραμμής τύπων με αναζήτηση από την εντολή."
   },
   "eo": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4712,7 +4792,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Ŝalti la formulpanelon",
+    "formulaPanelEnabledDesc": "Montri la butonon Sigma en la rubando kaj permesi al la komando malfermi la serĉeblan formulan flankpanelon."
   },
   "eu": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4827,7 +4909,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Gaitu formula-panela",
+    "formulaPanelEnabledDesc": "Erakutsi Sigma botoia zintan eta baimendu komandoari formula bilagarrien alboko barra irekitzea."
   },
   "ga": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4942,7 +5026,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Cumasaigh painéal na bhfoirmlí",
+    "formulaPanelEnabledDesc": "Taispeáin an cnaipe Sigma sa ribín agus lig don ordú barra taoibh inchuardaithe na bhfoirmlí a oscailt."
   },
   "gl": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5057,7 +5143,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Activar o panel de fórmulas",
+    "formulaPanelEnabledDesc": "Mostrar o botón Sigma na cinta e permitir que a orde abra a barra lateral de fórmulas con busca."
   },
   "hr": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5172,7 +5260,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Omogući ploču formula",
+    "formulaPanelEnabledDesc": "Prikaži gumb Sigma na vrpci i dopusti naredbi otvaranje pretražive bočne trake formula."
   },
   "ka": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5287,7 +5377,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "ფორმულების პანელის ჩართვა",
+    "formulaPanelEnabledDesc": "ლენტზე Sigma ღილაკის ჩვენება და ბრძანებისთვის ძიებადი ფორმულების გვერდითი ზოლის გახსნის უფლების მიცემა."
   },
   "kh": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5402,7 +5494,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "បើកផ្ទាំងរូបមន្ត",
+    "formulaPanelEnabledDesc": "បង្ហាញប៊ូតុង Sigma លើខ្សែឧបករណ៍ និងអនុញ្ញាតឱ្យពាក្យបញ្ជាបើករបារចំហៀងរូបមន្តដែលអាចស្វែងរកបាន។"
   },
   "kn": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5517,7 +5611,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "ಸೂತ್ರ ಫಲಕವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ",
+    "formulaPanelEnabledDesc": "ರಿಬ್ಬನ್‌ನಲ್ಲಿ Sigma ಗುಂಡಿಯನ್ನು ತೋರಿಸಿ ಮತ್ತು ಹುಡುಕಬಹುದಾದ ಸೂತ್ರದ ಪಕ್ಕಪಟ್ಟಿಯನ್ನು ತೆರೆಯಲು ಆದೇಶಕ್ಕೆ ಅನುಮತಿಸಿ."
   },
   "ky": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5632,7 +5728,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Формула панелин иштетүү",
+    "formulaPanelEnabledDesc": "Тасмада Sigma баскычын көрсөтүп, буйрукка изделүүчү формула каптал тилкесин ачууга уруксат берүү."
   },
   "la": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5747,7 +5845,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Tabulam formularum habilitare",
+    "formulaPanelEnabledDesc": "Bullam Sigma in taenia ostende et mandato permitte ut latus formularum pervestigabile aperiat."
   },
   "lt": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5862,7 +5962,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Įjungti formulių skydelį",
+    "formulaPanelEnabledDesc": "Rodyti Sigma mygtuką juostoje ir leisti komandai atverti formulių šoninę juostą su paieška."
   },
   "lv": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5977,7 +6079,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Iespējot formulu paneli",
+    "formulaPanelEnabledDesc": "Rādīt Sigma pogu lentē un ļaut komandai atvērt meklējamo formulu sānjoslu."
   },
   "ml": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6092,7 +6196,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "സൂത്ര പാനൽ പ്രവർത്തനക്ഷമമാക്കുക",
+    "formulaPanelEnabledDesc": "റിബണിൽ Sigma ബട്ടൺ കാണിക്കുകയും തിരയാവുന്ന സൂത്ര സൈഡ്‌ബാർ തുറക്കാൻ കമാൻഡിനെ അനുവദിക്കുകയും ചെയ്യുക."
   },
   "ms": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6207,7 +6313,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Dayakan panel formula",
+    "formulaPanelEnabledDesc": "Tunjukkan butang Sigma pada reben dan benarkan arahan membuka bar sisi formula yang boleh dicari."
   },
   "nan-TW": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6322,7 +6430,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "啟用公式面枋",
+    "formulaPanelEnabledDesc": "佇工具列顯示 Sigma 鈕，閣予指令會當拍開通搜揣的公式邊仔欄。"
   },
   "ne": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6437,7 +6547,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "सूत्र प्यानल सक्षम गर्नुहोस्",
+    "formulaPanelEnabledDesc": "रिबनमा Sigma बटन देखाउनुहोस् र आदेशलाई खोज्न मिल्ने सूत्र साइडबार खोल्न दिनुहोस्।"
   },
   "oc": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6552,7 +6664,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Activar lo panèl de formulas",
+    "formulaPanelEnabledDesc": "Afichar lo boton Sigma dins lo riban e permetre a la comanda de dobrir la barra laterala de formulas amb recèrca."
   },
   "or": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6667,7 +6781,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "ସୂତ୍ର ପ୍ୟାନେଲ୍ ସକ୍ଷମ କରନ୍ତୁ",
+    "formulaPanelEnabledDesc": "ରିବନ୍‌ରେ Sigma ବଟନ୍ ଦେଖାନ୍ତୁ ଏବଂ ସନ୍ଧାନଯୋଗ୍ୟ ସୂତ୍ର ପାର୍ଶ୍ୱପଟ ଖୋଲିବାକୁ କମାଣ୍ଡକୁ ଅନୁମତି ଦିଅନ୍ତୁ।"
   },
   "sa": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6782,7 +6898,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "सूत्रफलकं सक्रियं कुरुत",
+    "formulaPanelEnabledDesc": "पट्टिकायां Sigma पिञ्जं दर्शयतु तथा अन्वेषणीयं सूत्रपार्श्वफलकम् उद्घाटयितुं आदेशम् अनुमन्यताम्।"
   },
   "si": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6897,7 +7015,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "සූත්‍ර පැනලය සබල කරන්න",
+    "formulaPanelEnabledDesc": "රිබනයේ Sigma බොත්තම පෙන්වා සෙවිය හැකි සූත්‍ර පැති තීරුව විවෘත කිරීමට විධානයට ඉඩ දෙන්න."
   },
   "sk": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7012,7 +7132,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Povoliť panel vzorcov",
+    "formulaPanelEnabledDesc": "Zobraziť tlačidlo Sigma na páse s nástrojmi a umožniť príkazu otvoriť prehľadávateľný bočný panel vzorcov."
   },
   "sl": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7127,7 +7249,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Omogoči ploščo formul",
+    "formulaPanelEnabledDesc": "Prikaži gumb Sigma na traku in dovoli ukazu odpiranje stranske vrstice formul z iskanjem."
   },
   "sq": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7242,7 +7366,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Aktivizo panelin e formulave",
+    "formulaPanelEnabledDesc": "Shfaq butonin Sigma në shirit dhe lejo komandën të hapë shiritin anësor të kërkueshëm të formulave."
   },
   "sr": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7357,7 +7483,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Омогући панел формула",
+    "formulaPanelEnabledDesc": "Прикажи дугме Sigma на траци и дозволи команди да отвори претраживу бочну траку формула."
   },
   "sw": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7472,7 +7600,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Washa paneli ya fomula",
+    "formulaPanelEnabledDesc": "Onyesha kitufe cha Sigma kwenye utepe na uruhusu amri kufungua upau wa kando wa fomula unaoweza kutafutwa."
   },
   "ta": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7587,7 +7717,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "சூத்திரப் பலகையை இயக்கு",
+    "formulaPanelEnabledDesc": "ரிப்பனில் Sigma பொத்தானைக் காட்டி, தேடக்கூடிய சூத்திரப் பக்கப்பட்டியைத் திறக்க கட்டளையை அனுமதிக்கவும்."
   },
   "te": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7702,7 +7834,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "సూత్రాల ప్యానెల్‌ను ప్రారంభించండి",
+    "formulaPanelEnabledDesc": "రిబ్బన్‌లో Sigma బటన్‌ను చూపించి, శోధించగల సూత్రాల సైడ్‌బార్‌ను తెరవడానికి ఆదేశాన్ని అనుమతించండి."
   },
   "tl": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7817,7 +7951,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Paganahin ang panel ng formula",
+    "formulaPanelEnabledDesc": "Ipakita ang Sigma button sa ribbon at payagan ang command na buksan ang nahahanap na sidebar ng formula."
   },
   "tt": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7932,7 +8068,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Формула панелен кабызу",
+    "formulaPanelEnabledDesc": "Тасмада Sigma төймәсен күрсәтергә һәм боерыкка эзләнә торган формула ян панелен ачарга рөхсәт итәргә."
   },
   "ur": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -8047,7 +8185,9 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "فارمولا پینل فعال کریں",
+    "formulaPanelEnabledDesc": "ربن میں Sigma بٹن دکھائیں اور کمانڈ کو قابلِ تلاش فارمولا سائڈ بار کھولنے دیں۔"
   },
   "uz": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -8162,6 +8302,8 @@
     "formulaPanelItemCount": "%1 of %2 items",
     "noMatchingFormulas": "No formulas or environments match this search.",
     "expandAllGroups": "Expand all groups",
-    "collapseAllGroups": "Collapse all groups"
+    "collapseAllGroups": "Collapse all groups",
+    "formulaPanelEnabledName": "Formula panelini yoqing",
+    "formulaPanelEnabledDesc": "Tasmada Sigma tugmasini ko‘rsating va buyruqqa qidiriladigan formula yon panelini ochishga ruxsat bering."
   }
 }

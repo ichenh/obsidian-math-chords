@@ -34,6 +34,8 @@ export const locale: Record<TranslationKey, string> = {
   mathEnvironmentsName: "数学环境",
   shortcutManagementHeading: "快捷键管理",
   formulaPanelTitle: "公式面板",
+  formulaPanelEnabledName: "启用公式面板",
+  formulaPanelEnabledDesc: "显示 Sigma 功能区按钮，并允许通过命令打开可搜索的公式侧边栏。",
   shortcutManagementDesc: "按分组浏览，或搜索按键、名称、命令和分组。公式预览根据每条 LaTeX 片段动态生成。",
   searchName: "搜索",
   searchPlaceholder: "按键、名称、命令或分组",

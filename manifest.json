@@ -1,7 +1,7 @@
 {
   "id": "math-chords",
   "name": "Math Chords",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "minAppVersion": "1.5.0",
   "description": "Write and normalize LaTeX math with leader-key snippets, protected delimiter conversion, preview, brace navigation, and display environments.",
   "author": "CHEH Hua",
