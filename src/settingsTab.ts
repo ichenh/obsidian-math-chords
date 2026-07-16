@@ -1,11 +1,8 @@
 import {
   App,
-  finishRenderMath,
-  loadMathJax,
   Modal,
   Notice,
   PluginSettingTab,
-  renderMath,
   Setting,
   setIcon,
   TextComponent,
@@ -16,13 +13,18 @@ import { isValidKeySequence } from "./keys";
 import { t } from "./l10n/locale";
 import type ObsidianMathChordsPlugin from "./main";
 import { normalizeChordSetting, normalizeSequenceSetting } from "./settings";
-import { buildShortcutPreview, shortcutMatchesSearch } from "./shortcutPresentation";
+import { shortcutMatchesSearch } from "./shortcutPresentation";
+import {
+  scheduleShortcutPreviews,
+  type ShortcutPreviewRequest,
+} from "./shortcutPreviewRenderer";
 import type { MathEnvironment, Shortcut } from "./types";
 import { shortcutStorageKey } from "./trie";
 
 export class ObsidianMathChordsSettingTab extends PluginSettingTab {
   plugin: ObsidianMathChordsPlugin;
   private search = "";
+  private previewCleanup: (() => void) | null = null;
 
   constructor(app: App, plugin: ObsidianMathChordsPlugin) {
     super(app, plugin);
@@ -214,10 +216,12 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
     };
 
     applyFilter();
-    void renderShortcutPreviews(previewRequests, managerEl);
+    this.previewCleanup = scheduleShortcutPreviews(previewRequests, managerEl);
   }
 
   display(): void {
+    this.previewCleanup?.();
+    this.previewCleanup = null;
     const { containerEl } = this;
     containerEl.empty();
     containerEl.addClass("obsidian-math-chords-settings");
@@ -408,6 +412,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
             void runWithNotice(async () => {
               this.plugin.settings.mathEnvironments.push(entry);
               await this.plugin.saveSettings();
+              this.plugin.refreshFormulaPanels();
               this.display();
             }, t("noticeCouldNotSaveSettings"));
           }).open();
@@ -466,6 +471,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
           void runWithNotice(async () => {
             this.plugin.settings.mathEnvironments[index] = updated;
             await this.plugin.saveSettings();
+            this.plugin.refreshFormulaPanels();
             this.display();
           }, t("noticeCouldNotSaveSettings"));
         }).open();
@@ -480,6 +486,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
             void runWithNotice(async () => {
               this.plugin.settings.mathEnvironments.splice(index, 1);
               await this.plugin.saveSettings();
+              this.plugin.refreshFormulaPanels();
               this.display();
             }, t("noticeCouldNotSaveSettings"));
           },
@@ -493,69 +500,18 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         const [item] = list.splice(from, 1);
         list.splice(to, 0, item);
         await this.plugin.saveSettings();
+        this.plugin.refreshFormulaPanels();
         this.display();
       }, t("noticeCouldNotSaveSettings"));
     });
 
     this.renderShortcutManager(containerEl);
   }
-}
 
-interface ShortcutPreviewRequest {
-  containerEl: HTMLElement;
-  command: string;
-}
-
-async function renderShortcutPreviews(
-  requests: ShortcutPreviewRequest[],
-  ownerEl: HTMLElement,
-): Promise<void> {
-  try {
-    await loadMathJax();
-  } catch {
-    if (!ownerEl.parentElement) return;
-    for (const { containerEl } of requests) {
-      if (!containerEl.parentElement) continue;
-      containerEl.empty();
-      containerEl.createSpan({ text: "—" });
-    }
-    return;
-  }
-
-  // display() may have rebuilt the settings tab while MathJax was loading.
-  // Never populate preview nodes that belong to the discarded view.
-  if (!ownerEl.parentElement) return;
-
-  for (const { containerEl, command } of requests) {
-    if (!containerEl.parentElement) continue;
-    containerEl.empty();
-    renderShortcutPreview(containerEl, command);
-  }
-
-  try {
-    await finishRenderMath();
-  } catch {
-    // Names and LaTeX source remain visible even if stylesheet flushing fails.
-  }
-}
-
-function renderShortcutPreview(containerEl: HTMLElement, command: string): void {
-  const preview = buildShortcutPreview(command);
-  if (preview.fallback) {
-    containerEl.createEl("code", { text: preview.fallback });
-    return;
-  }
-  if (!preview.latex) {
-    containerEl.createSpan({ text: "—" });
-    return;
-  }
-
-  try {
-    const mathEl = renderMath(preview.latex, false);
-    mathEl.addClass("obsidian-math-chords-shortcut-preview-math");
-    containerEl.appendChild(mathEl);
-  } catch {
-    containerEl.createSpan({ text: "—" });
+  hide(): void {
+    this.previewCleanup?.();
+    this.previewCleanup = null;
+    super.hide();
   }
 }
 

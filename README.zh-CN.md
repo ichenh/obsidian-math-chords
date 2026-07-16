@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>在 Obsidian 中更快地输入并规范化 LaTeX 数学内容。</strong><br />
-  将 leader 快捷片段、安全定界符转换、行内预览、大括号跳转和行间公式环境集中到一个插件中。
+  将 leader 快捷片段、可搜索公式面板、安全定界符转换、行内预览、大括号跳转和行间公式环境集中到一个插件中。
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.3.1。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.3.3。** 见 [CHANGELOG](CHANGELOG.md)。
 
 **需要 Obsidian 1.5.0+。** 以键盘操作为主，建议在桌面端使用。
 
@@ -43,6 +43,7 @@
 - [功能](#功能)
 - [安装](#安装)
 - [快速开始](#快速开始)
+- [公式面板](#公式面板)
 - [快捷键参考](#快捷键参考)
 - [行间公式环境包裹](#行间公式环境包裹)
 - [配置](#配置)
@@ -61,6 +62,7 @@
 | 功能 | 说明 |
 | :--- | :--- |
 | **结构化输入** | 按可配置的 leader 键，再按按键序列插入常用 LaTeX 结构和符号。 |
+| **公式面板** | 在 Obsidian 侧边栏浏览或搜索当前快捷键目录，点击渲染后的公式即可插入。 |
 | **光标占位符** | 命令模板中的 `$$` 标记光标（或选区）位置，例如 `\frac{$$}{}`。 |
 | **自动 `$…$` 包裹** | 可选：在公式区域外插入时，自动用行内公式定界符包裹。 |
 | **行内实时预览** | 光标位于 `$…$` 内时，在公式上方用 Obsidian 原生 **MathJax** 渲染预览（默认开启）。 |
@@ -123,6 +125,16 @@ npm run build
 8. 按 leader 之后的 **`Shift+E`**（默认），或运行命令 **Wrap display math with environment** 选择环境；若光标不在 `$$…$$` 内，会先插入行间公式块。
 
 > **说明：** 下文快捷键表只列出 **leader 之后** 的按键。默认 leader 为 `Alt+M`。
+
+---
+
+## 公式面板
+
+点击 Ribbon 中的 **sigma（Σ）** 图标，或从 Obsidian 命令面板运行 **Open formula panel（打开公式面板）**。右侧栏会按照 `shortcuts.yaml` 中实际加载的快捷键分组显示公式；搜索可匹配按键、名称、LaTeX 命令和分组。点击公式后，会插入到最近使用且仍然打开的 Markdown 编辑器。统计栏将快捷公式与数学环境统一称为“条目”。各组首次按照日常使用频率排列；可拖曳标题右侧的手柄调整个人顺序，点击相邻箭头单独收起或展开分组，也可使用统计栏右侧按钮一键收起或展开全部分组。分组顺序和收起状态会跨重启保存。
+
+面板插入与 leader 快捷键共用选区替换、`$$` 光标标记、公式外自动包裹、行间公式动作及光标定位规则。重新加载、合并、新增、编辑或删除快捷键后，已打开的公式面板会自动刷新。若当前没有可用的 Markdown 笔记，插件不会修改工作区，并会显示提示。
+
+**数学环境**分组直接读取设置中的可编辑环境列表。内置的 `aligned`、`matrix`、`cases` 和 `gathered` 会显示对应的多行示例。点击后可包裹当前行间公式；若当前位置还没有行间公式，则会在一次可撤销的编辑事务中创建 `$$…$$` 块并插入环境。
 
 ---
 
@@ -326,7 +338,7 @@ Math Chords 可以只替换标准 LaTeX 数学定界符，并原样保留公式�
 | Environment wrap keys（环境包裹快捷键） | `Shift+E` | leader 之后触发环境选择器的按键。 |
 | Math environments（数学环境） | 4 个内置 | 可编辑的环境列表。 |
 
-**内置命令**（可在 **设置 → 快捷键** 中绑定或修改）：**Insert inline math**、**Insert display math**、**Wrap display math with environment**、**Convert LaTeX Delimiters in Selection**、**Convert LaTeX Delimiters in Current File**。
+**内置命令**（可在 **设置 → 快捷键** 中绑定或修改）：**Open formula panel**、**Insert inline math**、**Insert display math**、**Wrap display math with environment**、**Convert LaTeX Delimiters in Selection**、**Convert LaTeX Delimiters in Current File**。
 
 所有内置命令均不注册默认快捷键；需要时可在 **设置 → 快捷键** 中自行绑定。
 
@@ -335,7 +347,7 @@ Math Chords 可以只替换标准 LaTeX 数学定界符，并原样保留公式�
 
 关闭跨类型转换后，在现有公式块内调用另一种公式命令会保持笔记不变并显示提示，不会生成无效的嵌套定界符。行间公式转为行内公式时，会移除包裹旁的一组换行，并将内容中其余换行替换为空格，因为 Markdown 行内公式无法可靠地跨行。
 
-**Shortcut management（快捷键管理）：** 快捷键按分组显示为紧凑、响应式列表。每一行保留易读名称和原始 LaTeX 命令，同时提供动态生成的 MathJax 预览与键帽式按键序列。搜索会匹配按键、名称、命令和分组，且不会重建整个设置页。添加和编辑使用独立对话框，删除前需要确认。**Reload** 重新读取 YAML；**Merge defaults** 追加缺失的内置项，不覆盖已有绑定。公式预览只用于界面展示，不会写入 `shortcuts.yaml`。
+**Shortcut management（快捷键管理）：** 快捷键按分组显示为紧凑、响应式列表。每一行保留易读名称和原始 LaTeX 命令，同时提供动态生成的 MathJax 预览与键帽式按键序列。公式预览仅在条目接近可视区域时渲染，打开设置页不会一次性排版整个目录。搜索会匹配按键、名称、命令和分组，且不会重建整个设置页。添加和编辑使用独立对话框，删除前需要确认。**Reload** 重新读取 YAML；**Merge defaults** 追加缺失的内置项，不覆盖已有绑定。公式预览只用于界面展示，不会写入 `shortcuts.yaml`。
 
 ---
 
@@ -367,15 +379,19 @@ math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-
 │   ├── braceNav.ts         # 公式内大括号跳转
 │   ├── delimiterConverter.ts # 纯函数形式的受保护定界符转换
 │   ├── delimiterEditor.ts  # 定界符转换的 Obsidian 编辑事务
+│   ├── formulaPanel.ts      # 可搜索的 Obsidian 公式侧边栏
+│   ├── formulaPanelModel.ts # 纯函数形式的面板分组与筛选模型
 │   ├── markdownProtection.ts # 共享 Markdown 保护区解析器
 │   ├── mathToggle.ts       # 纯函数形式的行内/行间切换与转换规划
 │   ├── mathEnvPlan.ts      # 纯函数形式的单事务环境包裹规划
 │   ├── defaults.ts         # 默认快捷键目录
 │   ├── config.ts           # YAML 读写与合并
+│   ├── shortcutPreviewRenderer.ts # 共享的延迟 MathJax 预览渲染
 │   ├── l10n/               # 内置语言包 + 按需加载 extras
 │   └── …                   # 公式检测、预览、设置界面等
 ├── tests/
-│   └── unit/               # Vitest 单元测试与回归测试
+│   ├── unit/               # Vitest 单元测试与回归测试
+│   └── performance/        # 按需运行的解析性能基准
 ├── vitest.config.ts
 ├── shortcuts.yaml          # 随仓库分发的默认快捷键（102 条）
 ├── styles.css              # 预览与设置样式
@@ -404,6 +420,7 @@ npm run dev    # 监听模式构建
 npm run lint   # ESLint + Obsidian 插件规则
 npm run build  # 类型检查 + 生产构建
 npm test       # Vitest 单元测试
+npm run bench  # 按需运行解析器与定界符转换性能基准
 npm run seed   # 从 src/defaults.ts 重写 shortcuts.yaml
 npm run check:shortcuts # 检查 shortcuts.yaml 是否与 src/defaults.ts 一致
 npm run seed:locales  # 从 scripts/locale-catalog.json 生成内置 TS 语言包与 locales-extras.json

@@ -102,7 +102,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "zh": {
     "intro": "Math Chords 主要处理两类任务：高效输入常用 LaTeX 结构，以及将从 AI 工具、论文或 LaTeX 文档复制的数学内容规范为适合 Obsidian Markdown 的格式。你可以在下方配置 leader 快捷键、安全定界符转换、粘贴处理、MathJax 预览、大括号跳转、行内/行间公式切换和数学环境。",
@@ -207,7 +217,17 @@
     "deleteMathEnvHeading": "删除数学环境",
     "deleteMathEnvDesc": "确定删除数学环境“%1”吗？此操作无法撤销。",
     "noticeEnableSmartMathToggle": "请启用“智能公式切换”以在行内公式和行间公式之间转换。",
-    "noticeInvalidKeySequence": "请输入完整的按键序列；每个组合键必须且只能包含一个非修饰键。"
+    "noticeInvalidKeySequence": "请输入完整的按键序列；每个组合键必须且只能包含一个非修饰键。",
+    "formulaPanelTitle": "公式面板",
+    "cmdOpenFormulaPanel": "打开公式面板",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords：无法打开公式面板。",
+    "noticeOpenMarkdownToInsert": "请先打开 Markdown 笔记，再插入公式。",
+    "expandGroup": "展开分组",
+    "collapseGroup": "收起分组",
+    "formulaPanelItemCount": "%1 / %2 个条目",
+    "noMatchingFormulas": "没有匹配此搜索的公式或环境。",
+    "expandAllGroups": "展开全部分组",
+    "collapseAllGroups": "收起全部分组"
   },
   "zh-TW": {
     "intro": "Math Chords 主要處理兩類工作：有效率地輸入常用 LaTeX 結構，以及將從 AI 工具、論文或 LaTeX 文件複製的數學內容規範為適合 Obsidian Markdown 的格式。你可以在下方設定 leader 快捷鍵、安全定界符轉換、貼上處理、MathJax 預覽、大括號導覽、行內/行間公式切換和數學環境。",
@@ -312,7 +332,17 @@
     "deleteMathEnvHeading": "刪除數學環境",
     "deleteMathEnvDesc": "確定要刪除數學環境「%1」嗎？此操作無法復原。",
     "noticeEnableSmartMathToggle": "請啟用「智慧公式切換」以在行內公式與行間公式之間轉換。",
-    "noticeInvalidKeySequence": "請輸入完整的按鍵序列；每個組合鍵必須且只能包含一個非修飾鍵。"
+    "noticeInvalidKeySequence": "請輸入完整的按鍵序列；每個組合鍵必須且只能包含一個非修飾鍵。",
+    "formulaPanelTitle": "公式面板",
+    "cmdOpenFormulaPanel": "開啟公式面板",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords：無法開啟公式面板。",
+    "noticeOpenMarkdownToInsert": "請先開啟 Markdown 筆記，再插入公式。",
+    "expandGroup": "展開分組",
+    "collapseGroup": "收合分組",
+    "formulaPanelItemCount": "%1 / %2 個項目",
+    "noMatchingFormulas": "沒有符合此搜尋的公式或環境。",
+    "expandAllGroups": "展開全部分組",
+    "collapseAllGroups": "收合全部分組"
   },
   "fr": {
     "intro": "Math Chords répond à deux besoins : saisir efficacement les structures LaTeX courantes et normaliser pour Obsidian Markdown les contenus mathématiques copiés depuis des outils d’IA, des articles ou des sources LaTeX. Configurez ci-dessous les raccourcis leader, la conversion sûre des délimiteurs, le traitement du collage, l’aperçu MathJax, la navigation entre accolades, la bascule en ligne/bloc et les environnements mathématiques.",
@@ -417,7 +447,17 @@
     "deleteMathEnvHeading": "Supprimer l’environnement mathématique",
     "deleteMathEnvDesc": "Supprimer l’environnement mathématique « %1 » ? Cette action est irréversible.",
     "noticeEnableSmartMathToggle": "Activez la bascule intelligente pour convertir entre les maths en ligne et en bloc.",
-    "noticeInvalidKeySequence": "Saisissez une séquence complète ; chaque accord doit contenir exactement une touche autre qu’un modificateur."
+    "noticeInvalidKeySequence": "Saisissez une séquence complète ; chaque accord doit contenir exactement une touche autre qu’un modificateur.",
+    "formulaPanelTitle": "Palette de formules",
+    "cmdOpenFormulaPanel": "Ouvrir la palette de formules",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords : impossible d’ouvrir la palette de formules.",
+    "noticeOpenMarkdownToInsert": "Ouvrez une note Markdown avant d’insérer une formule.",
+    "expandGroup": "Développer le groupe",
+    "collapseGroup": "Réduire le groupe",
+    "formulaPanelItemCount": "%1 éléments sur %2",
+    "noMatchingFormulas": "Aucune formule ni aucun environnement ne correspond à cette recherche.",
+    "expandAllGroups": "Développer tous les groupes",
+    "collapseAllGroups": "Réduire tous les groupes"
   },
   "de": {
     "intro": "Math Chords unterstützt zwei Aufgaben: wiederkehrende LaTeX-Strukturen effizient einzugeben und mathematische Inhalte aus KI-Werkzeugen, Fachartikeln oder LaTeX-Quellen für Obsidian Markdown zu vereinheitlichen. Unten lassen sich Leader-Kürzel, sichere Trennzeichenkonvertierung, Einfügeverarbeitung, MathJax-Vorschau, Klammernavigation, Inline-/Blockumschaltung und Mathematikumgebungen konfigurieren.",
@@ -522,7 +562,17 @@
     "deleteMathEnvHeading": "Mathematikumgebung löschen",
     "deleteMathEnvDesc": "Die Mathematikumgebung „%1“ löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "noticeEnableSmartMathToggle": "Aktiviere den intelligenten Mathematik-Umschalter, um zwischen Inline- und Anzeigeformeln zu konvertieren.",
-    "noticeInvalidKeySequence": "Gib eine vollständige Tastenfolge ein; jeder Akkord benötigt genau eine Taste, die keine Modifikatortaste ist."
+    "noticeInvalidKeySequence": "Gib eine vollständige Tastenfolge ein; jeder Akkord benötigt genau eine Taste, die keine Modifikatortaste ist.",
+    "formulaPanelTitle": "Formelpalette",
+    "cmdOpenFormulaPanel": "Formelpalette öffnen",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: Die Formelpalette konnte nicht geöffnet werden.",
+    "noticeOpenMarkdownToInsert": "Öffnen Sie eine Markdown-Notiz, bevor Sie eine Formel einfügen.",
+    "expandGroup": "Gruppe erweitern",
+    "collapseGroup": "Gruppe reduzieren",
+    "formulaPanelItemCount": "%1 von %2 Elementen",
+    "noMatchingFormulas": "Keine Formeln oder Umgebungen entsprechen dieser Suche.",
+    "expandAllGroups": "Alle Gruppen erweitern",
+    "collapseAllGroups": "Alle Gruppen reduzieren"
   },
   "es": {
     "intro": "Math Chords resuelve dos tareas: introducir eficazmente estructuras LaTeX habituales y normalizar para Obsidian Markdown el contenido matemático copiado de herramientas de IA, artículos o fuentes LaTeX. Configura abajo los atajos leader, la conversión segura de delimitadores, el tratamiento del pegado, la vista previa MathJax, la navegación entre llaves, el cambio entre fórmulas en línea y de bloque y los entornos matemáticos.",
@@ -627,7 +677,17 @@
     "deleteMathEnvHeading": "Eliminar entorno matemático",
     "deleteMathEnvDesc": "¿Eliminar el entorno matemático «%1»? Esta acción no se puede deshacer.",
     "noticeEnableSmartMathToggle": "Activa el cambio matemático inteligente para convertir entre matemáticas en línea y de bloque.",
-    "noticeInvalidKeySequence": "Introduce una secuencia completa; cada combinación necesita exactamente una tecla que no sea modificadora."
+    "noticeInvalidKeySequence": "Introduce una secuencia completa; cada combinación necesita exactamente una tecla que no sea modificadora.",
+    "formulaPanelTitle": "Panel de fórmulas",
+    "cmdOpenFormulaPanel": "Abrir el panel de fórmulas",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: no se pudo abrir el panel de fórmulas.",
+    "noticeOpenMarkdownToInsert": "Abre una nota Markdown antes de insertar una fórmula.",
+    "expandGroup": "Expandir grupo",
+    "collapseGroup": "Contraer grupo",
+    "formulaPanelItemCount": "%1 de %2 elementos",
+    "noMatchingFormulas": "Ninguna fórmula o entorno coincide con esta búsqueda.",
+    "expandAllGroups": "Expandir todos los grupos",
+    "collapseAllGroups": "Contraer todos los grupos"
   },
   "it": {
     "intro": "Math Chords gestisce due attività: inserire in modo efficiente le strutture LaTeX ricorrenti e normalizzare per Obsidian Markdown i contenuti matematici copiati da strumenti di IA, articoli o sorgenti LaTeX. Qui sotto puoi configurare scorciatoie leader, conversione sicura dei delimitatori, gestione dell’incolla, anteprima MathJax, navigazione tra parentesi graffe, commutazione inline/display e ambienti matematici.",
@@ -732,7 +792,17 @@
     "deleteMathEnvHeading": "Elimina ambiente matematico",
     "deleteMathEnvDesc": "Eliminare l’ambiente matematico «%1»? Questa azione non può essere annullata.",
     "noticeEnableSmartMathToggle": "Attiva la commutazione matematica intelligente per convertire tra formule in linea e visualizzate.",
-    "noticeInvalidKeySequence": "Inserisci una sequenza completa; ogni combinazione deve contenere esattamente un tasto non modificatore."
+    "noticeInvalidKeySequence": "Inserisci una sequenza completa; ogni combinazione deve contenere esattamente un tasto non modificatore.",
+    "formulaPanelTitle": "Pannello formule",
+    "cmdOpenFormulaPanel": "Apri il pannello formule",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: impossibile aprire il pannello formule.",
+    "noticeOpenMarkdownToInsert": "Apri una nota Markdown prima di inserire una formula.",
+    "expandGroup": "Espandi gruppo",
+    "collapseGroup": "Comprimi gruppo",
+    "formulaPanelItemCount": "%1 di %2 elementi",
+    "noMatchingFormulas": "Nessuna formula o ambiente corrisponde alla ricerca.",
+    "expandAllGroups": "Espandi tutti i gruppi",
+    "collapseAllGroups": "Comprimi tutti i gruppi"
   },
   "nl": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -837,7 +907,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "pt": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -942,7 +1022,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "pt-BR": {
     "intro": "O Math Chords atende a duas tarefas: inserir estruturas LaTeX recorrentes com eficiência e normalizar para o Markdown do Obsidian conteúdos matemáticos copiados de ferramentas de IA, artigos ou fontes LaTeX. Configure abaixo atalhos leader, conversão segura de delimitadores, tratamento de colagem, pré-visualização MathJax, navegação entre chaves, alternância inline/bloco e ambientes matemáticos.",
@@ -1047,7 +1137,17 @@
     "deleteMathEnvHeading": "Excluir ambiente matemático",
     "deleteMathEnvDesc": "Excluir o ambiente matemático “%1”? Esta ação não pode ser desfeita.",
     "noticeEnableSmartMathToggle": "Ative a alternância matemática inteligente para converter entre matemática inline e de exibição.",
-    "noticeInvalidKeySequence": "Insira uma sequência completa; cada combinação precisa de exatamente uma tecla não modificadora."
+    "noticeInvalidKeySequence": "Insira uma sequência completa; cada combinação precisa de exatamente uma tecla não modificadora.",
+    "formulaPanelTitle": "Painel de fórmulas",
+    "cmdOpenFormulaPanel": "Abrir painel de fórmulas",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: não foi possível abrir o painel de fórmulas.",
+    "noticeOpenMarkdownToInsert": "Abra uma nota Markdown antes de inserir uma fórmula.",
+    "expandGroup": "Expandir grupo",
+    "collapseGroup": "Recolher grupo",
+    "formulaPanelItemCount": "%1 de %2 itens",
+    "noMatchingFormulas": "Nenhuma fórmula ou ambiente corresponde à pesquisa.",
+    "expandAllGroups": "Expandir todos os grupos",
+    "collapseAllGroups": "Recolher todos os grupos"
   },
   "ru": {
     "intro": "Math Chords решает две задачи: ускоряет ввод часто используемых структур LaTeX и приводит к формату Obsidian Markdown математический текст, скопированный из ИИ-инструментов, статей или исходников LaTeX. Ниже можно настроить leader-сочетания, безопасное преобразование разделителей, обработку вставки, предпросмотр MathJax, навигацию по фигурным скобкам, переключение строчных и выкладных формул и математические окружения.",
@@ -1152,7 +1252,17 @@
     "deleteMathEnvHeading": "Удалить математическое окружение",
     "deleteMathEnvDesc": "Удалить математическое окружение «%1»? Это действие нельзя отменить.",
     "noticeEnableSmartMathToggle": "Включите умное переключение формул для преобразования между строчными и выкладными формулами.",
-    "noticeInvalidKeySequence": "Введите полную последовательность: каждое сочетание должно содержать ровно одну клавишу, не являющуюся модификатором."
+    "noticeInvalidKeySequence": "Введите полную последовательность: каждое сочетание должно содержать ровно одну клавишу, не являющуюся модификатором.",
+    "formulaPanelTitle": "Панель формул",
+    "cmdOpenFormulaPanel": "Открыть панель формул",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: не удалось открыть панель формул.",
+    "noticeOpenMarkdownToInsert": "Откройте заметку Markdown перед вставкой формулы.",
+    "expandGroup": "Развернуть группу",
+    "collapseGroup": "Свернуть группу",
+    "formulaPanelItemCount": "%1 из %2 элементов",
+    "noMatchingFormulas": "Нет формул или окружений, соответствующих поиску.",
+    "expandAllGroups": "Развернуть все группы",
+    "collapseAllGroups": "Свернуть все группы"
   },
   "ja": {
     "intro": "Math Chords は、よく使う LaTeX 構造を効率よく入力することと、AI ツール・論文・LaTeX ソースからコピーした数式を Obsidian Markdown 向けに整えることの二つを支援します。以下で leader ショートカット、安全な区切り記号変換、貼り付け処理、MathJax プレビュー、波括弧ナビゲーション、インライン／ディスプレイ切替、数式環境を設定できます。",
@@ -1257,7 +1367,17 @@
     "deleteMathEnvHeading": "数式環境を削除",
     "deleteMathEnvDesc": "数式環境「%1」を削除しますか？この操作は取り消せません。",
     "noticeEnableSmartMathToggle": "インライン数式とディスプレイ数式を変換するには、スマート数式切り替えを有効にしてください。",
-    "noticeInvalidKeySequence": "完全なキーシーケンスを入力してください。各コードには修飾キー以外のキーが正確に1つ必要です。"
+    "noticeInvalidKeySequence": "完全なキーシーケンスを入力してください。各コードには修飾キー以外のキーが正確に1つ必要です。",
+    "formulaPanelTitle": "数式パネル",
+    "cmdOpenFormulaPanel": "数式パネルを開く",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords：数式パネルを開けませんでした。",
+    "noticeOpenMarkdownToInsert": "数式を挿入する前に Markdown ノートを開いてください。",
+    "expandGroup": "グループを展開",
+    "collapseGroup": "グループを折りたたむ",
+    "formulaPanelItemCount": "%2 件中 %1 件の項目",
+    "noMatchingFormulas": "検索に一致する数式または環境はありません。",
+    "expandAllGroups": "すべてのグループを展開",
+    "collapseAllGroups": "すべてのグループを折りたたむ"
   },
   "ko": {
     "intro": "Math Chords는 자주 쓰는 LaTeX 구조를 효율적으로 입력하고, AI 도구·논문·LaTeX 원본에서 복사한 수학 내용을 Obsidian Markdown에 맞게 정규화하는 두 가지 작업을 지원합니다. 아래에서 leader 단축키, 안전한 구분 기호 변환, 붙여넣기 처리, MathJax 미리보기, 중괄호 탐색, 인라인/디스플레이 전환, 수학 환경을 설정할 수 있습니다.",
@@ -1362,7 +1482,17 @@
     "deleteMathEnvHeading": "수학 환경 삭제",
     "deleteMathEnvDesc": "수학 환경 “%1”을 삭제할까요? 이 작업은 취소할 수 없습니다.",
     "noticeEnableSmartMathToggle": "인라인 수식과 디스플레이 수식을 변환하려면 스마트 수식 전환을 활성화하세요.",
-    "noticeInvalidKeySequence": "완전한 키 시퀀스를 입력하세요. 각 코드는 수정자 키가 아닌 키를 정확히 하나 포함해야 합니다."
+    "noticeInvalidKeySequence": "완전한 키 시퀀스를 입력하세요. 각 코드는 수정자 키가 아닌 키를 정확히 하나 포함해야 합니다.",
+    "formulaPanelTitle": "수식 패널",
+    "cmdOpenFormulaPanel": "수식 패널 열기",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: 수식 패널을 열 수 없습니다.",
+    "noticeOpenMarkdownToInsert": "수식을 삽입하기 전에 Markdown 노트를 여세요.",
+    "expandGroup": "그룹 펼치기",
+    "collapseGroup": "그룹 접기",
+    "formulaPanelItemCount": "%2개 중 %1개 항목",
+    "noMatchingFormulas": "검색과 일치하는 수식 또는 환경이 없습니다.",
+    "expandAllGroups": "모든 그룹 펼치기",
+    "collapseAllGroups": "모든 그룹 접기"
   },
   "pl": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1467,7 +1597,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "cs": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1572,7 +1712,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "sv": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1677,7 +1827,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "da": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1782,7 +1942,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "fi": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1887,7 +2057,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "no": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -1992,7 +2172,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ro": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2097,7 +2287,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "uk": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2202,7 +2402,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "vi": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2307,7 +2517,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "id": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2412,7 +2632,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ar": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2517,7 +2747,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "he": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2622,7 +2862,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "th": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2727,7 +2977,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "tr": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2832,7 +3092,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "en-GB": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -2937,7 +3207,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "hi": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3042,7 +3322,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "fa": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3147,7 +3437,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "nn": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3252,7 +3552,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "hu": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3357,7 +3667,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "am": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3462,7 +3782,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "az": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3567,7 +3897,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "be": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3672,7 +4012,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "bg": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3777,7 +4127,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "bn": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3882,7 +4242,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ca": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -3987,7 +4357,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "dv": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4092,7 +4472,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "el": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4197,7 +4587,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "eo": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4302,7 +4702,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "eu": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4407,7 +4817,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ga": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4512,7 +4932,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "gl": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4617,7 +5047,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "hr": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4722,7 +5162,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ka": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4827,7 +5277,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "kh": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -4932,7 +5392,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "kn": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5037,7 +5507,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ky": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5142,7 +5622,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "la": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5247,7 +5737,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "lt": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5352,7 +5852,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "lv": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5457,7 +5967,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ml": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5562,7 +6082,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ms": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5667,7 +6197,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "nan-TW": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5772,7 +6312,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ne": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5877,7 +6427,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "oc": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -5982,7 +6542,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "or": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6087,7 +6657,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "sa": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6192,7 +6772,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "si": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6297,7 +6887,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "sk": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6402,7 +7002,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "sl": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6507,7 +7117,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "sq": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6612,7 +7232,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "sr": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6717,7 +7347,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "sw": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6822,7 +7462,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ta": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -6927,7 +7577,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "te": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7032,7 +7692,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "tl": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7137,7 +7807,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "tt": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7242,7 +7922,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "ur": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7347,7 +8037,17 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   },
   "uz": {
     "intro": "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
@@ -7452,6 +8152,16 @@
     "deleteMathEnvHeading": "Delete math environment",
     "deleteMathEnvDesc": "Delete the math environment \"%1\"? This action cannot be undone.",
     "noticeEnableSmartMathToggle": "Enable Smart math toggle to convert between inline and display math.",
-    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key."
+    "noticeInvalidKeySequence": "Enter a complete key sequence; each chord needs exactly one non-modifier key.",
+    "formulaPanelTitle": "Formula panel",
+    "cmdOpenFormulaPanel": "Open formula panel",
+    "noticeCouldNotOpenFormulaPanel": "Math Chords: could not open the formula panel.",
+    "noticeOpenMarkdownToInsert": "Open a Markdown note before inserting a formula.",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group",
+    "formulaPanelItemCount": "%1 of %2 items",
+    "noMatchingFormulas": "No formulas or environments match this search.",
+    "expandAllGroups": "Expand all groups",
+    "collapseAllGroups": "Collapse all groups"
   }
 }

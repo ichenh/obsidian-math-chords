@@ -150,6 +150,17 @@ describe("LaTeX delimiter conversion", () => {
     expect(result.displayCount).toBe(0);
   });
 
+  it("does not join adjacent selections into a complete delimiter pair", () => {
+    const input = "\\(split\\)";
+    const middle = input.indexOf("\\)");
+    const result = findLatexDelimiterConversionsInRanges(input, [
+      { from: 0, to: middle },
+      { from: middle, to: input.length },
+    ]);
+
+    expect(result.changes).toEqual([]);
+  });
+
   it("uses surrounding Markdown context for paste conversion", () => {
     const code = "```latex\nplaceholder\n```";
     const codeAt = code.indexOf("placeholder");
@@ -162,5 +173,10 @@ describe("LaTeX delimiter conversion", () => {
     expect(
       convertPastedLatexDelimiters(text, "\\(x\\)", textAt, textAt + "placeholder".length),
     ).toBe("$x$");
+  });
+
+  it("skips pasted text without a possible opening delimiter", () => {
+    expect(convertPastedLatexDelimiters("before after", "plain text", 7, 7)).toBeNull();
+    expect(convertPastedLatexDelimiters("before after", "\\) only", 7, 7)).toBeNull();
   });
 });

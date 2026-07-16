@@ -4,6 +4,20 @@ import { validateMathEnvironment } from "./inputValidation";
 
 export const DEFAULT_MATH_BRACE_NAV_NEXT = "Alt+ArrowRight";
 export const DEFAULT_MATH_BRACE_NAV_PREV = "Alt+ArrowLeft";
+export const SETTINGS_SCHEMA_VERSION = 3;
+export const FORMULA_PANEL_ENVIRONMENT_GROUP_ID = "__math_environments__";
+
+export const DEFAULT_FORMULA_PANEL_GROUP_ORDER = [
+  "Structures",
+  FORMULA_PANEL_ENVIRONMENT_GROUP_ID,
+  "Greek",
+  "Operators",
+  "Delimiters",
+  "Accents",
+  "Arrows",
+  "Matrices",
+  "Fonts",
+];
 
 function isValidNavChord(chord: string): boolean {
   return isValidChord(chord);
@@ -35,6 +49,7 @@ export const DEFAULT_MATH_ENVIRONMENTS: MathEnvironment[] = [
 ];
 
 export interface ObsidianMathChordsSettings {
+  schemaVersion: number;
   enabled: boolean;
   showHintPopup: boolean;
   showInlinePreview: boolean;
@@ -48,9 +63,12 @@ export interface ObsidianMathChordsSettings {
   mathEnvWrapEnabled: boolean;
   mathEnvWrapKeys: string;
   mathEnvironments: MathEnvironment[];
+  formulaPanelGroupOrder: string[];
+  formulaPanelCollapsedGroups: string[];
 }
 
 export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
+  schemaVersion: SETTINGS_SCHEMA_VERSION,
   enabled: true,
   showHintPopup: true,
   showInlinePreview: true,
@@ -64,14 +82,58 @@ export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
   mathEnvWrapEnabled: true,
   mathEnvWrapKeys: "Shift+E",
   mathEnvironments: DEFAULT_MATH_ENVIRONMENTS.map((env) => ({ ...env })),
+  formulaPanelGroupOrder: [...DEFAULT_FORMULA_PANEL_GROUP_ORDER],
+  formulaPanelCollapsedGroups: [],
 };
 
-export function normalizeSettings(data: Record<string, unknown> | null): ObsidianMathChordsSettings {
-  const legacy = data ?? {};
-  const raw = { ...DEFAULT_SETTINGS, ...legacy };
+function normalizeStringList(raw: unknown, fallback: string[]): string[] {
+  if (!Array.isArray(raw)) return [...fallback];
+  const values = raw
+    .filter((entry): entry is string => typeof entry === "string")
+    .map((entry) => entry.trim());
+  return [...new Set(values)];
+}
 
-  const savedEnvironments = Array.isArray(legacy.mathEnvironments)
-    ? legacy.mathEnvironments
+export function migrateSettingsData(
+  data: Record<string, unknown> | null,
+): Record<string, unknown> {
+  const migrated = { ...(data ?? {}) };
+  const savedSchema = typeof migrated.schemaVersion === "number" ? migrated.schemaVersion : 0;
+  if (typeof migrated.mathBraceNavEnabled !== "boolean") {
+    migrated.mathBraceNavEnabled = migrated.snippetTabStops;
+  }
+  if (typeof migrated.mathBraceNavNextKey !== "string") {
+    migrated.mathBraceNavNextKey = migrated.placeholderNavNextKey;
+  }
+  if (typeof migrated.mathBraceNavPrevKey !== "string") {
+    migrated.mathBraceNavPrevKey = migrated.placeholderNavPrevKey;
+  }
+  delete migrated.snippetTabStops;
+  delete migrated.placeholderNavNextKey;
+  delete migrated.placeholderNavPrevKey;
+  if (
+    savedSchema > 0 &&
+    savedSchema < 3 &&
+    Array.isArray(migrated.formulaPanelGroupOrder) &&
+    !migrated.formulaPanelGroupOrder.includes(FORMULA_PANEL_ENVIRONMENT_GROUP_ID)
+  ) {
+    const order = migrated.formulaPanelGroupOrder.filter(
+      (entry): entry is string => typeof entry === "string",
+    );
+    const structuresAt = order.indexOf("Structures");
+    order.splice(structuresAt >= 0 ? structuresAt + 1 : 0, 0, FORMULA_PANEL_ENVIRONMENT_GROUP_ID);
+    migrated.formulaPanelGroupOrder = order;
+  }
+  migrated.schemaVersion = SETTINGS_SCHEMA_VERSION;
+  return migrated;
+}
+
+export function normalizeSettings(data: Record<string, unknown> | null): ObsidianMathChordsSettings {
+  const migrated = migrateSettingsData(data);
+  const raw = { ...DEFAULT_SETTINGS, ...migrated };
+
+  const savedEnvironments = Array.isArray(migrated.mathEnvironments)
+    ? migrated.mathEnvironments
     : null;
   const validSavedEnvironments = savedEnvironments
     ? savedEnvironments
@@ -86,21 +148,20 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
         : DEFAULT_MATH_ENVIRONMENTS.map((env) => ({ ...env }));
 
   return {
+    schemaVersion: SETTINGS_SCHEMA_VERSION,
     enabled: raw.enabled !== false,
     showHintPopup: raw.showHintPopup !== false,
     showInlinePreview: raw.showInlinePreview !== false,
     mathBraceNavEnabled:
-      typeof legacy.mathBraceNavEnabled === "boolean"
-        ? legacy.mathBraceNavEnabled
-        : typeof legacy.snippetTabStops === "boolean"
-          ? legacy.snippetTabStops
-          : DEFAULT_SETTINGS.mathBraceNavEnabled,
+      typeof migrated.mathBraceNavEnabled === "boolean"
+        ? migrated.mathBraceNavEnabled
+        : DEFAULT_SETTINGS.mathBraceNavEnabled,
     mathBraceNavNextKey: normalizeNavKey(
-      raw.mathBraceNavNextKey ?? legacy.placeholderNavNextKey,
+      raw.mathBraceNavNextKey,
       DEFAULT_MATH_BRACE_NAV_NEXT,
     ),
     mathBraceNavPrevKey: normalizeNavKey(
-      raw.mathBraceNavPrevKey ?? legacy.placeholderNavPrevKey,
+      raw.mathBraceNavPrevKey,
       DEFAULT_MATH_BRACE_NAV_PREV,
     ),
     leaderKey: normalizeChordSetting(raw.leaderKey, DEFAULT_SETTINGS.leaderKey),
@@ -113,5 +174,13 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
       DEFAULT_SETTINGS.mathEnvWrapKeys,
     ),
     mathEnvironments: environments,
+    formulaPanelGroupOrder: normalizeStringList(
+      raw.formulaPanelGroupOrder,
+      DEFAULT_SETTINGS.formulaPanelGroupOrder,
+    ),
+    formulaPanelCollapsedGroups: normalizeStringList(
+      raw.formulaPanelCollapsedGroups,
+      DEFAULT_SETTINGS.formulaPanelCollapsedGroups,
+    ),
   };
 }

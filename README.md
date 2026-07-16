@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>Write and normalize LaTeX math in Obsidian—faster.</strong><br />
-  Use leader-key snippets, safe delimiter conversion, inline preview, brace navigation, and display-math environments in one plugin.
+  Use leader-key snippets, a searchable formula panel, safe delimiter conversion, inline preview, brace navigation, and display-math environments in one plugin.
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@ The converter changes delimiters only. It preserves formula content, whitespace,
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.3.1.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.3.3.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
@@ -41,6 +41,7 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 - [Features](#features)
 - [Installation](#installation)
 - [Quick start](#quick-start)
+- [Formula panel](#formula-panel)
 - [Shortcut reference](#shortcut-reference)
 - [Display-math environment wrap](#display-math-environment-wrap)
 - [Configuration](#configuration)
@@ -59,6 +60,7 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 | Feature | Description |
 | :--- | :--- |
 | **Structured input** | Press a configurable leader key, then a key sequence to insert common LaTeX structures and symbols. |
+| **Formula panel** | Browse or search the active shortcut catalog in an Obsidian sidebar and click a rendered formula to insert it. |
 | **Caret placeholder** | `$$` in a command template marks where the cursor (or selection) is placed, e.g. `\frac{$$}{}`. |
 | **Auto `$…$` wrap** | Optional: when inserting outside math, wrap the snippet in inline math delimiters. |
 | **Inline live preview** | While the caret is inside `$…$`, a floating panel above the formula renders with Obsidian's native **MathJax** (on by default). |
@@ -121,6 +123,16 @@ Copy `main.js`, `manifest.json`, `styles.css`, `locales-extras.json`, and `short
 8. Press **`Shift+E`** (default, after the leader) or run **Wrap display math with environment** to pick an environment. If the caret is not already inside `$$…$$`, a display block is inserted first.
 
 > **Note:** Shortcut tables list keys **after** the leader. The default leader is `Alt+M`. Built-in commands do not register default hotkeys; assign them under **Settings → Hotkeys** if desired.
+
+---
+
+## Formula panel
+
+Select the **sigma (Σ)** ribbon icon or run **Open formula panel** from Obsidian's command palette. The right sidebar groups the same shortcuts loaded from `shortcuts.yaml`; search matches keys, names, LaTeX commands, and groups. Click a rendered formula to insert it into the most recently active Markdown editor. The summary counts all panel **items**, including shortcut formulas and math environments. Groups start in a frequency-oriented order; use the grip button to drag them into a personal order, the adjacent chevron to collapse or expand one group, or the summary action to collapse or expand all groups at once. Group order and collapsed state persist across restarts.
+
+Panel insertion uses the same selection replacement, `$$` caret marker, auto-wrap, display-math action, and cursor-placement rules as leader shortcuts. Reloading, merging, adding, editing, or deleting shortcuts refreshes open formula panels automatically. If no Markdown note is open, the plugin leaves the workspace unchanged and shows a notice.
+
+The **Math environments** group reads the editable environment list from settings. Its built-in `aligned`, `matrix`, `cases`, and `gathered` entries use representative multi-row previews. Clicking one wraps the current display formula, or creates a new `$$…$$` block and environment in one undoable editor transaction when needed.
 
 ---
 
@@ -326,7 +338,7 @@ Open **Settings → Math Chords**. The settings UI follows your Obsidian display
 | Environment wrap keys | `Shift+E` | Keys after the leader for the picker. |
 | Math environments | 4 built-ins | Editable list for the picker. |
 
-**Built-in commands** (assign or reassign under **Settings → Hotkeys**): **Insert inline math**, **Insert display math**, **Wrap display math with environment**, **Convert LaTeX Delimiters in Selection**, **Convert LaTeX Delimiters in Current File**.
+**Built-in commands** (assign or reassign under **Settings → Hotkeys**): **Open formula panel**, **Insert inline math**, **Insert display math**, **Wrap display math with environment**, **Convert LaTeX Delimiters in Selection**, **Convert LaTeX Delimiters in Current File**.
 
 No built-in command registers a default hotkey. Assign any desired bindings under **Settings → Hotkeys**.
 
@@ -335,7 +347,7 @@ No built-in command registers a default hotkey. Assign any desired bindings unde
 
 When cross-kind conversion is disabled, invoking the other math command inside an existing block leaves the note unchanged and shows a notice instead of creating invalid nested delimiters. Converting display math to inline math removes one wrapper-adjacent line break and replaces remaining internal line breaks with spaces, because inline Markdown math cannot span lines reliably.
 
-**Shortcut management:** shortcuts are grouped into compact, responsive sections. Each row keeps the readable name and raw LaTeX command while adding a derived MathJax preview and keycap-style sequence. Search matches keys, names, commands, and groups without rebuilding the settings page. Add and edit operations remain available in focused dialogs; deletions require confirmation. **Reload** re-reads YAML, and **Merge defaults** appends missing built-in shortcuts without overwriting yours. Formula previews are presentation-only and are never written to `shortcuts.yaml`.
+**Shortcut management:** shortcuts are grouped into compact, responsive sections. Each row keeps the readable name and raw LaTeX command while adding a derived MathJax preview and keycap-style sequence. Visible previews render on demand so opening settings does not eagerly typeset the entire catalog. Search matches keys, names, commands, and groups without rebuilding the settings page. Add and edit operations remain available in focused dialogs; deletions require confirmation. **Reload** re-reads YAML, and **Merge defaults** appends missing built-in shortcuts without overwriting yours. Formula previews are presentation-only and are never written to `shortcuts.yaml`.
 
 ---
 
@@ -367,15 +379,19 @@ math-chords/                  # Plugin id; install folder .obsidian/plugins/math
 │   ├── braceNav.ts         # Brace-pair navigation inside math
 │   ├── delimiterConverter.ts # Pure, protected LaTeX delimiter conversion
 │   ├── delimiterEditor.ts  # Obsidian editor transactions for conversion
+│   ├── formulaPanel.ts      # Searchable Obsidian formula sidebar
+│   ├── formulaPanelModel.ts # Pure panel grouping and filtering model
 │   ├── markdownProtection.ts # Shared Markdown protected-region parser
 │   ├── mathToggle.ts       # Pure inline/display toggle and conversion planning
 │   ├── mathEnvPlan.ts      # Pure single-transaction environment planning
 │   ├── defaults.ts         # Default shortcut catalog
 │   ├── config.ts           # YAML load/save/merge
+│   ├── shortcutPreviewRenderer.ts # Shared lazy MathJax preview rendering
 │   ├── l10n/               # bundled locales + lazy extras loader
 │   └── …                   # math, preview, settings UI, etc.
 ├── tests/
-│   └── unit/               # Vitest unit and regression tests
+│   ├── unit/               # Vitest unit and regression tests
+│   └── performance/        # Opt-in parser performance baselines
 ├── vitest.config.ts
 ├── shortcuts.yaml          # Shipped default shortcuts (102 entries)
 ├── styles.css              # Preview & settings styles
@@ -404,6 +420,7 @@ npm run dev    # watch build
 npm run lint   # ESLint + Obsidian plugin rules
 npm run build  # typecheck + production bundle
 npm test       # Vitest unit tests
+npm run bench  # opt-in parser and delimiter-conversion benchmarks
 npm run seed   # rewrite shortcuts.yaml from src/defaults.ts
 npm run check:shortcuts # verify shortcuts.yaml matches src/defaults.ts
 npm run seed:locales  # bundled TS locales + locales-extras.json from scripts/locale-catalog.json

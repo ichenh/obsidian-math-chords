@@ -7,15 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-07-16
+
+### Added
+
+- Added an Obsidian-native formula sidebar opened from the ribbon or command palette, with grouped browsing, search, lazy MathJax previews, and click-to-insert behavior backed by the active `shortcuts.yaml` catalog.
+- Formula-panel insertion remembers the most recent open Markdown editor, preserves selection and caret behavior, and reports when no valid target note is available.
+- Formula-panel groups can now be collapsed and reordered with a drag handle; both preferences persist across restarts.
+- The formula panel now includes the configured display-math environments, with representative multi-row previews for `cases`, matrices, `aligned`, and `gathered`, and direct one-transaction insertion or wrapping.
+- The formula-panel summary now provides a one-click action to collapse or expand every group.
+
+### Changed
+
+- Shared lazy shortcut-preview rendering between settings and the formula panel, including popout-window-aware observers and lifecycle cleanup.
+- The initial formula-panel group order now prioritizes structures, Greek letters, operators, and delimiters according to common daily math-entry frequency.
+- Formula-panel totals now use the inclusive term "items" because the panel contains both shortcut formulas and math environments.
+
+### Fixed
+
+- Clicking the sigma ribbon icon now toggles the formula panel closed when it is already open.
+- Moved the formula-panel search icon to the right side so it no longer overlaps entered text.
+- Collapsing or expanding formula-panel groups now updates the existing DOM in place, preserving rendered MathJax previews and preventing the panel from flashing and shifting twice on every click.
+- Pointer clicks on formula-panel actions no longer steal focus from the Markdown editor, preventing Live Preview formulas from collapsing on mouse-down and reopening after insertion.
+
+## [0.3.2] - 2026-07-16
+
 ### Added
 
 - Added an Obsidian-aware ESLint gate to the complete local and CI verification path.
 - Added bilingual security policies and codes of conduct, structured bug and feature issue forms, a pull request checklist, and grouped Dependabot updates for npm and GitHub Actions.
 - Added CI coverage for both the minimum supported Node.js version and the current primary Node.js version.
+- Added opt-in Vitest performance baselines for large-note math parsing and imported delimiter conversion.
 
 ### Changed
 
 - Moved unit and regression tests from `src/` to `tests/unit/` and updated the TypeScript, Vitest, release validation, and contributor documentation paths accordingly.
+- Added an explicit settings schema and automatic migration for legacy brace-navigation keys.
+- Reused a document-level math analysis index across preview and insertion queries, parsed protection ranges once for multi-selection delimiter conversion, and skipped paste parsing when no opening delimiter is present.
+- Shortcut previews now render near the visible settings viewport and release their observers and timers when the tab is rebuilt or hidden.
+- Brace-navigation parsing now runs only for its configured navigation chords instead of every editor keydown.
 
 ### Removed
 

@@ -47,8 +47,20 @@ function findInlineClose(text: string, from: number, to: number): number {
   return -1;
 }
 
-function scanMathChunk(text: string, from: number, to: number): MathRegion[] {
+interface MathChunkScan {
+  regions: MathRegion[];
+  hasUnclosedDisplay: boolean;
+}
+
+interface MarkdownMathIndex extends MathChunkScan {
+  protectedRanges: TextRange[];
+}
+
+let cachedMathIndex: { text: string; index: MarkdownMathIndex } | null = null;
+
+function scanMathChunk(text: string, from: number, to: number): MathChunkScan {
   const regions: MathRegion[] = [];
+  let hasUnclosedDisplay = false;
   let cursor = from;
 
   while (cursor < to) {
@@ -63,6 +75,7 @@ function scanMathChunk(text: string, from: number, to: number): MathRegion[] {
         cursor = close + 2;
         continue;
       }
+      hasUnclosedDisplay = true;
       cursor += 2;
       continue;
     }
@@ -78,17 +91,42 @@ function scanMathChunk(text: string, from: number, to: number): MathRegion[] {
     cursor += 1;
   }
 
-  return regions;
+  return { regions, hasUnclosedDisplay };
+}
+
+function buildMarkdownMathIndex(
+  text: string,
+  protectedRanges: TextRange[],
+): MarkdownMathIndex {
+  const regions: MathRegion[] = [];
+  let hasUnclosedDisplay = false;
+
+  for (const range of editableRanges(text.length, protectedRanges)) {
+    const chunk = scanMathChunk(text, range.from, range.to);
+    regions.push(...chunk.regions);
+    hasUnclosedDisplay ||= chunk.hasUnclosedDisplay;
+  }
+
+  return { regions, protectedRanges, hasUnclosedDisplay };
+}
+
+function getMarkdownMathIndex(text: string): MarkdownMathIndex {
+  if (cachedMathIndex?.text === text) return cachedMathIndex.index;
+  const protectedRanges = findNonMathProtectedRanges(text);
+  const index = buildMarkdownMathIndex(text, protectedRanges);
+  cachedMathIndex = { text, index };
+  return index;
 }
 
 /** All matched Markdown math regions outside Markdown code/frontmatter regions. */
 export function scanMarkdownMathRegions(
   text: string,
-  protectedRanges: TextRange[] = findNonMathProtectedRanges(text),
+  protectedRanges?: TextRange[],
 ): MathRegion[] {
-  return editableRanges(text.length, protectedRanges).flatMap((range) =>
-    scanMathChunk(text, range.from, range.to),
-  );
+  const index = protectedRanges
+    ? buildMarkdownMathIndex(text, protectedRanges)
+    : getMarkdownMathIndex(text);
+  return [...index.regions];
 }
 
 export function findMathRegionAt(text: string, offset: number): MathRegion | null {
@@ -100,7 +138,7 @@ export function findMathRegionAt(text: string, offset: number): MathRegion | nul
 export function findMathRegionAtForEdit(text: string, offset: number): MathRegion | null {
   if (offset < 0 || offset > text.length) return null;
   return (
-    scanMarkdownMathRegions(text).find(
+    getMarkdownMathIndex(text).regions.find(
       (region) => {
         const bounds = getMathContentBounds(region);
         return offset >= bounds.from && offset <= bounds.to;
@@ -117,7 +155,7 @@ export function isInMath(text: string, offset: number): boolean {
 export function hasUnclosedInlineMathBefore(text: string, offset: number): boolean {
   if (offset <= 0) return false;
   const end = Math.min(offset, text.length);
-  const protectedRanges = findNonMathProtectedRanges(text);
+  const protectedRanges = getMarkdownMathIndex(text).protectedRanges;
 
   for (const chunk of editableRanges(text.length, protectedRanges, 0, end)) {
     let cursor = chunk.from;
@@ -145,7 +183,7 @@ export function hasUnclosedInlineMathBefore(text: string, offset: number): boole
 
 function touchesInlineMathClose(text: string, offset: number): boolean {
   if (offset <= 0 || offset > text.length) return false;
-  return scanMarkdownMathRegions(text).some(
+  return getMarkdownMathIndex(text).regions.some(
     (region) =>
       region.kind === "inline" && (region.to === offset || region.to === offset - 1),
   );
@@ -156,7 +194,7 @@ export function shouldAutoWrapSnippet(text: string, from: number, to: number): b
   const start = Math.max(0, Math.min(from, to));
   const end = Math.min(text.length, Math.max(from, to));
   if (
-    scanMarkdownMathRegions(text).some(
+    getMarkdownMathIndex(text).regions.some(
       (region) => start <= region.to && end >= region.from,
     )
   ) {
@@ -175,7 +213,7 @@ export function resolveSnippetInsertPosition(
   to: number,
 ): { from: number; to: number } {
   if (from !== to) return { from, to };
-  const region = scanMarkdownMathRegions(text).find(
+  const region = getMarkdownMathIndex(text).regions.find(
     (entry) =>
       entry.kind === "inline" && (entry.to === from || entry.to === from - 1),
   );
@@ -197,7 +235,7 @@ export function extractMathContent(text: string, region: MathRegion): string {
 
 export function isValidMathRegion(text: string, region: MathRegion): boolean {
   if (region.from < 0 || region.to > text.length || region.from >= region.to) return false;
-  return scanMarkdownMathRegions(text).some(
+  return getMarkdownMathIndex(text).regions.some(
     (candidate) =>
       candidate.from === region.from &&
       candidate.to === region.to &&
@@ -207,18 +245,5 @@ export function isValidMathRegion(text: string, region: MathRegion): boolean {
 
 /** True when normal Markdown text contains an opening `$$` without a close. */
 export function hasUnclosedDisplayMath(text: string): boolean {
-  const protectedRanges = findNonMathProtectedRanges(text);
-  for (const chunk of editableRanges(text.length, protectedRanges)) {
-    let cursor = chunk.from;
-    while ((cursor = text.indexOf("$$", cursor)) >= 0 && cursor + 2 <= chunk.to) {
-      if (!isExactDollarRun(text, cursor, 2) || isEscaped(text, cursor)) {
-        cursor += 2;
-        continue;
-      }
-      const close = findDisplayClose(text, cursor + 2, chunk.to);
-      if (close < 0) return true;
-      cursor = close + 2;
-    }
-  }
-  return false;
+  return getMarkdownMathIndex(text).hasUnclosedDisplay;
 }

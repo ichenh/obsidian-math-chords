@@ -2,7 +2,12 @@ import { EditorView } from "@codemirror/view";
 import { Editor, MarkdownView, Notice, Plugin } from "obsidian";
 import { loadShortcuts, mergeShortcuts, saveShortcuts } from "./config";
 import { DEFAULT_SHORTCUTS } from "./defaults";
-import { DEFAULT_SETTINGS, normalizeSettings, type ObsidianMathChordsSettings } from "./settings";
+import {
+  DEFAULT_SETTINGS,
+  normalizeSettings,
+  SETTINGS_SCHEMA_VERSION,
+  type ObsidianMathChordsSettings,
+} from "./settings";
 import { buildTrie, shortcutStorageKey, type TrieNode } from "./trie";
 import { eventMatchesChord } from "./keys";
 import { LeaderController } from "./leader";
@@ -16,16 +21,20 @@ import {
   resolveSnippetInsertPosition,
   shouldAutoWrapSnippet,
 } from "./math";
-import { openEnvironmentPicker } from "./mathEnv";
+import { openEnvironmentPicker, wrapMathWithEnvironment } from "./mathEnv";
 import { runWithNotice } from "./errors";
 import { initLocale, t } from "./l10n/locale";
-import type { Shortcut } from "./types";
+import type { MathEnvironment, Shortcut } from "./types";
 import {
   convertLatexDelimitersInDocument,
   convertLatexDelimitersInSelections,
   pasteConvertedLatexDelimiters,
 } from "./delimiterEditor";
 import { offsetToTextPosition, replaceTextRange } from "./textPosition";
+import {
+  FORMULA_PANEL_VIEW_TYPE,
+  FormulaPanelView,
+} from "./formulaPanel";
 
 export default class ObsidianMathChordsPlugin extends Plugin {
   settings: ObsidianMathChordsSettings = { ...DEFAULT_SETTINGS };
@@ -35,6 +44,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   trie: TrieNode = buildTrie(DEFAULT_SHORTCUTS);
 
   private leaderController: LeaderController | null = null;
+  private lastMarkdownEditor: Editor | null = null;
   private readonly keydownDocuments = new Map<Document, () => void>();
   private settingsWriteChain: Promise<void> = Promise.resolve();
   private shortcutWriteChain: Promise<void> = Promise.resolve();
@@ -43,6 +53,17 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     await this.loadSettings();
     await initLocale(this);
     await runWithNotice(() => this.reloadShortcuts(), t("noticeCouldNotLoadYaml"));
+
+    this.registerView(
+      FORMULA_PANEL_VIEW_TYPE,
+      (leaf) => new FormulaPanelView(leaf, this),
+    );
+    this.addRibbonIcon("sigma", t("formulaPanelTitle"), () => {
+      void runWithNotice(
+        () => this.toggleFormulaPanel(),
+        t("noticeCouldNotOpenFormulaPanel"),
+      );
+    });
 
     this.leaderController = new LeaderController({
       isEnabled: () => this.settings.enabled,
@@ -75,8 +96,11 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       this.keydownDocuments.clear();
     });
     this.registerEvent(
-      this.app.workspace.on("active-leaf-change", () => {
+      this.app.workspace.on("active-leaf-change", (leaf) => {
         this.leaderController?.reset();
+        if (leaf?.view instanceof MarkdownView) {
+          this.lastMarkdownEditor = leaf.view.editor;
+        }
       }),
     );
     this.registerEvent(this.app.workspace.on("editor-paste", this.onEditorPaste));
@@ -87,6 +111,17 @@ export default class ObsidianMathChordsPlugin extends Plugin {
         isActiveView: (view) => this.isActiveEditorView(view),
       }),
     ]);
+
+    this.addCommand({
+      id: "open-formula-panel",
+      name: t("cmdOpenFormulaPanel"),
+      callback: () => {
+        void runWithNotice(
+          () => this.activateFormulaPanel(),
+          t("noticeCouldNotOpenFormulaPanel"),
+        );
+      },
+    });
 
     this.addCommand({
       id: "insert-inline-math",
@@ -137,23 +172,17 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     if (!this.isEditorFocused(cm)) return;
 
     if (this.settings.mathBraceNavEnabled) {
-      const editor = this.findEditor(cm);
-      if (editor) {
-        const doc = editor.getValue();
-        const offset = editor.posToOffset(editor.getCursor());
-        if (findMathRegionAt(doc, offset)) {
-          if (
-            eventMatchesChord(event, this.settings.mathBraceNavNextKey) &&
-            jumpToBrace(editor, "next")
-          ) {
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-          }
-          if (
-            eventMatchesChord(event, this.settings.mathBraceNavPrevKey) &&
-            jumpToBrace(editor, "prev")
-          ) {
+      const direction = eventMatchesChord(event, this.settings.mathBraceNavNextKey)
+        ? "next"
+        : eventMatchesChord(event, this.settings.mathBraceNavPrevKey)
+          ? "prev"
+          : null;
+      if (direction) {
+        const editor = this.findEditor(cm);
+        if (editor) {
+          const doc = editor.getValue();
+          const offset = editor.posToOffset(editor.getCursor());
+          if (findMathRegionAt(doc, offset) && jumpToBrace(editor, direction)) {
             event.preventDefault();
             event.stopPropagation();
             return;
@@ -206,6 +235,10 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   async loadSettings(): Promise<void> {
     const data = (await this.loadData()) as Record<string, unknown> | null;
     this.settings = normalizeSettings(data);
+    const savedSchema = data?.schemaVersion;
+    if (typeof savedSchema !== "number" || savedSchema < SETTINGS_SCHEMA_VERSION) {
+      await this.saveSettings();
+    }
   }
 
   async saveSettings(): Promise<void> {
@@ -214,6 +247,8 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       mathEnvironments: this.settings.mathEnvironments.map((environment) => ({
         ...environment,
       })),
+      formulaPanelGroupOrder: [...this.settings.formulaPanelGroupOrder],
+      formulaPanelCollapsedGroups: [...this.settings.formulaPanelCollapsedGroups],
     };
     const write = this.settingsWriteChain.then(() => this.saveData(snapshot));
     this.settingsWriteChain = write.catch(() => undefined);
@@ -242,6 +277,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       shortcuts.map((shortcut) => [shortcutStorageKey(shortcut), shortcut]),
     );
     this.rebuildTrie();
+    this.refreshFormulaPanels();
   }
 
   async mergeDefaultShortcuts(): Promise<number> {
@@ -252,6 +288,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     await this.enqueueShortcutWrite(merged);
     this.shortcuts = new Map(merged.map((shortcut) => [shortcutStorageKey(shortcut), shortcut]));
     this.rebuildTrie();
+    this.refreshFormulaPanels();
     return added.length;
   }
 
@@ -260,10 +297,107 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     await this.enqueueShortcutWrite(list);
     this.shortcuts = new Map(next);
     this.rebuildTrie();
+    this.refreshFormulaPanels();
   }
 
   rebuildTrie(): void {
     this.trie = buildTrie([...this.shortcuts.values()]);
+  }
+
+  async activateFormulaPanel(): Promise<void> {
+    const activeMarkdown = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (activeMarkdown) this.lastMarkdownEditor = activeMarkdown.editor;
+
+    const existingLeaf = this.app.workspace.getLeavesOfType(FORMULA_PANEL_VIEW_TYPE)[0];
+    const leaf = existingLeaf ?? this.app.workspace.getRightLeaf(false);
+    if (!leaf) throw new Error("Could not create a formula panel leaf.");
+    if (!existingLeaf) {
+      await leaf.setViewState({ type: FORMULA_PANEL_VIEW_TYPE, active: true });
+    }
+    this.app.workspace.setActiveLeaf(leaf, { focus: true });
+  }
+
+  async toggleFormulaPanel(): Promise<void> {
+    const leaves = this.app.workspace.getLeavesOfType(FORMULA_PANEL_VIEW_TYPE);
+    if (leaves.length > 0) {
+      for (const leaf of leaves) leaf.detach();
+      return;
+    }
+    await this.activateFormulaPanel();
+  }
+
+  insertShortcutFromFormulaPanel(shortcut: Shortcut): void {
+    const editor = this.resolveFormulaPanelEditor();
+    if (!editor) {
+      new Notice(t("noticeOpenMarkdownToInsert"));
+      return;
+    }
+    this.insertShortcutForEditor(editor, shortcut);
+    editor.focus();
+  }
+
+  async updateFormulaPanelGroupOrder(order: string[]): Promise<void> {
+    this.settings.formulaPanelGroupOrder = [...order];
+    this.refreshFormulaPanels();
+    await this.saveSettings();
+  }
+
+  async setFormulaPanelGroupCollapsed(groupId: string, collapsed: boolean): Promise<void> {
+    const groups = new Set(this.settings.formulaPanelCollapsedGroups);
+    if (collapsed) groups.add(groupId);
+    else groups.delete(groupId);
+    this.settings.formulaPanelCollapsedGroups = [...groups];
+    await this.saveSettings();
+  }
+
+  async setAllFormulaPanelGroupsCollapsed(
+    groupIds: string[],
+    collapsed: boolean,
+  ): Promise<void> {
+    const collapsedGroups = new Set(this.settings.formulaPanelCollapsedGroups);
+    for (const groupId of groupIds) {
+      if (collapsed) collapsedGroups.add(groupId);
+      else collapsedGroups.delete(groupId);
+    }
+    this.settings.formulaPanelCollapsedGroups = [...collapsedGroups];
+    await this.saveSettings();
+  }
+
+  insertMathEnvironmentFromFormulaPanel(environment: MathEnvironment): void {
+    if (!this.settings.mathEnvWrapEnabled) {
+      new Notice(t("noticeEnableEnvWrap"));
+      return;
+    }
+    const editor = this.resolveFormulaPanelEditor();
+    if (!editor) {
+      new Notice(t("noticeOpenMarkdownToInsert"));
+      return;
+    }
+    wrapMathWithEnvironment(editor, environment);
+    editor.focus();
+  }
+
+  refreshFormulaPanels(): void {
+    for (const leaf of this.app.workspace.getLeavesOfType(FORMULA_PANEL_VIEW_TYPE)) {
+      if (leaf.view instanceof FormulaPanelView) leaf.view.refresh();
+    }
+  }
+
+  private resolveFormulaPanelEditor(): Editor | null {
+    const activeMarkdown = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (activeMarkdown) {
+      this.lastMarkdownEditor = activeMarkdown.editor;
+      return activeMarkdown.editor;
+    }
+    if (!this.lastMarkdownEditor) return null;
+
+    let available = false;
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      if (leaf.view instanceof MarkdownView && leaf.view.editor === this.lastMarkdownEditor) {
+        available = true;
+      }
+    });
+    return available ? this.lastMarkdownEditor : null;
   }
 
   refreshInteractiveState(): void {
@@ -386,7 +520,10 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   private insertShortcut(view: EditorView, shortcut: Shortcut): void {
     const editor = this.findEditor(view);
     if (!editor) return;
+    this.insertShortcutForEditor(editor, shortcut);
+  }
 
+  private insertShortcutForEditor(editor: Editor, shortcut: Shortcut): void {
     if (shortcut.command === "__DISPLAY_MATH__") {
       this.insertDisplayMath(editor);
       return;

@@ -1,6 +1,6 @@
 {
   "name": "obsidian-math-chords",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "private": true,
   "description": "Write and normalize LaTeX math with leader-key snippets, protected delimiter conversion, preview, brace navigation, and display environments.",
   "main": "main.js",
@@ -20,6 +20,7 @@
     "build": "tsc --noEmit && node esbuild.config.mjs production",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
+    "bench": "vitest bench --run",
     "seed": "node scripts/seed-yaml.cjs",
     "seed:locales": "node scripts/seed-locales.cjs",
     "check:shortcuts": "node scripts/seed-yaml.cjs --check",

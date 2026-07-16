@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildShortcutPreview, shortcutMatchesSearch } from "../../src/shortcutPresentation";
+import {
+  buildMathEnvironmentPreview,
+  buildShortcutPreview,
+  shortcutMatchesSearch,
+} from "../../src/shortcutPresentation";
 
 describe("buildShortcutPreview", () => {
   it("shows both operands in the default fraction preview", () => {
@@ -36,6 +40,25 @@ describe("buildShortcutPreview", () => {
       latex: null,
       fallback: "$$",
     });
+  });
+});
+
+describe("buildMathEnvironmentPreview", () => {
+  it("uses representative multi-row content for cases and matrices", () => {
+    expect(
+      buildMathEnvironmentPreview({
+        name: "cases",
+        begin: "\\begin{cases}",
+        end: "\\end{cases}",
+      }),
+    ).toContain("x, & x > 0 \\\\ 0, & x = 0");
+    expect(
+      buildMathEnvironmentPreview({
+        name: "matrix",
+        begin: "\\begin{matrix}",
+        end: "\\end{matrix}",
+      }),
+    ).toContain("a & b \\\\ c & d");
   });
 });
 

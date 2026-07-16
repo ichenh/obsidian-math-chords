@@ -1,4 +1,4 @@
-import type { Shortcut } from "./types";
+import type { MathEnvironment, Shortcut } from "./types";
 
 export interface ShortcutPreview {
   latex: string | null;
@@ -31,4 +31,23 @@ export function buildShortcutPreview(command: string): ShortcutPreview {
   });
   if (/^[\^_]/u.test(latex)) latex = `x${latex}`;
   return { latex, fallback: null };
+}
+
+export function buildMathEnvironmentPreview(environment: MathEnvironment): string {
+  const environmentName =
+    environment.begin.match(/^\\begin\{([^}]+)\}$/u)?.[1].toLocaleLowerCase() ??
+    environment.name.toLocaleLowerCase();
+  if (environmentName === "cases") {
+    return `${environment.begin}x, & x > 0 \\\\ 0, & x = 0${environment.end}`;
+  }
+  if (["matrix", "pmatrix", "bmatrix", "vmatrix", "vmatrix*"].includes(environmentName)) {
+    return `${environment.begin}a & b \\\\ c & d${environment.end}`;
+  }
+  if (environmentName === "aligned" || environmentName === "align") {
+    return `${environment.begin}a &= b \\\\ c &= d${environment.end}`;
+  }
+  if (environmentName === "gathered" || environmentName === "gather") {
+    return `${environment.begin}a + b \\\\ c + d${environment.end}`;
+  }
+  return `${environment.begin}x${environment.end}`;
 }

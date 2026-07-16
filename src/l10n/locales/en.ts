@@ -41,12 +41,15 @@ export const en = {
   mathEnvironmentsName: "Math environments",
 
   shortcutManagementHeading: "Shortcut management",
+  formulaPanelTitle: "Formula panel",
   shortcutManagementDesc:
     "Browse by group or search keys, names, commands, and groups. Formula previews are generated from each LaTeX snippet.",
   searchName: "Search",
   searchPlaceholder: "Keys, name, command, or group",
   shortcutCount: "%1 of %2 shortcuts",
+  formulaPanelItemCount: "%1 of %2 items",
   noMatchingShortcuts: "No shortcuts match this search.",
+  noMatchingFormulas: "No formulas or environments match this search.",
   ungroupedGroup: "Ungrouped",
   unnamedShortcut: "Unnamed shortcut",
 
@@ -56,6 +59,10 @@ export const en = {
   tableActions: "Actions",
   tableOrder: "Order",
   dragToReorder: "Drag to reorder",
+  expandGroup: "Expand group",
+  collapseGroup: "Collapse group",
+  expandAllGroups: "Expand all groups",
+  collapseAllGroups: "Collapse all groups",
   moveUpButton: "Move up",
   moveDownButton: "Move down",
   tableKeys: "Keys",
@@ -90,6 +97,7 @@ export const en = {
   mathEnvEndDesc: "LaTeX inserted after the content, e.g. \\end{aligned}.",
 
   cmdInsertInlineMath: "Insert inline math",
+  cmdOpenFormulaPanel: "Open formula panel",
   cmdInsertDisplayMath: "Insert display math",
   cmdWrapDisplayMathEnv: "Wrap display math with environment",
   cmdConvertLatexDelimitersSelection: "Convert LaTeX Delimiters in Selection",
@@ -101,6 +109,8 @@ export const en = {
   envPickerPlaceholder: "Choose a math environment…",
 
   noticeCouldNotSaveSettings: "Math Chords: could not save settings.",
+  noticeCouldNotOpenFormulaPanel: "Math Chords: could not open the formula panel.",
+  noticeOpenMarkdownToInsert: "Open a Markdown note before inserting a formula.",
   noticeCouldNotReloadYaml: "Math Chords: could not reload shortcuts.yaml.",
   noticeCouldNotMergeDefaults: "Math Chords: could not merge default shortcuts.",
   noticeCouldNotSaveYaml: "Math Chords: could not save shortcuts.yaml.",

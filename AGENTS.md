@@ -58,6 +58,8 @@ an explicit design and compatibility review.
 | `config.ts`, `defaults.ts`, `types.ts` | Shortcut persistence, defaults, and domain types. |
 | `inputValidation.ts` | Pure normalization and validation for external command and environment input. |
 | `shortcutPresentation.ts` | Pure shortcut search and safe preview preparation for the settings UI. |
+| `shortcutPreviewRenderer.ts` | Shared lazy MathJax rendering for shortcut previews. |
+| `formulaPanel.ts`, `formulaPanelModel.ts` | Searchable formula sidebar and its pure grouping/filter model. |
 | `settings.ts`, `settingsTab.ts` | Normalized settings and localized settings UI. |
 | `l10n/` | Language resolution, bundled translations, and optional lazy translations. |
 | `errors.ts`, `hint.ts` | Error reporting and optional shortcut hints. |
@@ -107,6 +109,7 @@ Supported Node.js versions are declared in `package.json`. Install reproducibly 
 - `npm run lint` — ESLint with the official Obsidian plugin rules.
 - `npm run build` — strict TypeScript check and production bundle.
 - `npm test` — Vitest suite.
+- `npm run bench` — opt-in parser and delimiter-conversion performance baselines.
 - `npm run seed` / `npm run check:shortcuts` — generate or verify shortcut YAML.
 - `npm run seed:locales` / `npm run check:locales` — generate or verify locales.
 - `npm run check:release` — verify package, manifest, lockfile, versions, changelog,

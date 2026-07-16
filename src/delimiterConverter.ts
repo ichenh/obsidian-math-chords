@@ -31,19 +31,38 @@ export function findLatexDelimiterConversions(
   from = 0,
   to = markdown.length,
 ): DelimiterConversion {
+  const protectedRanges = findProtectedRanges(markdown);
+  return findConversionsInRanges(markdown, [{ from, to }], protectedRanges);
+}
+
+function findProtectedRanges(markdown: string): ConversionRange[] {
   const nonMathProtectedRanges = findNonMathProtectedRanges(markdown);
-  const protectedRanges = mergeRanges([
+  return mergeRanges([
     ...nonMathProtectedRanges,
     ...scanMarkdownMathRegions(markdown, nonMathProtectedRanges),
   ]);
+}
+
+function findConversionsInRanges(
+  markdown: string,
+  ranges: ConversionRange[],
+  protectedRanges: ConversionRange[],
+): DelimiterConversion {
   const changes: DelimiterChange[] = [];
   let displayCount = 0;
   let inlineCount = 0;
 
-  for (const range of editableRanges(markdown.length, protectedRanges, from, to)) {
-    const counts = findConversionsInText(markdown, range.from, range.to, changes);
-    displayCount += counts.displayCount;
-    inlineCount += counts.inlineCount;
+  for (const requested of ranges) {
+    for (const range of editableRanges(
+      markdown.length,
+      protectedRanges,
+      requested.from,
+      requested.to,
+    )) {
+      const counts = findConversionsInText(markdown, range.from, range.to, changes);
+      displayCount += counts.displayCount;
+      inlineCount += counts.inlineCount;
+    }
   }
 
   changes.sort((a, b) => a.from - b.from);
@@ -55,15 +74,22 @@ export function findLatexDelimiterConversionsInRanges(
   markdown: string,
   ranges: ConversionRange[],
 ): DelimiterConversion {
+  const normalizedRanges = ranges
+    .filter((range) => range.from !== range.to)
+    .map((range) => ({
+      from: Math.max(0, Math.min(range.from, range.to)),
+      to: Math.min(markdown.length, Math.max(range.from, range.to)),
+    }))
+    .filter((range) => range.from < range.to);
+  if (normalizedRanges.length === 0) {
+    return { changes: [], displayCount: 0, inlineCount: 0 };
+  }
+
+  const protectedRanges = findProtectedRanges(markdown);
   const byPosition = new Map<string, DelimiterChange>();
 
-  for (const range of ranges) {
-    if (range.from === range.to) continue;
-    const conversion = findLatexDelimiterConversions(
-      markdown,
-      Math.min(range.from, range.to),
-      Math.max(range.from, range.to),
-    );
+  for (const range of normalizedRanges) {
+    const conversion = findConversionsInRanges(markdown, [range], protectedRanges);
     for (const change of conversion.changes) {
       byPosition.set(`${change.from}:${change.to}`, change);
     }
@@ -87,6 +113,7 @@ export function convertPastedLatexDelimiters(
   from: number,
   to: number,
 ): string | null {
+  if (!pastedText.includes("\\(") && !pastedText.includes("\\[")) return null;
   const start = Math.min(from, to);
   const end = Math.max(from, to);
   const prospective = markdown.slice(0, start) + pastedText + markdown.slice(end);
