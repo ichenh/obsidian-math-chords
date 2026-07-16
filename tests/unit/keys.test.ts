@@ -5,7 +5,7 @@ import {
   normalizeSequenceKeys,
   parseChord,
   parseKeysField,
-} from "./keys";
+} from "../../src/keys";
 
 function keyEvent(partial: Partial<KeyboardEvent> & { key: string }): KeyboardEvent {
   return partial as KeyboardEvent;

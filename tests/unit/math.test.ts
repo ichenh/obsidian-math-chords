@@ -9,7 +9,7 @@ import {
   MAX_DOC_LENGTH,
   resolveSnippetInsertPosition,
   shouldAutoWrapSnippet,
-} from "./math";
+} from "../../src/math";
 
 describe("findMathRegionAt", () => {
   it("detects inline math regions", () => {

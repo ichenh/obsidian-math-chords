@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planMathToggle } from "./mathToggle";
+import { planMathToggle } from "../../src/mathToggle";
 
 describe("planMathToggle", () => {
   it.each([

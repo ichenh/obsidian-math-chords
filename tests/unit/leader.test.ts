@@ -2,12 +2,12 @@ import type { EditorView } from "@codemirror/view";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("obsidian", () => ({
-  getLanguage: () => "en",
+  moment: { locale: () => "en" },
   normalizePath: (path: string) => path,
 }));
-import type { HintPopup } from "./hint";
-import { LeaderController } from "./leader";
-import { buildTrie } from "./trie";
+import type { HintPopup } from "../../src/hint";
+import { LeaderController } from "../../src/leader";
+import { buildTrie } from "../../src/trie";
 
 function keyEvent(
   key: string,

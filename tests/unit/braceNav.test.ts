@@ -3,7 +3,7 @@ import {
   findBraceStopsInMath,
   findNextBraceStop,
   findPrevBraceStop,
-} from "./braceNav";
+} from "../../src/braceNav";
 
 describe("findBraceStopsInMath", () => {
   it("lists brace contents inside inline math", () => {

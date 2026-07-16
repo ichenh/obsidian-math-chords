@@ -6,6 +6,10 @@ Contributions should preserve the plugin's existing behavior, Obsidian compatibi
 and non-destructive editing guarantees. Read [AGENTS.md](AGENTS.md) before changing
 architecture, parsers, generated files, CI, or release metadata.
 
+Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md). Report
+vulnerabilities privately according to the [Security Policy](SECURITY.md), not through
+public issues.
+
 ## Development setup
 
 Use a Node.js version supported by `package.json`.
@@ -15,6 +19,9 @@ npm install
 npm run check
 ```
 
+The complete check includes ESLint, strict TypeScript, the production bundle, Vitest,
+generated-file drift checks, and release metadata validation.
+
 Use `npm ci` for a clean, lockfile-reproducible installation, as CI and release jobs
 do. Do not commit `main.js`, `data.json`, transient script bundles, or dependency
 directories.
@@ -22,7 +29,7 @@ directories.
 ## Making changes
 
 - Keep changes focused and preserve unrelated work in the repository.
-- Add or update tests for behavior and regression fixes.
+- Add or update focused tests under `tests/unit/` for behavior and regression fixes.
 - Edit `src/defaults.ts`, then run `npm run seed`, when default shortcuts change.
 - Edit `src/l10n/locales/en.ts` and `scripts/locale-catalog.json`, then run
   `npm run seed:locales`, when interface text changes.

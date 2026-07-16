@@ -1,10 +1,22 @@
-# Math Chords for Obsidian
+<h1 align="center">Math Chords for Obsidian</h1>
 
-[中文文档](README.zh-CN.md)
+<p align="center">
+  <strong>Write and normalize LaTeX math in Obsidian—faster.</strong><br />
+  Use leader-key snippets, safe delimiter conversion, inline preview, brace navigation, and display-math environments in one plugin.
+</p>
 
-[![Version](https://img.shields.io/badge/version-0.3.1-blue)](manifest.json)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
+<p align="center">
+  <b>English</b> · <a href="README.zh-CN.md">简体中文</a>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
+  <img src="https://img.shields.io/badge/Obsidian-1.5.0%2B-7C3AED?logo=obsidian&logoColor=white" alt="Obsidian 1.5.0 or later" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <a href="https://github.com/ichenh/obsidian-math-chords/releases/latest"><img src="https://img.shields.io/github/v/release/ichenh/obsidian-math-chords?display_name=tag&sort=semver" alt="Latest release" /></a>
+  <a href="https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml"><img src="https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
+  <a href="https://github.com/ichenh/obsidian-math-chords/actions/workflows/release.yml"><img src="https://github.com/ichenh/obsidian-math-chords/actions/workflows/release.yml/badge.svg" alt="Release status" /></a>
+</p>
 
 **Math Chords** is an Obsidian plugin for writing and normalizing LaTeX mathematics in Markdown notes. It addresses two recurring sources of friction: entering common LaTeX structures character by character, and reconciling text copied from AI tools, papers, or LaTeX sources with Obsidian's Markdown math delimiters.
 
@@ -362,14 +374,19 @@ math-chords/                  # Plugin id; install folder .obsidian/plugins/math
 │   ├── config.ts           # YAML load/save/merge
 │   ├── l10n/               # bundled locales + lazy extras loader
 │   └── …                   # math, preview, settings UI, etc.
-├── src/*.test.ts           # Vitest unit tests
+├── tests/
+│   └── unit/               # Vitest unit and regression tests
 ├── vitest.config.ts
 ├── shortcuts.yaml          # Shipped default shortcuts (102 entries)
 ├── styles.css              # Preview & settings styles
 ├── manifest.json           # Obsidian plugin manifest
 ├── scripts/                 # Generation, shared utilities, and validation
+├── .github/                 # CI, release, Dependabot, and contribution templates
 ├── AGENTS.md                # Canonical Codex, engineering, and workflow rules
 ├── CONTRIBUTING.md          # Contributor workflow and submission requirements
+├── SECURITY.md              # Private vulnerability reporting policy
+├── CODE_OF_CONDUCT.md       # Community participation standards
+├── eslint.config.mts        # Obsidian-aware lint configuration
 ├── .editorconfig            # Editor encoding and whitespace defaults
 ├── .gitattributes           # Repository line-ending and binary-file rules
 └── esbuild.config.mjs       # Build config
@@ -384,6 +401,7 @@ Development requires Node.js `20.19+` or `22.12+`, as declared in `package.json`
 ```bash
 npm install
 npm run dev    # watch build
+npm run lint   # ESLint + Obsidian plugin rules
 npm run build  # typecheck + production bundle
 npm test       # Vitest unit tests
 npm run seed   # rewrite shortcuts.yaml from src/defaults.ts
@@ -402,12 +420,15 @@ Pull requests welcome. Follow [CONTRIBUTING.md](CONTRIBUTING.md), run `npm run c
 before submitting, and perform relevant manual Obsidian testing for editor-integrated
 behavior.
 
+Community participation follows the [Code of Conduct](CODE_OF_CONDUCT.md). Report
+security vulnerabilities privately using the [Security Policy](SECURITY.md).
+
 Potential future work and its design constraints are tracked in [ROADMAP.md](ROADMAP.md).
 
 ### Releasing
 
 1. After the maintainer approves a release, update the version consistently in `package.json`, `package-lock.json`, and `manifest.json`; add its minimum-app mapping to `versions.json`.
-2. Replace the `Unreleased` changelog section with a dated release section and create a new empty `Unreleased` section above it. Update both README version badges and current-release lines.
+2. Replace the `Unreleased` changelog section with a dated release section and create a new empty `Unreleased` section above it. Update the current-release line in both READMEs; the release badges track the latest GitHub release automatically.
 3. Run `npm run check`, review the release assets, and complete the relevant manual Obsidian acceptance checks.
 4. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.3.0 && git push origin 0.3.0`.
 5. The [release workflow](.github/workflows/release.yml) reruns the complete verification path, builds and attaches `main.js`, `manifest.json`, `styles.css`, and `locales-extras.json`, and creates artifact attestations for every asset. Existing releases are not deleted or recreated.

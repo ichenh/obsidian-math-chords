@@ -1,5 +1,5 @@
 import { en, type TranslationKey } from "./locales/en";
-import { getActiveLocaleBundle, initLocale } from "./loader";
+import { getActiveLocaleBundle } from "./loader";
 
 export { initLocale } from "./loader";
 

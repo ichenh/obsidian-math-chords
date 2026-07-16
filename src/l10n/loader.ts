@@ -1,4 +1,4 @@
-import { getLanguage, normalizePath, type Plugin } from "obsidian";
+import { moment, normalizePath, type Plugin } from "obsidian";
 import { BUNDLED_LOCALE_CODES } from "./bundled";
 import { LAZY_LOCALE_CODES } from "./lazy-codes";
 import { en, type TranslationKey } from "./locales/en";
@@ -19,7 +19,7 @@ function isBundled(code: string): boolean {
 }
 
 function bundledBundle(code: string): Record<TranslationKey, string> {
-  return bundledLocales[code as keyof typeof bundledLocales] ?? en;
+  return bundledLocales[code] ?? en;
 }
 
 function lazyLocaleCodes(): readonly string[] {
@@ -56,7 +56,7 @@ export function initLocale(plugin: Plugin): Promise<void> {
   // is reflected after a reload instead of retaining the previous instance.
   activeBundle = en;
   extrasByCode = null;
-  const code = resolveLanguage(getLanguage(), supportedLocaleCodes());
+  const code = resolveLanguage(moment.locale(), supportedLocaleCodes());
   return applyLocale(plugin, code);
 }
 

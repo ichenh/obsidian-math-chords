@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { buildShortcutPreview, shortcutMatchesSearch } from "./shortcutPresentation";
+import { buildShortcutPreview, shortcutMatchesSearch } from "../../src/shortcutPresentation";
 
 describe("buildShortcutPreview", () => {
-  it("replaces the caret marker with neutral sample content", () => {
+  it("shows both operands in the default fraction preview", () => {
     expect(buildShortcutPreview("\\frac{$$}{}")).toEqual({
-      latex: "\\frac{x}{}",
+      latex: "\\frac{x}{y}",
       fallback: null,
     });
+  });
+
+  it("replaces the caret marker with neutral sample content", () => {
+    expect(buildShortcutPreview("\\sqrt{$$}").latex).toBe("\\sqrt{x}");
   });
 
   it("adds a base to standalone superscripts and subscripts", () => {

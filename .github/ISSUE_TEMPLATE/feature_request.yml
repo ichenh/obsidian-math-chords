@@ -1,0 +1,43 @@
+name: Feature request
+description: Propose a focused improvement to Math Chords
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and the roadmap for a similar proposal.
+          required: true
+        - label: The request fits Math Chords' LaTeX input or normalization scope.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: Describe the workflow problem rather than only the desired UI.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain how the feature should work from a user's perspective.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Note existing Obsidian features, shortcuts, or plugins you have tried.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add examples or mockups without including private vault content.

@@ -18,23 +18,30 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc --noEmit && node esbuild.config.mjs production",
+    "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
     "seed": "node scripts/seed-yaml.cjs",
     "seed:locales": "node scripts/seed-locales.cjs",
     "check:shortcuts": "node scripts/seed-yaml.cjs --check",
     "check:locales": "node scripts/check-locales.cjs",
     "check:release": "node scripts/check-release.cjs",
-    "check": "npm run build && npm test && npm run check:shortcuts && npm run check:locales && npm run check:release"
+    "check": "npm run lint && npm run build && npm test && npm run check:shortcuts && npm run check:locales && npm run check:release"
   },
   "author": "CHEH Hua",
   "license": "MIT",
   "devDependencies": {
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.26.3",
+    "@eslint/js": "^9.39.4",
     "@types/node": "^20.11.0",
     "esbuild": "^0.28.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-obsidianmd": "^0.4.0",
+    "globals": "^17.6.0",
+    "jiti": "^2.6.1",
     "obsidian": "^1.5.0",
     "typescript": "^5.4.0",
+    "typescript-eslint": "^8.59.1",
     "vitest": "^4.1.9"
   }
 }

@@ -61,6 +61,7 @@ an explicit design and compatibility review.
 | `settings.ts`, `settingsTab.ts` | Normalized settings and localized settings UI. |
 | `l10n/` | Language resolution, bundled translations, and optional lazy translations. |
 | `errors.ts`, `hint.ts` | Error reporting and optional shortcut hints. |
+| `tests/unit/` | Vitest unit and regression tests, kept outside production source. |
 
 Keep pure parsing and transformation logic independent of Obsidian APIs. Place editor
 mutation adapters in focused modules and keep `main.ts` responsible for orchestration.
@@ -103,6 +104,7 @@ Supported Node.js versions are declared in `package.json`. Install reproducibly 
 `npm ci` in CI and release jobs.
 
 - `npm run dev` — watch-mode bundle.
+- `npm run lint` — ESLint with the official Obsidian plugin rules.
 - `npm run build` — strict TypeScript check and production bundle.
 - `npm test` — Vitest suite.
 - `npm run seed` / `npm run check:shortcuts` — generate or verify shortcut YAML.
@@ -111,7 +113,13 @@ Supported Node.js versions are declared in `package.json`. Install reproducibly 
   and README version references.
 - `npm run check` — complete local and CI verification path.
 
-For behavior changes, add or update focused tests and run `npm run check`. Also test
+GitHub CI must cover the minimum supported Node.js version and the current primary
+version. Keep third-party actions pinned to full commit SHAs. Community health files,
+issue forms, pull request guidance, the security policy, and Dependabot configuration
+live under the repository root or `.github/` in GitHub-supported locations.
+
+For behavior changes, add or update focused tests under `tests/unit/` and run
+`npm run check`. Also test
 in Obsidian when behavior depends on commands, settings, hotkeys, paste events,
 CodeMirror focus, popout windows, or undo history. Automated checks reduce risk but
 do not replace relevant application testing.

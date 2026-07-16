@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added an Obsidian-aware ESLint gate to the complete local and CI verification path.
+- Added bilingual security policies and codes of conduct, structured bug and feature issue forms, a pull request checklist, and grouped Dependabot updates for npm and GitHub Actions.
+- Added CI coverage for both the minimum supported Node.js version and the current primary Node.js version.
+
+### Changed
+
+- Moved unit and regression tests from `src/` to `tests/unit/` and updated the TypeScript, Vitest, release validation, and contributor documentation paths accordingly.
+
+### Removed
+
+- Removed the obsolete, unreferenced bundle-analysis script left over from the earlier localization rollout.
+
+### Fixed
+
+- Restored compatibility with the declared Obsidian 1.5.0 minimum by using the long-supported Moment locale API instead of `getLanguage()`, which was introduced in Obsidian 1.8.7.
+- The default Fraction shortcut preview now renders a complete `\\frac{x}{y}` sample instead of leaving the denominator empty.
+
 ## [0.3.1] - 2026-07-15
 
 ### Fixed

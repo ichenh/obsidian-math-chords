@@ -4,6 +4,8 @@
 
 提交内容应保持插件现有行为、Obsidian 兼容性和非破坏性编辑保证。修改架构、解析器、生成文件、CI 或发布元数据前，请先阅读 [AGENTS.md](AGENTS.md)。
 
+参与项目须遵守[行为准则](CODE_OF_CONDUCT.zh-CN.md)。安全漏洞请按照[安全策略](SECURITY.zh-CN.md)私下报告，不要提交公开 Issue。
+
 ## 开发环境
 
 请使用 `package.json` 支持的 Node.js 版本。
@@ -13,12 +15,14 @@ npm install
 npm run check
 ```
 
+完整检查包括 ESLint、严格 TypeScript、生产构建、Vitest、生成文件漂移检查和发布元数据校验。
+
 需要从锁文件进行干净、可复现的安装时使用 `npm ci`；CI 和发布任务也使用该命令。不要提交 `main.js`、`data.json`、临时脚本产物或依赖目录。
 
 ## 修改要求
 
 - 保持修改范围集中，不覆盖仓库中的无关改动。
-- 行为变更和回归修复应补充或更新测试。
+- 行为变更和回归修复应在 `tests/unit/` 下补充或更新聚焦测试。
 - 修改默认快捷键时，编辑 `src/defaults.ts` 后运行 `npm run seed`。
 - 修改界面文本时，编辑 `src/l10n/locales/en.ts` 和 `scripts/locale-catalog.json` 后运行 `npm run seed:locales`。
 - 面向用户的行为应在 `README.md` 与 `README.zh-CN.md` 中保持一致。

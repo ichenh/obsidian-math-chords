@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { offsetToTextPosition, replaceTextRange } from "./textPosition";
+import { offsetToTextPosition, replaceTextRange } from "../../src/textPosition";
 
 describe("offsetToTextPosition", () => {
   it("maps offsets after newly inserted lines", () => {

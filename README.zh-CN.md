@@ -1,10 +1,22 @@
-# Math Chords for Obsidian
+<h1 align="center">Math Chords for Obsidian</h1>
 
-[English](README.md)
+<p align="center">
+  <strong>在 Obsidian 中更快地输入并规范化 LaTeX 数学内容。</strong><br />
+  将 leader 快捷片段、安全定界符转换、行内预览、大括号跳转和行间公式环境集中到一个插件中。
+</p>
 
-[![Version](https://img.shields.io/badge/version-0.3.1-blue)](manifest.json)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![CI](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg)](https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml)
+<p align="center">
+  <a href="README.md">English</a> · <b>简体中文</b>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT 许可证" /></a>
+  <img src="https://img.shields.io/badge/Obsidian-1.5.0%2B-7C3AED?logo=obsidian&logoColor=white" alt="Obsidian 1.5.0 或更高版本" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <a href="https://github.com/ichenh/obsidian-math-chords/releases/latest"><img src="https://img.shields.io/github/v/release/ichenh/obsidian-math-chords?display_name=tag&sort=semver" alt="最新版本" /></a>
+  <a href="https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml"><img src="https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg" alt="CI 状态" /></a>
+  <a href="https://github.com/ichenh/obsidian-math-chords/actions/workflows/release.yml"><img src="https://github.com/ichenh/obsidian-math-chords/actions/workflows/release.yml/badge.svg" alt="发布状态" /></a>
+</p>
 
 **Math Chords** 是一个用于在 Obsidian Markdown 笔记中编写和规范化 LaTeX 数学内容的插件。它主要处理两类实际问题：一是常用 LaTeX 结构需要逐字符输入；二是从 AI 工具、论文或 LaTeX 文档复制的内容常使用 `\(...\)`、`\[...\]`，与 Obsidian 通常使用的 `$...$`、`$$...$$` 定界符不一致。
 
@@ -362,14 +374,19 @@ math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-
 │   ├── config.ts           # YAML 读写与合并
 │   ├── l10n/               # 内置语言包 + 按需加载 extras
 │   └── …                   # 公式检测、预览、设置界面等
-├── src/*.test.ts           # Vitest 单元测试
+├── tests/
+│   └── unit/               # Vitest 单元测试与回归测试
 ├── vitest.config.ts
 ├── shortcuts.yaml          # 随仓库分发的默认快捷键（102 条）
 ├── styles.css              # 预览与设置样式
 ├── manifest.json           # Obsidian 插件清单
 ├── scripts/                 # 生成、共享脚本工具与校验逻辑
+├── .github/                 # CI、发布、Dependabot 与贡献模板
 ├── AGENTS.md                # 统一的 Codex、工程与工作流规范
 ├── CONTRIBUTING.zh-CN.md    # 贡献流程与提交要求
+├── SECURITY.md              # 私密漏洞报告策略
+├── CODE_OF_CONDUCT.md       # 社区参与行为准则
+├── eslint.config.mts        # Obsidian 规则感知的代码检查配置
 ├── .editorconfig            # 编辑器编码与空白规则
 ├── .gitattributes           # 换行与二进制文件规则
 └── esbuild.config.mjs       # 构建配置
@@ -384,6 +401,7 @@ math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-
 ```bash
 npm install
 npm run dev    # 监听模式构建
+npm run lint   # ESLint + Obsidian 插件规则
 npm run build  # 类型检查 + 生产构建
 npm test       # Vitest 单元测试
 npm run seed   # 从 src/defaults.ts 重写 shortcuts.yaml
@@ -400,12 +418,14 @@ npm run check  # 完整执行构建、测试、生成物与元数据检查
 欢迎提交 Pull Request。请遵循 [中文贡献指南](CONTRIBUTING.zh-CN.md)，提交前运行
 `npm run check`；涉及编辑器集成的行为还应在 Obsidian 中完成相应手动测试。
 
+社区参与须遵守[行为准则](CODE_OF_CONDUCT.zh-CN.md)。安全漏洞请通过[安全策略](SECURITY.zh-CN.md)中的方式私下报告。
+
 未来可能开展的工作及其设计约束记录在[路线图](ROADMAP.zh-CN.md)中。
 
 ### 发布
 
 1. 维护者确认发布后，统一更新 `package.json`、`package-lock.json` 和 `manifest.json` 中的版本，并在 `versions.json` 中添加最低 Obsidian 版本映射。
-2. 将 Changelog 的 `Unreleased` 内容转为带日期的发布章节，并在其上方重新建立空的 `Unreleased` 章节；同时更新中英文 README 的版本徽章和当前版本说明。
+2. 将 Changelog 的 `Unreleased` 内容转为带日期的发布章节，并在其上方重新建立空的 `Unreleased` 章节；同时更新中英文 README 的当前版本说明，版本徽章会自动跟随最新 GitHub Release。
 3. 运行 `npm run check`，复核发布资产，并完成相关的 Obsidian 应用内验收。
 4. 提交后打精确版本 tag（不要加 `v` 前缀），例如 `git tag 0.3.0 && git push origin 0.3.0`。
 5. [release 工作流](.github/workflows/release.yml) 会重新执行完整检查、构建并附上 `main.js`、`manifest.json`、`styles.css` 和 `locales-extras.json`，同时为全部资产生成 artifact attestations；不会删除或重建已有 Release。

@@ -19,6 +19,7 @@ export function buildShortcutPreview(command: string): ShortcutPreview {
   const trimmed = command.trim();
   if (!trimmed) return { latex: null, fallback: null };
   if (trimmed === "__DISPLAY_MATH__") return { latex: null, fallback: "$$" };
+  if (trimmed === "\\frac{$$}{}") return { latex: "\\frac{x}{y}", fallback: null };
   if (trimmed === "'") return { latex: "x'", fallback: null };
   if (trimmed === "\\,") return { latex: "x\\,x", fallback: null };
 

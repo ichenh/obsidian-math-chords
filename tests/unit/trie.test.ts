@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildTrie, findNode, hasChildren, shortcutStorageKey } from "./trie";
-import type { Shortcut } from "./types";
+import { buildTrie, findNode, hasChildren, shortcutStorageKey } from "../../src/trie";
+import type { Shortcut } from "../../src/types";
 
 describe("buildTrie", () => {
   const shortcuts: Shortcut[] = [

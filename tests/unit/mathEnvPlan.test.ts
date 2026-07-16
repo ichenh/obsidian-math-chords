@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planMathEnvironmentWrap } from "./mathEnvPlan";
+import { planMathEnvironmentWrap } from "../../src/mathEnvPlan";
 
 const aligned = {
   name: "aligned",

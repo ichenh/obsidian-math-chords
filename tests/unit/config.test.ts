@@ -25,8 +25,8 @@ import {
   parseShortcutsYaml,
   shortcutSequenceKey,
   validateShortcut,
-} from "./config";
-import { DEFAULT_SHORTCUTS } from "./defaults";
+} from "../../src/config";
+import { DEFAULT_SHORTCUTS } from "../../src/defaults";
 
 describe("shortcut validation", () => {
   it("keeps the complete default catalog valid and canonically unique", () => {

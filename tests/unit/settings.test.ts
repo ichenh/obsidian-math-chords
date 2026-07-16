@@ -4,7 +4,7 @@ import {
   normalizeChordSetting,
   normalizeSequenceSetting,
   normalizeSettings,
-} from "./settings";
+} from "../../src/settings";
 
 describe("settings normalization", () => {
   it("falls back from incomplete key settings", () => {

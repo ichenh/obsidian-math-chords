@@ -14,6 +14,8 @@ const readmeZh = readText("README.zh-CN.md");
 const mainSource = readText("src/main.ts");
 const errors = [];
 const releaseAssets = ["main.js", "manifest.json", "styles.css", "locales-extras.json"];
+const releaseBadgeUrl =
+  "img.shields.io/github/v/release/ichenh/obsidian-math-chords?display_name=tag&sort=semver";
 
 checkEqual("package name", pkg.name, "obsidian-math-chords");
 checkEqual("package main", pkg.main, "main.js");
@@ -58,9 +60,9 @@ if (!new RegExp(`^## \\[${escapeRegExp(pkg.version)}\\] - \\d{4}-\\d{2}-\\d{2}$`
   errors.push(`CHANGELOG.md has no dated released section for ${pkg.version}`);
 }
 
-checkIncludes("README.md version badge", readme, `version-${pkg.version}-blue`);
+checkIncludes("README.md release badge", readme, releaseBadgeUrl);
 checkIncludes("README.md current release", readme, `Current release: v${pkg.version}`);
-checkIncludes("README.zh-CN.md version badge", readmeZh, `version-${pkg.version}-blue`);
+checkIncludes("README.zh-CN.md release badge", readmeZh, releaseBadgeUrl);
 checkIncludes("README.zh-CN.md current release", readmeZh, `当前版本：v${pkg.version}`);
 
 if (process.env.GITHUB_REF_TYPE === "tag") {

@@ -1,0 +1,79 @@
+name: Bug report
+description: Report a reproducible problem in Math Chords
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Remove private vault content, credentials, and unrelated personal information before submitting.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I reproduced the problem with the latest Math Chords release.
+          required: true
+        - label: I searched existing issues for the same problem.
+          required: true
+        - label: This is not a security vulnerability. Security reports must follow SECURITY.md.
+          required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Math Chords version
+      placeholder: 0.3.1
+    validations:
+      required: true
+
+  - type: input
+    id: obsidian-version
+    attributes:
+      label: Obsidian version
+      placeholder: 1.x.x
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Android
+        - iOS/iPadOS
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem description
+      description: Explain what happened and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest reliable sequence that reproduces the problem.
+      placeholder: |
+        1. Open ...
+        2. Run ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Relevant settings, logs, or screenshots
+      description: Include only information needed to diagnose the issue. Redact private note content.
+      render: shell

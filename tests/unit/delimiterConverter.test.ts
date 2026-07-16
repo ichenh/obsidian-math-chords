@@ -4,7 +4,7 @@ import {
   convertPastedLatexDelimiters,
   findLatexDelimiterConversions,
   findLatexDelimiterConversionsInRanges,
-} from "./delimiterConverter";
+} from "../../src/delimiterConverter";
 
 function convert(markdown: string, from = 0, to = markdown.length) {
   const result = findLatexDelimiterConversions(markdown, from, to);

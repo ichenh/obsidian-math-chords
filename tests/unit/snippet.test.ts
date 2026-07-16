@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { expandSnippet } from "./snippet";
+import { expandSnippet } from "../../src/snippet";
 
 describe("expandSnippet", () => {
   it("replaces a single $$ with selection", () => {
