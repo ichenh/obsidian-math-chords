@@ -229,10 +229,10 @@
   box-shadow: 10px 0 12px -12px var(--text-muted);
 }
 
-.obsidian-math-chords-table-wrap.is-scrolled-x:dir(rtl)
+body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
   .obsidian-math-chords-environment-table
   .obsidian-math-chords-env-name-header,
-.obsidian-math-chords-table-wrap.is-scrolled-x:dir(rtl)
+body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
   .obsidian-math-chords-environment-table
   .obsidian-math-chords-env-name {
   box-shadow: -10px 0 12px -12px var(--text-muted);

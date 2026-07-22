@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-22
+
+### Fixed
+
+- Replaced direct DOM element creation in the formula-panel drop cursor with Obsidian's element helpers while preserving popout-window ownership.
+- Replaced the unsupported CSS `:dir()` pseudo-class with Obsidian's RTL body state for compatibility with the declared minimum app version.
+
 ## [0.4.0] - 2026-07-22
 
 ### Added
