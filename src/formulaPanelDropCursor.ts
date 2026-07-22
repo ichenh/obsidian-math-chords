@@ -10,7 +10,10 @@ export const setFormulaPanelDropPosition = StateEffect.define<number | null>();
 
 class FormulaPanelDropCursorWidget extends WidgetType {
   toDOM(view: EditorView): HTMLElement {
-    return view.dom.ownerDocument.createDocumentFragment().createSpan({
+    const ownerWindow = view.dom.win as Window & {
+      createFragment: typeof createFragment;
+    };
+    return ownerWindow.createFragment().createSpan({
       cls: "obsidian-math-chords-editor-drop-cursor",
       attr: { "aria-hidden": "true" },
     });

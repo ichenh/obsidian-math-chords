@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-07-22
+
+### Fixed
+
+- Created the formula-panel drop cursor through the editor's Obsidian window helpers, satisfying the DOM-helper rule while retaining popout-window ownership.
+
 ## [0.4.1] - 2026-07-22
 
 ### Fixed
