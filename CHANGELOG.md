@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-22
+
+### Added
+
+- Added a persistent template tree to the formula panel with named Markdown templates, direct template creation at the root or inside folders, recursive folders, click/drag insertion, cross-folder reordering, settings-page management with matching free drag-and-drop reordering, and persistent collapse controls including the panel-wide expand/collapse action. Empty folders are supported and no longer receive automatic placeholder templates.
+- Localized all formula-panel template and template-management UI added in this release across every supported language catalog.
+- Updated the settings-page introduction to describe reusable Markdown and formula templates alongside the core math-writing tools, with concise wording across all 72 supported locales.
+- Reworked the bilingual README and plugin description around Math Chords' complete math-writing workflow, with detailed guidance for reusable formula templates and general Markdown insertion.
+- Added confirmed delete actions for template folders and templates directly in the formula panel, matching template management in settings.
+
+### Fixed
+
+- Made template blocks insert their Markdown content into the active note when clicked instead of responding only to drag gestures.
+- Made formula cards, math environments, and template titles/previews support real editor drag-and-drop insertion at a visible drop cursor instead of falling back to the editor's previously selected caret position; template handles remain available for tree reorganization.
+- Made empty inline and display math placeholders switch, unwrap, and accept shortcut insertion deterministically without producing repeated dollar delimiters, while preserving document line endings and valid inline boundary whitespace.
+
 ## [0.3.4] - 2026-07-16
 
 ### Changed

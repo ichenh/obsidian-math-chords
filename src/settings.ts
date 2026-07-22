@@ -1,10 +1,15 @@
-import type { MathEnvironment } from "./types";
+import type {
+  FormulaPanelSectionId,
+  FormulaTemplateNode,
+  MathEnvironment,
+} from "./types";
+import { normalizeFormulaTemplateNodes } from "./formulaTemplateModel";
 import { isValidChord, isValidKeySequence } from "./keys";
 import { validateMathEnvironment } from "./inputValidation";
 
 export const DEFAULT_MATH_BRACE_NAV_NEXT = "Alt+ArrowRight";
 export const DEFAULT_MATH_BRACE_NAV_PREV = "Alt+ArrowLeft";
-export const SETTINGS_SCHEMA_VERSION = 4;
+export const SETTINGS_SCHEMA_VERSION = 6;
 export const FORMULA_PANEL_ENVIRONMENT_GROUP_ID = "__math_environments__";
 
 export const DEFAULT_FORMULA_PANEL_GROUP_ORDER = [
@@ -17,6 +22,10 @@ export const DEFAULT_FORMULA_PANEL_GROUP_ORDER = [
   "Arrows",
   "Matrices",
   "Fonts",
+];
+export const DEFAULT_FORMULA_PANEL_SECTION_ORDER: FormulaPanelSectionId[] = [
+  "shortcuts",
+  "templates",
 ];
 
 function isValidNavChord(chord: string): boolean {
@@ -66,6 +75,12 @@ export interface ObsidianMathChordsSettings {
   mathEnvironments: MathEnvironment[];
   formulaPanelGroupOrder: string[];
   formulaPanelCollapsedGroups: string[];
+  formulaPanelSectionOrder: FormulaPanelSectionId[];
+  formulaPanelCollapsedSections: FormulaPanelSectionId[];
+  formulaPanelTemplates: FormulaTemplateNode[];
+  settingsCollapsedManagementSections: string[];
+  settingsCollapsedShortcutGroups: string[];
+  settingsCollapsedTemplateFolders: string[];
 }
 
 export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
@@ -86,6 +101,12 @@ export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
   mathEnvironments: DEFAULT_MATH_ENVIRONMENTS.map((env) => ({ ...env })),
   formulaPanelGroupOrder: [...DEFAULT_FORMULA_PANEL_GROUP_ORDER],
   formulaPanelCollapsedGroups: [],
+  formulaPanelSectionOrder: [...DEFAULT_FORMULA_PANEL_SECTION_ORDER],
+  formulaPanelCollapsedSections: [],
+  formulaPanelTemplates: [],
+  settingsCollapsedManagementSections: [],
+  settingsCollapsedShortcutGroups: [],
+  settingsCollapsedTemplateFolders: [],
 };
 
 function normalizeStringList(raw: unknown, fallback: string[]): string[] {
@@ -94,6 +115,16 @@ function normalizeStringList(raw: unknown, fallback: string[]): string[] {
     .filter((entry): entry is string => typeof entry === "string")
     .map((entry) => entry.trim());
   return [...new Set(values)];
+}
+
+function normalizeFormulaPanelSectionList(
+  raw: unknown,
+  fallback: FormulaPanelSectionId[],
+): FormulaPanelSectionId[] {
+  const values = normalizeStringList(raw, fallback).filter(
+    (value): value is FormulaPanelSectionId => value === "shortcuts" || value === "templates",
+  );
+  return [...values, ...fallback.filter((value) => !values.includes(value))];
 }
 
 export function migrateSettingsData(
@@ -184,6 +215,27 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
     formulaPanelCollapsedGroups: normalizeStringList(
       raw.formulaPanelCollapsedGroups,
       DEFAULT_SETTINGS.formulaPanelCollapsedGroups,
+    ),
+    formulaPanelSectionOrder: normalizeFormulaPanelSectionList(
+      raw.formulaPanelSectionOrder,
+      DEFAULT_SETTINGS.formulaPanelSectionOrder,
+    ),
+    formulaPanelCollapsedSections: normalizeFormulaPanelSectionList(
+      raw.formulaPanelCollapsedSections,
+      [],
+    ),
+    formulaPanelTemplates: normalizeFormulaTemplateNodes(raw.formulaPanelTemplates),
+    settingsCollapsedManagementSections: normalizeStringList(
+      raw.settingsCollapsedManagementSections,
+      DEFAULT_SETTINGS.settingsCollapsedManagementSections,
+    ).filter((value) => value === "shortcuts" || value === "templates"),
+    settingsCollapsedShortcutGroups: normalizeStringList(
+      raw.settingsCollapsedShortcutGroups,
+      DEFAULT_SETTINGS.settingsCollapsedShortcutGroups,
+    ),
+    settingsCollapsedTemplateFolders: normalizeStringList(
+      raw.settingsCollapsedTemplateFolders,
+      DEFAULT_SETTINGS.settingsCollapsedTemplateFolders,
     ),
   };
 }

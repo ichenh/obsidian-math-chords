@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { findMathRegionAtForEdit } from "../../src/math";
 import { planMathToggle } from "../../src/mathToggle";
 
 describe("planMathToggle", () => {
@@ -30,10 +31,61 @@ describe("planMathToggle", () => {
     });
   });
 
+  it("converts an empty inline placeholder to an empty display block", () => {
+    expect(planMathToggle("$$", 1, 1, "display", true)).toEqual({
+      type: "replace",
+      from: 0,
+      to: 2,
+      text: "$$\n\n$$",
+      caret: 3,
+    });
+  });
+
+  it("unwraps an empty inline placeholder with the matching command", () => {
+    expect(planMathToggle("$$", 1, 1, "inline", false)).toEqual({
+      type: "replace",
+      from: 0,
+      to: 2,
+      text: "",
+      caret: 0,
+    });
+  });
+
+  it("round-trips an empty display block through the inline placeholder", () => {
+    const inlinePlan = planMathToggle("$$\n\n$$", 3, 3, "inline", true);
+    expect(inlinePlan).toEqual({
+      type: "replace",
+      from: 0,
+      to: 6,
+      text: "$$",
+      caret: 1,
+    });
+    expect(planMathToggle("$$", 1, 1, "display", true)).toMatchObject({
+      type: "replace",
+      text: "$$\n\n$$",
+      caret: 3,
+    });
+  });
+
+  it("trims invalid inline boundary whitespace after display conversion", () => {
+    const plan = planMathToggle("$$\n x \n$$", 5, 5, "inline", true);
+    expect(plan).toMatchObject({ type: "replace", text: "$x$", caret: 2 });
+    if (plan.type !== "replace") throw new Error("Expected a replacement plan");
+    expect(findMathRegionAtForEdit(plan.text, plan.caret)?.kind).toBe("inline");
+  });
+
   it("normalizes CRLF display wrappers and content", () => {
     expect(planMathToggle("$$\r\na\r\nb\r\n$$", 7, 7, "inline", true)).toMatchObject({
       type: "replace",
       text: "$a b$",
+    });
+  });
+
+  it("preserves CRLF when converting inline math to display math", () => {
+    expect(planMathToggle("before\r\n$x$", 10, 10, "display", true)).toMatchObject({
+      type: "replace",
+      text: "$$\r\nx\r\n$$",
+      caret: 13,
     });
   });
 

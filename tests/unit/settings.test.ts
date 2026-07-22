@@ -14,6 +14,12 @@ describe("settings normalization", () => {
   it("assigns the current schema to old or missing settings", () => {
     expect(normalizeSettings(null).schemaVersion).toBe(SETTINGS_SCHEMA_VERSION);
     expect(normalizeSettings(null).formulaPanelEnabled).toBe(true);
+    expect(normalizeSettings(null).formulaPanelSectionOrder).toEqual([
+      "shortcuts",
+      "templates",
+    ]);
+    expect(normalizeSettings(null).formulaPanelTemplates).toEqual([]);
+    expect(normalizeSettings(null).settingsCollapsedManagementSections).toEqual([]);
   });
 
   it("preserves an explicitly disabled formula panel", () => {
@@ -62,6 +68,38 @@ describe("settings normalization", () => {
     expect(normalizeSettings(null).formulaPanelGroupOrder).toEqual(
       DEFAULT_FORMULA_PANEL_GROUP_ORDER,
     );
+  });
+
+  it("normalizes formula panel section state and template data", () => {
+    const settings = normalizeSettings({
+      formulaPanelSectionOrder: ["templates", "unknown"],
+      formulaPanelCollapsedSections: ["templates", "templates", "unknown"],
+      formulaPanelTemplates: [{
+        id: "folder",
+        type: "folder",
+        name: "Equations",
+        children: [],
+      }],
+    });
+    expect(settings.formulaPanelSectionOrder).toEqual(["templates", "shortcuts"]);
+    expect(settings.formulaPanelCollapsedSections).toEqual(["templates"]);
+    expect(settings.formulaPanelTemplates[0]).toMatchObject({
+      id: "folder",
+      type: "folder",
+      name: "Equations",
+      children: [],
+    });
+  });
+
+  it("normalizes settings-page collapsed sections and groups", () => {
+    const settings = normalizeSettings({
+      settingsCollapsedManagementSections: ["templates", "invalid", "templates"],
+      settingsCollapsedShortcutGroups: ["Greek", "Greek", 42],
+      settingsCollapsedTemplateFolders: ["folder", null, "folder"],
+    });
+    expect(settings.settingsCollapsedManagementSections).toEqual(["templates"]);
+    expect(settings.settingsCollapsedShortcutGroups).toEqual(["Greek"]);
+    expect(settings.settingsCollapsedTemplateFolders).toEqual(["folder"]);
   });
 
   it("adds the environment group when migrating formula panel order", () => {

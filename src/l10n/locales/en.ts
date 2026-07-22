@@ -1,6 +1,6 @@
 export const en = {
   intro:
-    "Math Chords addresses two tasks: entering recurring LaTeX structures efficiently, and normalizing math copied from AI tools, papers, or LaTeX sources for Obsidian Markdown. Configure leader shortcuts, safe delimiter conversion, paste handling, MathJax preview, brace navigation, inline/display toggling, and math environments below.",
+    "Write and organize math faster with leader shortcuts, reusable Markdown templates, safe delimiter conversion, MathJax preview, brace navigation, math toggles, and display environments.",
 
   enablePluginName: "Enable plugin",
   enablePluginDesc: "Turn off to disable leader-key chord sequences.",
@@ -55,6 +55,34 @@ export const en = {
   noMatchingFormulas: "No formulas or environments match this search.",
   ungroupedGroup: "Ungrouped",
   unnamedShortcut: "Unnamed shortcut",
+  formulaPanelShortcutsSection: "Shortcuts",
+  formulaPanelTemplatesSection: "Templates",
+  addTemplateFolder: "Add template folder",
+  addTemplate: "Add template",
+  newTemplateFolderName: "New folder",
+  untitledTemplate: "Untitled template",
+  editTemplate: "Edit template",
+  templateEmptyHint: "Empty template",
+  templateSectionEmptyHint: "Add a folder to create your first template.",
+  templateEditorHeading: "Edit template",
+  templateTitleName: "Title",
+  templateTitleDesc: "Name shown on the template block.",
+  templateMarkdownName: "Markdown content",
+  templateMarkdownDesc:
+    "Markdown and math are rendered in the panel. Drag the template into a note to insert its source.",
+  insertTemplate: "Insert template",
+  templateManagementHeading: "Template management",
+  templateManagementDesc:
+    "Search, edit, and organize the folders and templates shown in the formula panel.",
+  templateSearchPlaceholder: "Title, folder, or Markdown content",
+  templateCount: "%1 of %2 templates",
+  noMatchingTemplates: "No templates match this search.",
+  editTemplateFolder: "Edit template folder",
+  deleteTemplateHeading: "Delete template",
+  deleteTemplateDesc: 'Delete the template "%1"? This action cannot be undone.',
+  deleteTemplateFolderHeading: "Delete template folder",
+  deleteTemplateFolderDesc:
+    'Delete the folder "%1" and all templates inside it? This action cannot be undone.',
 
   tableName: "Name",
   tableBegin: "Begin",

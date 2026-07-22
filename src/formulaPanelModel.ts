@@ -81,11 +81,11 @@ export function areAllFormulaPanelGroupsCollapsed(
   return groupIds.every((groupId) => collapsed.has(groupId));
 }
 
-export function reorderFormulaPanelGroups(
-  groupIds: string[],
+export function reorderFormulaPanelGroups<T extends string>(
+  groupIds: T[],
   from: number,
   to: number,
-): string[] {
+): T[] {
   const reordered = [...groupIds];
   if (
     from === to ||

@@ -1,8 +1,8 @@
 <h1 align="center">Math Chords for Obsidian</h1>
 
 <p align="center">
-  <strong>Write and normalize LaTeX math in Obsidian—faster.</strong><br />
-  Use leader-key snippets, a searchable formula panel, safe delimiter conversion, inline preview, brace navigation, and display-math environments in one plugin.
+  <strong>A practical math-writing toolkit for Obsidian.</strong><br />
+  Enter LaTeX faster, normalize imported formulas safely, and keep reusable math or Markdown templates one click away.
 </p>
 
 <p align="center">
@@ -18,19 +18,22 @@
   <a href="https://github.com/ichenh/obsidian-math-chords/actions/workflows/release.yml"><img src="https://github.com/ichenh/obsidian-math-chords/actions/workflows/release.yml/badge.svg" alt="Release status" /></a>
 </p>
 
-**Math Chords** is an Obsidian plugin for writing and normalizing LaTeX mathematics in Markdown notes. It addresses two recurring sources of friction: entering common LaTeX structures character by character, and reconciling text copied from AI tools, papers, or LaTeX sources with Obsidian's Markdown math delimiters.
+**Math Chords** is an Obsidian writing toolkit built around mathematical Markdown. Its name comes from its chord-like leader shortcuts, but the plugin now covers the full path from entering a formula to reusing larger pieces of a note:
 
-For direct input, a configurable leader key (default `Alt+M`) followed by a short sequence inserts fractions, Greek letters, integrals, and other snippets. For imported text, explicit commands convert `\(...\)` and `\[...\]` to `$...$` and `$$...$$` in a selection or the current file; the same conversion can optionally run on paste.
+- type common LaTeX structures with short, memorable key sequences;
+- browse and insert formulas from a searchable sidebar;
+- save frequently used equations as titled templates and insert them by click or drag;
+- store any reusable Markdown in the same template tree—definitions, derivations, callouts, tables, or complete document sections are all valid;
+- normalize LaTeX delimiters copied from AI tools, papers, or TeX sources without touching protected Markdown regions;
+- preview inline math, move between brace fields, toggle math wrappers, and wrap display math in environments.
 
-The converter changes delimiters only. It preserves formula content, whitespace, and line breaks, and excludes Markdown regions where textual conversion would be unsafe. The plugin also provides optional inline preview, brace navigation within math, and display-math environment wrapping.
+Math remains the primary workflow, but templates are deliberately not limited to formulas. They store raw Markdown in plugin settings and insert that source into the active note, so a template can be a Maxwell equation block, a proof scaffold, a lab-report section, or any other repeatable Markdown content. These templates are an insertion library, not vault files and not a replacement for Obsidian's file-based core Templates feature.
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.3.4.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.4.0.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
-
-> **Community plugin browser:** Obsidian shows each plugin's `description` from `manifest.json` in **English only** (the browse UI itself follows your app language). After installation, **Settings → Math Chords** and command names follow your Obsidian display language.
 
 ![Math Chords demo: leader shortcuts insert LaTeX with live preview](docs/demo.gif)
 
@@ -38,7 +41,7 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 
 ## Table of contents
 
-- [Features](#features)
+- [What Math Chords does](#what-math-chords-does)
 - [Installation](#installation)
 - [Quick start](#quick-start)
 - [Formula panel](#formula-panel)
@@ -55,12 +58,12 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 
 ---
 
-## Features
+## What Math Chords does
 
 | Feature | Description |
 | :--- | :--- |
 | **Structured input** | Press a configurable leader key, then a key sequence to insert common LaTeX structures and symbols. |
-| **Formula panel** | Browse or search the active shortcut catalog in an Obsidian sidebar and click a rendered formula to insert it. |
+| **Formula and template panel** | Browse shortcuts or organize an unlimited tree of reusable math and Markdown templates, then click or drag content into a note. |
 | **Caret placeholder** | `$$` in a command template marks where the cursor (or selection) is placed, e.g. `\frac{$$}{}`. |
 | **Auto `$…$` wrap** | Optional: when inserting outside math, wrap the snippet in inline math delimiters. |
 | **Inline live preview** | While the caret is inside `$…$`, a floating panel above the formula renders with Obsidian's native **MathJax** (on by default). |
@@ -113,14 +116,27 @@ Copy `main.js`, `manifest.json`, `styles.css`, `locales-extras.json`, and `short
 
 ## Quick start
 
-1. Place the caret in a Markdown note.
-2. Press the **leader key** (default `Alt+M`; configurable in settings) — optionally enable the which-key popup.
-3. Press a shortcut, e.g. **`F`** → `\frac{}{}` with the cursor in the numerator.
-4. For Greek letters: **`G` `A`** → `\alpha` (after the leader).
-5. For display math: **`D`** → `$$\n\n$$`.
-6. With only a caret inside math, pressing the matching inline/display command removes that wrapper. **Smart math toggle** (on by default) additionally lets the other command convert between inline and display math. A non-empty selection is always wrapped by the requested command.
-7. Select LaTeX-delimited math and run **Convert LaTeX Delimiters in Selection**, or use the whole-file command. Assign either command under **Settings → Hotkeys** if desired.
-8. Press **`Shift+E`** (default, after the leader) or run **Wrap display math with environment** to pick an environment. If the caret is not already inside `$$…$$`, a display block is inserted first.
+Choose the workflow that matches what you are doing.
+
+### Type a formula
+
+1. Place the caret in a Markdown note and press the **leader key** (default `Alt+M`).
+2. Continue with a sequence: **`F`** inserts `\frac{}{}`, **`G` `A`** inserts `\alpha`, and **`D`** inserts a display-math block.
+3. The `$$` marker inside a configured snippet determines where the selection or caret lands. Enable shortcut hints if you want a which-key guide after pressing the leader.
+
+### Reuse a formula or Markdown block
+
+1. Open the formula panel from the sigma (Σ) ribbon icon or the **Open formula panel** command.
+2. Under **Templates**, use the file-plus button to create a template at the root, or the folder-plus button to organize a nested library.
+3. Give the template a title and enter its Markdown body—for example a Maxwell equation system, a theorem skeleton, or a complete recurring note section.
+4. Click the rendered template to insert it at the current selection, or drag its handle into the editor.
+
+### Clean up imported LaTeX
+
+1. Select text containing `\(...\)` or `\[...\]` and run **Convert LaTeX Delimiters in Selection**; use the current-file command for the whole note.
+2. Optionally enable conversion on paste. The converter changes delimiters only and skips frontmatter, code, HTML comments, HTML code blocks, and existing Markdown math.
+
+For display environments, press **`Shift+E`** after the leader or run **Wrap display math with environment**. With only a caret inside math, the matching inline/display command removes that wrapper; with **Smart math toggle** enabled, the other command converts between inline and display math. A non-empty selection is always wrapped by the requested command.
 
 > **Note:** Shortcut tables list keys **after** the leader. The default leader is `Alt+M`. Built-in commands do not register default hotkeys; assign them under **Settings → Hotkeys** if desired.
 
@@ -128,11 +144,31 @@ Copy `main.js`, `manifest.json`, `styles.css`, `locales-extras.json`, and `short
 
 ## Formula panel
 
-Select the **sigma (Σ)** ribbon icon or run **Open formula panel** from Obsidian's command palette. The optional panel is enabled by default; disabling it removes the ribbon action, closes the open panel, and makes its command unavailable until re-enabled. The right sidebar groups the same shortcuts loaded from `shortcuts.yaml`; search matches keys, names, LaTeX commands, and groups. Click a rendered formula to insert it into the most recently active Markdown editor. The summary counts all panel **items**, including shortcut formulas and math environments. Groups start in a frequency-oriented order; use the grip button to the left of a group name to drag it into a personal order, the chevron on the right to collapse or expand one group, or the summary action to collapse or expand all groups at once. Group order and collapsed state persist across restarts.
+Select the **sigma (Σ)** ribbon icon or run **Open formula panel**. The optional right sidebar is enabled by default; disabling it removes the ribbon action, closes the panel, and makes the command unavailable until re-enabled.
+
+### Shortcuts and math environments
+
+The **Shortcuts** section uses the same catalog as leader input. Search matches keys, names, LaTeX commands, groups, folder names, template titles, and template content. Click a rendered shortcut to insert it at the editor's current selection, or drag the card to insert it at the exact Markdown editor position under the pointer. Math Chords handles the editor drop directly, so shortcut expansion, auto-wrap, and caret placement still apply. The **Math environments** group reads the editable environment list from settings; `aligned`, `matrix`, `cases`, and `gathered` show representative previews and can likewise be clicked or dragged into the editor in one undoable transaction.
+
+### Reusable Markdown templates
+
+The **Templates** section is a general reusable-content library optimized for math notes:
+
+- The folder-plus and file-plus buttons create a folder or template directly at the root. Every folder repeats both controls, so nesting has no fixed depth.
+- A new folder is empty. Add templates explicitly with the clearly separated file-plus action.
+- Every template has a title and a Markdown body. Obsidian renders the body—including display math, headings, lists, links, tables, callouts, and other supported Markdown—as a preview. Template and folder headers include a delete action with confirmation.
+- Click the title or preview to insert the original Markdown at the current selection. Drag the title or preview into the editor to insert at the displayed drop cursor; the left handle remains dedicated to reorganizing the template tree.
+- Drag any folder or template handle before or after a sibling, into another folder, or back to the root. Empty folders remain empty; moving or deleting the last template does not create a placeholder.
+
+A template can be as focused as one Maxwell equation system or as broad as a reusable Markdown document section. Content is stored in Math Chords settings rather than as files in the vault.
+
+### Organizing the panel and settings
+
+Drag the left handles to reorder shortcut groups, the two main sections, template folders, or templates. Use the chevrons on the right to collapse individual sections and nodes; the summary action collapses or expands all shortcut groups, template folders, and template blocks together. Order and collapsed state persist across restarts.
+
+**Settings → Math Chords → Template management** mirrors the panel tree. It supports search, root-level and nested creation, title/content editing, folder renaming, deletion, keyboard arrow reordering from a focused drag handle, and the same free drag-and-drop placement before, after, or inside folders. Shortcut management, template management, and their internal groups can all be collapsed so a long settings page remains navigable.
 
 Panel insertion uses the same selection replacement, `$$` caret marker, auto-wrap, display-math action, and cursor-placement rules as leader shortcuts. Reloading, merging, adding, editing, or deleting shortcuts refreshes open formula panels automatically. If no Markdown note is open, the plugin leaves the workspace unchanged and shows a notice.
-
-The **Math environments** group reads the editable environment list from settings. Its built-in `aligned`, `matrix`, `cases`, and `gathered` entries use representative multi-row previews. Clicking one wraps the current display formula, or creates a new `$$…$$` block and environment in one undoable editor transaction when needed.
 
 ---
 
@@ -349,6 +385,8 @@ No built-in command registers a default hotkey. Assign any desired bindings unde
 When cross-kind conversion is disabled, invoking the other math command inside an existing block leaves the note unchanged and shows a notice instead of creating invalid nested delimiters. Converting display math to inline math removes one wrapper-adjacent line break and replaces remaining internal line breaks with spaces, because inline Markdown math cannot span lines reliably.
 
 **Shortcut management:** shortcuts are grouped into compact, container-responsive sections. Each row keeps the readable name and raw LaTeX command while adding a derived MathJax preview and keycap-style sequence; narrow panes move keys and actions onto dedicated rows instead of clipping them. Visible previews render on demand so opening settings does not eagerly typeset the entire catalog. Search matches keys, names, commands, and groups without rebuilding the settings page. Add and edit operations use aligned native dialogs; deletions require confirmation. **Reload** re-reads YAML, and **Merge defaults** appends missing built-in shortcuts without overwriting yours. Formula previews are presentation-only and are never written to `shortcuts.yaml`.
+
+**Template management:** templates use the same recursive tree and free reordering as the formula panel. Drag a handle to reorder siblings, move an item into another folder, or return it to the root; focus a handle and use the arrow keys for same-level reordering. Root and folder toolbars distinguish **new folder** from **new template**. Empty folders are allowed, and search matches template titles and Markdown bodies. Titles, source content, tree order, and collapsed state are saved in plugin settings.
 
 ---
 

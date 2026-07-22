@@ -143,8 +143,44 @@ export function findMathRegionAtForEdit(text: string, offset: number): MathRegio
         const bounds = getMathContentBounds(region);
         return offset >= bounds.from && offset <= bounds.to;
       },
-    ) ?? null
+    ) ?? findEmptyInlinePlaceholderAtForEdit(text, offset)
   );
+}
+
+/**
+ * Recognizes the transient `$|$` placeholder created by the inline-math command.
+ * The Markdown scanner necessarily reads the same `$$` text as an unclosed display
+ * opener, so toggle commands need this caret-specific representation.
+ */
+export function findEmptyInlinePlaceholderAtForEdit(
+  text: string,
+  offset: number,
+): MathRegion | null {
+  const from = offset - 1;
+  const to = offset + 1;
+  if (
+    from < 0 ||
+    to > text.length ||
+    text[from] !== "$" ||
+    text[offset] !== "$" ||
+    text[from - 1] === "$" ||
+    text[to] === "$"
+  ) {
+    return null;
+  }
+
+  const index = getMarkdownMathIndex(text);
+  if (
+    index.protectedRanges.some((range) => from < range.to && to > range.from) ||
+    index.regions.some(
+      (region) =>
+        region.kind === "display" && (region.from === from || region.to === to),
+    )
+  ) {
+    return null;
+  }
+
+  return { from, to, kind: "inline" };
 }
 
 export function isInMath(text: string, offset: number): boolean {
@@ -193,6 +229,7 @@ function touchesInlineMathClose(text: string, offset: number): boolean {
 export function shouldAutoWrapSnippet(text: string, from: number, to: number): boolean {
   const start = Math.max(0, Math.min(from, to));
   const end = Math.min(text.length, Math.max(from, to));
+  if (start === end && findEmptyInlinePlaceholderAtForEdit(text, start)) return false;
   if (
     getMarkdownMathIndex(text).regions.some(
       (region) => start <= region.to && end >= region.from,

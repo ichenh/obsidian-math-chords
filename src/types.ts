@@ -11,6 +11,26 @@ export interface MathEnvironment {
   end: string;
 }
 
+export interface FormulaTemplate {
+  id: string;
+  type: "template";
+  name: string;
+  content: string;
+  collapsed: boolean;
+}
+
+export interface FormulaTemplateFolder {
+  id: string;
+  type: "folder";
+  name: string;
+  collapsed: boolean;
+  children: FormulaTemplateNode[];
+}
+
+export type FormulaTemplateNode = FormulaTemplate | FormulaTemplateFolder;
+
+export type FormulaPanelSectionId = "shortcuts" | "templates";
+
 export interface MathRegion {
   from: number;
   to: number;

@@ -20,12 +20,32 @@ import {
   scheduleShortcutPreviews,
   type ShortcutPreviewRequest,
 } from "./shortcutPreviewRenderer";
-import type { MathEnvironment, Shortcut } from "./types";
+import type {
+  FormulaTemplate,
+  FormulaTemplateNode,
+  MathEnvironment,
+  Shortcut,
+} from "./types";
 import { shortcutStorageKey } from "./trie";
+import {
+  appendFormulaTemplate,
+  appendFormulaTemplateFolder,
+  createFormulaTemplate,
+  createFormulaTemplateFolder,
+  formulaTemplateLabel,
+  moveFormulaTemplateNode,
+  removeFormulaTemplateNode,
+  updateFormulaTemplateNode,
+} from "./formulaTemplateModel";
+import {
+  openFormulaTemplateEditorModal,
+  openFormulaTemplateFolderModal,
+} from "./formulaTemplatePanel";
 
 export class ObsidianMathChordsSettingTab extends PluginSettingTab {
   plugin: ObsidianMathChordsPlugin;
   private search = "";
+  private templateSearch = "";
   private previewCleanup: (() => void) | null = null;
 
   constructor(app: App, plugin: ObsidianMathChordsPlugin) {
@@ -175,6 +195,16 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
             this.previewCleanup?.();
             this.previewCleanup = null;
           };
+        },
+      },
+      {
+        name: t("templateManagementHeading"),
+        desc: t("templateManagementDesc"),
+        aliases: [t("formulaPanelTemplatesSection"), t("templateTitleName")],
+        render: (setting) => {
+          setting.settingEl.empty();
+          setting.settingEl.addClass("obsidian-math-chords-declarative-block");
+          this.renderTemplateManager(setting.settingEl);
         },
       },
     ];
@@ -398,10 +428,70 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
     });
   }
 
-  private renderShortcutManager(containerEl: HTMLElement): void {
-    new Setting(containerEl).setName(t("shortcutManagementHeading")).setHeading();
+  private setCollapsedSettingsEntry(
+    key:
+      | "settingsCollapsedManagementSections"
+      | "settingsCollapsedShortcutGroups"
+      | "settingsCollapsedTemplateFolders",
+    id: string,
+    collapsed: boolean,
+  ): void {
+    const entries = new Set(this.plugin.settings[key]);
+    if (collapsed) entries.add(id);
+    else entries.delete(id);
+    this.plugin.settings[key] = [...entries];
+    void runWithNotice(
+      () => this.plugin.saveSettings(),
+      t("noticeCouldNotSaveSettings"),
+    );
+  }
 
-    const managerEl = containerEl.createDiv({ cls: "obsidian-math-chords-shortcuts" });
+  private renderCollapsibleManager(
+    containerEl: HTMLElement,
+    id: "shortcuts" | "templates",
+    title: string,
+  ): HTMLElement {
+    const collapsedEntries = new Set(
+      this.plugin.settings.settingsCollapsedManagementSections,
+    );
+    let collapsed = collapsedEntries.has(id);
+    const heading = new Setting(containerEl).setName(title).setHeading();
+    heading.settingEl.addClass("obsidian-math-chords-manager-header");
+    const bodyEl = containerEl.createDiv({
+      cls: "obsidian-math-chords-manager-body",
+    });
+    const update = (): void => {
+      bodyEl.toggleClass("is-hidden", collapsed);
+    };
+    heading.addExtraButton((button) => {
+      const updateButton = (): void => {
+        button
+          .setIcon(collapsed ? "chevron-right" : "chevron-down")
+          .setTooltip(t(collapsed ? "expandGroup" : "collapseGroup"));
+      };
+      updateButton();
+      button.onClick(() => {
+        collapsed = !collapsed;
+        update();
+        updateButton();
+        this.setCollapsedSettingsEntry(
+          "settingsCollapsedManagementSections",
+          id,
+          collapsed,
+        );
+      });
+    });
+    update();
+    return bodyEl;
+  }
+
+  private renderShortcutManager(containerEl: HTMLElement): void {
+    const managerBodyEl = this.renderCollapsibleManager(
+      containerEl,
+      "shortcuts",
+      t("shortcutManagementHeading"),
+    );
+    const managerEl = managerBodyEl.createDiv({ cls: "obsidian-math-chords-shortcuts" });
     let applyFilter = (): void => undefined;
 
     const toolbar = new Setting(managerEl)
@@ -464,6 +554,8 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
     interface RenderedGroup {
       sectionEl: HTMLElement;
       countEl: HTMLElement;
+      listEl: HTMLElement;
+      isCollapsed: () => boolean;
       rows: RenderedShortcut[];
     }
     const renderedGroups: RenderedGroup[] = [];
@@ -478,8 +570,31 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       const countEl = groupHeader.nameEl.createSpan({
         cls: "obsidian-math-chords-group-count",
       });
+      const collapsedGroups = new Set(
+        this.plugin.settings.settingsCollapsedShortcutGroups,
+      );
+      let collapsed = collapsedGroups.has(groupName);
+      groupHeader.addExtraButton((button) => {
+        const updateButton = (): void => {
+          button
+            .setIcon(collapsed ? "chevron-right" : "chevron-down")
+            .setTooltip(t(collapsed ? "expandGroup" : "collapseGroup"));
+        };
+        updateButton();
+        button.onClick(() => {
+          collapsed = !collapsed;
+          listEl.toggleClass("is-hidden", collapsed && !this.search.trim());
+          updateButton();
+          this.setCollapsedSettingsEntry(
+            "settingsCollapsedShortcutGroups",
+            groupName,
+            collapsed,
+          );
+        });
+      });
       const listEl = sectionEl.createDiv({ cls: "obsidian-math-chords-shortcut-list" });
       listEl.setAttr("role", "list");
+      listEl.toggleClass("is-hidden", collapsed && !this.search.trim());
 
       const rows: RenderedShortcut[] = [];
       for (const [key, entry] of entries) {
@@ -543,7 +658,13 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         }, true);
         rows.push({ entry, rowEl });
       }
-      renderedGroups.push({ sectionEl, countEl, rows });
+      renderedGroups.push({
+        sectionEl,
+        countEl,
+        listEl,
+        isCollapsed: () => collapsed,
+        rows,
+      });
     }
 
     applyFilter = () => {
@@ -556,6 +677,10 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
           if (visible) visibleInGroup++;
         }
         group.sectionEl.toggleClass("is-hidden", visibleInGroup === 0);
+        group.listEl.toggleClass(
+          "is-hidden",
+          visibleInGroup === 0 || (group.isCollapsed() && !this.search.trim()),
+        );
         group.countEl.setText(String(visibleInGroup));
         visibleTotal += visibleInGroup;
       }
@@ -567,6 +692,441 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
 
     applyFilter();
     this.previewCleanup = scheduleShortcutPreviews(previewRequests, managerEl);
+  }
+
+  private renderTemplateManager(containerEl: HTMLElement): void {
+    const managerBodyEl = this.renderCollapsibleManager(
+      containerEl,
+      "templates",
+      t("templateManagementHeading"),
+    );
+    const managerEl = managerBodyEl.createDiv({
+      cls: "obsidian-math-chords-template-manager",
+    });
+    let applyFilter = (): void => undefined;
+    let dragId: string | null = null;
+    const persist = (templates: FormulaTemplateNode[]): void => {
+      if (templates === this.plugin.settings.formulaPanelTemplates) return;
+      void runWithNotice(async () => {
+        await this.plugin.updateFormulaPanelTemplates(templates);
+        this.refreshSettingsView();
+      }, t("noticeCouldNotSaveSettings"));
+    };
+    const createTemplate = (parentId: string | null): void => {
+      const template = createFormulaTemplate();
+      openFormulaTemplateEditorModal(this.app, template, (updated) => {
+        persist(appendFormulaTemplate(
+          this.plugin.settings.formulaPanelTemplates,
+          parentId,
+          { ...template, ...updated },
+        ));
+      });
+    };
+
+    const toolbar = new Setting(managerEl)
+      .setName(t("searchName"))
+      .setDesc(t("templateManagementDesc"))
+      .addText((text) => {
+        text
+          .setPlaceholder(t("templateSearchPlaceholder"))
+          .setValue(this.templateSearch)
+          .onChange((value) => {
+            this.templateSearch = value;
+            applyFilter();
+          });
+        text.inputEl.type = "search";
+        text.inputEl.setAttr("aria-label", t("searchName"));
+        text.inputEl.setAttr("spellcheck", "false");
+        text.inputEl.addClass("obsidian-math-chords-search-input");
+      })
+      .addExtraButton((button) => button
+        .setIcon("folder-plus")
+        .setTooltip(t("addTemplateFolder"))
+        .onClick(() => {
+          openFormulaTemplateFolderModal(this.app, (name) => {
+            persist(appendFormulaTemplateFolder(
+              this.plugin.settings.formulaPanelTemplates,
+              null,
+              createFormulaTemplateFolder(name),
+            ));
+          });
+        }))
+      .addExtraButton((button) => button
+        .setIcon("file-plus")
+        .setTooltip(t("addTemplate"))
+        .onClick(() => createTemplate(null)));
+    toolbar.settingEl.addClass(
+      "obsidian-math-chords-shortcut-toolbar",
+      "obsidian-math-chords-template-toolbar",
+    );
+
+    const summaryEl = managerEl.createDiv({
+      cls: "obsidian-math-chords-shortcut-summary",
+    });
+    summaryEl.setAttr("aria-live", "polite");
+    const treeEl = managerEl.createDiv({
+      cls: "obsidian-math-chords-settings-template-tree",
+    });
+    const emptyEl = managerEl.createDiv({
+      cls: "obsidian-math-chords-empty-state is-hidden",
+      text: t("noMatchingTemplates"),
+    });
+
+    interface RenderedTemplateSetting {
+      node: FormulaTemplateNode;
+      element: HTMLElement;
+      body: HTMLElement | null;
+      isCollapsed: () => boolean;
+      children: RenderedTemplateSetting[];
+    }
+
+    const countTemplates = (nodes: FormulaTemplateNode[]): number =>
+      nodes.reduce(
+        (total, node) => total +
+          (node.type === "template" ? 1 : countTemplates(node.children)),
+        0,
+      );
+
+    const editTemplate = (template: FormulaTemplate): void => {
+      openFormulaTemplateEditorModal(this.app, template, (updated) => {
+        persist(updateFormulaTemplateNode(
+          this.plugin.settings.formulaPanelTemplates,
+          template.id,
+          (node) => node.type === "template" ? { ...node, ...updated } : node,
+        ));
+      });
+    };
+
+    const clearDropIndicators = (): void => {
+      treeEl
+        .querySelectorAll<HTMLElement>(
+          ".is-drop-before, .is-drop-after, .is-drop-inside, .is-root-drop-target",
+        )
+        .forEach((element) => element.removeClass(
+          "is-drop-before",
+          "is-drop-after",
+          "is-drop-inside",
+          "is-root-drop-target",
+        ));
+    };
+
+    const createDragHandle = (
+      parentEl: HTMLElement,
+      node: FormulaTemplateNode,
+      nodeEl: HTMLElement,
+      parentId: string | null,
+      index: number,
+    ): HTMLButtonElement => {
+      const buttonEl = parentEl.createEl("button", {
+        cls: "clickable-icon obsidian-math-chords-template-setting-drag",
+        attr: {
+          type: "button",
+          draggable: "true",
+          title: t("dragToReorder"),
+          "aria-label": t("dragToReorder"),
+        },
+      });
+      setIcon(buttonEl, "grip-vertical");
+      buttonEl.addEventListener("dragstart", (event) => {
+        dragId = node.id;
+        nodeEl.addClass("is-dragging");
+        event.dataTransfer?.setData("application/x-math-chords-template-node", node.id);
+        if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+      });
+      buttonEl.addEventListener("dragend", () => {
+        dragId = null;
+        nodeEl.removeClass("is-dragging");
+        clearDropIndicators();
+      });
+      buttonEl.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+        event.preventDefault();
+        persist(moveFormulaTemplateNode(
+          this.plugin.settings.formulaPanelTemplates,
+          node.id,
+          parentId,
+          index + (event.key === "ArrowUp" ? -1 : 2),
+        ));
+      });
+      return buttonEl;
+    };
+
+    const makeDropTarget = (
+      targetEl: HTMLElement,
+      indicatorEl: HTMLElement,
+      node: FormulaTemplateNode,
+      parentId: string | null,
+      index: number,
+    ): void => {
+      targetEl.addEventListener("dragover", (event) => {
+        if (!dragId || dragId === node.id) return;
+        event.preventDefault();
+        event.stopPropagation();
+        clearDropIndicators();
+        const bounds = targetEl.getBoundingClientRect();
+        const ratio = bounds.height > 0
+          ? (event.clientY - bounds.top) / bounds.height
+          : 0;
+        if (node.type === "folder" && ratio >= 0.25 && ratio <= 0.75) {
+          indicatorEl.addClass("is-drop-inside");
+        } else {
+          indicatorEl.addClass(ratio < 0.5 ? "is-drop-before" : "is-drop-after");
+        }
+      });
+      targetEl.addEventListener("dragleave", (event) => {
+        if (!indicatorEl.contains(event.relatedTarget as Node | null)) {
+          clearDropIndicators();
+        }
+      });
+      targetEl.addEventListener("drop", (event) => {
+        if (!dragId || dragId === node.id) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const inside = indicatorEl.hasClass("is-drop-inside") && node.type === "folder";
+        const after = indicatorEl.hasClass("is-drop-after");
+        clearDropIndicators();
+        persist(moveFormulaTemplateNode(
+          this.plugin.settings.formulaPanelTemplates,
+          dragId,
+          inside ? node.id : parentId,
+          inside ? node.children.length : index + (after ? 1 : 0),
+        ));
+      });
+    };
+
+    const renderNodes = (
+      parentEl: HTMLElement,
+      nodes: FormulaTemplateNode[],
+      parentId: string | null,
+    ): RenderedTemplateSetting[] => nodes.map((node, index) => {
+      if (node.type === "template") {
+        const rowEl = parentEl.createDiv({
+          cls: "obsidian-math-chords-shortcut-row obsidian-math-chords-template-setting-row",
+        });
+        createDragHandle(rowEl, node, rowEl, parentId, index);
+        const identityEl = rowEl.createDiv({
+          cls: "obsidian-math-chords-shortcut-identity",
+        });
+        const textEl = identityEl.createDiv({
+          cls: "obsidian-math-chords-shortcut-text",
+        });
+        const name = node.name || formulaTemplateLabel(node.content, t("untitledTemplate"));
+        textEl.createDiv({
+          cls: "obsidian-math-chords-shortcut-name",
+          text: name,
+          attr: { title: name },
+        });
+        textEl.createEl("code", {
+          cls: "obsidian-math-chords-shortcut-command",
+          text: node.content || t("templateEmptyHint"),
+          attr: { title: node.content || t("templateEmptyHint") },
+        });
+        const actionsEl = rowEl.createDiv({
+          cls: "obsidian-math-chords-row-actions",
+        });
+        createIconButton(actionsEl, "pencil", t("editTemplate"), () => {
+          editTemplate(node);
+        });
+        createIconButton(actionsEl, "trash-2", t("deleteButton"), () => {
+          new ConfirmDeleteModal(
+            this.app,
+            t("deleteTemplateHeading"),
+            t("deleteTemplateDesc", name),
+            () => persist(removeFormulaTemplateNode(
+              this.plugin.settings.formulaPanelTemplates,
+              node.id,
+            )),
+          ).open();
+        }, true);
+        makeDropTarget(rowEl, rowEl, node, parentId, index);
+        return {
+          node,
+          element: rowEl,
+          body: null,
+          isCollapsed: () => false,
+          children: [],
+        };
+      }
+
+      const sectionEl = parentEl.createEl("section", {
+        cls: "obsidian-math-chords-template-setting-folder",
+      });
+      const header = new Setting(sectionEl).setName(
+        node.name || t("newTemplateFolderName"),
+      ).setHeading();
+      header.settingEl.addClass(
+        "obsidian-math-chords-group-header",
+        "obsidian-math-chords-template-folder-header",
+      );
+      header.nameEl.addClass("obsidian-math-chords-group-title");
+      const dragButton = createDragHandle(
+        header.nameEl,
+        node,
+        sectionEl,
+        parentId,
+        index,
+      );
+      header.nameEl.prepend(dragButton);
+      const countEl = header.nameEl.createSpan({
+        cls: "obsidian-math-chords-group-count",
+        text: String(countTemplates(node.children)),
+      });
+      countEl.setAttr("aria-hidden", "true");
+      header.addExtraButton((button) => button
+        .setIcon("folder-plus")
+        .setTooltip(t("addTemplateFolder"))
+        .onClick(() => {
+          openFormulaTemplateFolderModal(this.app, (name) => {
+            persist(appendFormulaTemplateFolder(
+              this.plugin.settings.formulaPanelTemplates,
+              node.id,
+              createFormulaTemplateFolder(name),
+            ));
+          });
+        }));
+      header.addExtraButton((button) => button
+        .setIcon("file-plus")
+        .setTooltip(t("addTemplate"))
+        .onClick(() => createTemplate(node.id)));
+      header.addExtraButton((button) => button
+        .setIcon("pencil")
+        .setTooltip(t("editTemplateFolder"))
+        .onClick(() => {
+          openFormulaTemplateFolderModal(this.app, (name) => {
+            persist(updateFormulaTemplateNode(
+              this.plugin.settings.formulaPanelTemplates,
+              node.id,
+              (current) => current.type === "folder"
+                ? { ...current, name }
+                : current,
+            ));
+          }, node.name);
+        }));
+      header.addExtraButton((button) => button
+        .setIcon("trash-2")
+        .setTooltip(t("deleteButton"))
+        .onClick(() => {
+          new ConfirmDeleteModal(
+            this.app,
+            t("deleteTemplateFolderHeading"),
+            t("deleteTemplateFolderDesc", node.name || t("newTemplateFolderName")),
+            () => persist(removeFormulaTemplateNode(
+              this.plugin.settings.formulaPanelTemplates,
+              node.id,
+            )),
+          ).open();
+        }));
+      const collapsedFolders = new Set(
+        this.plugin.settings.settingsCollapsedTemplateFolders,
+      );
+      let collapsed = collapsedFolders.has(node.id);
+      const bodyEl = sectionEl.createDiv({
+        cls: "obsidian-math-chords-settings-template-folder-body",
+      });
+      header.addExtraButton((button) => {
+        const updateButton = (): void => {
+          button
+            .setIcon(collapsed ? "chevron-right" : "chevron-down")
+            .setTooltip(t(collapsed ? "expandGroup" : "collapseGroup"));
+        };
+        updateButton();
+        button.onClick(() => {
+          collapsed = !collapsed;
+          bodyEl.toggleClass("is-hidden", collapsed && !this.templateSearch.trim());
+          updateButton();
+          this.setCollapsedSettingsEntry(
+            "settingsCollapsedTemplateFolders",
+            node.id,
+            collapsed,
+          );
+        });
+      });
+      bodyEl.toggleClass("is-hidden", collapsed && !this.templateSearch.trim());
+      makeDropTarget(header.settingEl, sectionEl, node, parentId, index);
+      const children = renderNodes(bodyEl, node.children, node.id);
+      return {
+        node,
+        element: sectionEl,
+        body: bodyEl,
+        isCollapsed: () => collapsed,
+        children,
+      };
+    });
+
+    const rendered = renderNodes(
+      treeEl,
+      this.plugin.settings.formulaPanelTemplates,
+      null,
+    );
+    const treeEmptyEl = treeEl.createDiv({
+      cls: "obsidian-math-chords-template-setting-empty is-hidden",
+      text: t("templateSectionEmptyHint"),
+    });
+    const rootDropEl = treeEl.createDiv({
+      cls: "obsidian-math-chords-template-setting-root-drop",
+      attr: { "aria-hidden": "true" },
+    });
+    rootDropEl.addEventListener("dragover", (event) => {
+      if (!dragId) return;
+      event.preventDefault();
+      event.stopPropagation();
+      clearDropIndicators();
+      rootDropEl.addClass("is-root-drop-target");
+    });
+    rootDropEl.addEventListener("dragleave", () => clearDropIndicators());
+    rootDropEl.addEventListener("drop", (event) => {
+      if (!dragId) return;
+      event.preventDefault();
+      event.stopPropagation();
+      clearDropIndicators();
+      persist(moveFormulaTemplateNode(
+        this.plugin.settings.formulaPanelTemplates,
+        dragId,
+        null,
+        this.plugin.settings.formulaPanelTemplates.length,
+      ));
+    });
+    let visibleNodeCount = 0;
+    const applyNodeFilter = (
+      entry: RenderedTemplateSetting,
+      query: string,
+      ancestorMatches = false,
+    ): number => {
+      const matches = entry.node.type === "folder"
+        ? entry.node.name.toLocaleLowerCase().includes(query)
+        : `${entry.node.name} ${entry.node.content}`.toLocaleLowerCase().includes(query);
+      const childAncestorMatches = ancestorMatches ||
+        (entry.node.type === "folder" && matches);
+      const visibleChildren = entry.children.reduce(
+        (total, child) => total + applyNodeFilter(child, query, childAncestorMatches),
+        0,
+      );
+      const visible = !query || ancestorMatches || matches || visibleChildren > 0;
+      if (visible) visibleNodeCount++;
+      entry.element.toggleClass("is-hidden", !visible);
+      entry.body?.toggleClass(
+        "is-hidden",
+        !visible || (entry.isCollapsed() && !query),
+      );
+      return entry.node.type === "template" ? (visible ? 1 : 0) : visibleChildren;
+    };
+
+    applyFilter = () => {
+      const query = this.templateSearch.trim().toLocaleLowerCase();
+      visibleNodeCount = 0;
+      const visible = rendered.reduce(
+        (total, entry) => total + applyNodeFilter(entry, query),
+        0,
+      );
+      const total = countTemplates(this.plugin.settings.formulaPanelTemplates);
+      summaryEl.setText(t("templateCount", String(visible), String(total)));
+      emptyEl.toggleClass("is-hidden", visibleNodeCount !== 0 || !query);
+      const hasNodes = this.plugin.settings.formulaPanelTemplates.length > 0;
+      treeEl.toggleClass("is-empty", !hasNodes);
+      treeEmptyEl.toggleClass("is-hidden", hasNodes);
+      rootDropEl.toggleClass("is-hidden", !hasNodes);
+    };
+    applyFilter();
   }
 
   display(): void {
@@ -747,6 +1307,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
     this.configureReloadSetting(new Setting(containerEl));
 
     this.renderShortcutManager(containerEl);
+    this.renderTemplateManager(containerEl);
   }
 
   hide(): void {

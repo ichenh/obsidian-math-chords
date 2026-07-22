@@ -24,7 +24,16 @@ import {
 import { openEnvironmentPicker, wrapMathWithEnvironment } from "./mathEnv";
 import { runWithNotice } from "./errors";
 import { initLocale, t } from "./l10n/locale";
-import type { MathEnvironment, Shortcut } from "./types";
+import type {
+  FormulaPanelSectionId,
+  FormulaTemplateNode,
+  MathEnvironment,
+  Shortcut,
+} from "./types";
+import {
+  cloneFormulaTemplateNodes,
+  setAllFormulaTemplateNodesCollapsed,
+} from "./formulaTemplateModel";
 import {
   convertLatexDelimitersInDocument,
   convertLatexDelimitersInSelections,
@@ -35,6 +44,14 @@ import {
   FORMULA_PANEL_VIEW_TYPE,
   FormulaPanelView,
 } from "./formulaPanel";
+import {
+  decodeFormulaPanelDragPayload,
+  FORMULA_PANEL_INSERT_MIME,
+} from "./formulaPanelDrag";
+import {
+  formulaPanelDropCursorField,
+  setFormulaPanelDropPosition,
+} from "./formulaPanelDropCursor";
 
 export default class ObsidianMathChordsPlugin extends Plugin {
   settings: ObsidianMathChordsSettings = { ...DEFAULT_SETTINGS };
@@ -105,6 +122,27 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       createInlineMathPreviewPlugin({
         isEnabled: () => this.settings.showInlinePreview,
         isActiveView: (view) => this.isActiveEditorView(view),
+      }),
+      formulaPanelDropCursorField,
+      EditorView.domEventHandlers({
+        dragover: (event, view) => {
+          if (!event.dataTransfer?.types.includes(FORMULA_PANEL_INSERT_MIME)) {
+            return false;
+          }
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "copy";
+          const position = view.posAtCoords({ x: event.clientX, y: event.clientY });
+          view.dispatch({
+            effects: setFormulaPanelDropPosition.of(position),
+          });
+          return true;
+        },
+        dragleave: (event, view) => {
+          if (view.dom.contains(event.relatedTarget as Node | null)) return false;
+          view.dispatch({ effects: setFormulaPanelDropPosition.of(null) });
+          return false;
+        },
+        drop: (event, view) => this.onFormulaPanelDrop(event, view),
       }),
     ]);
 
@@ -220,6 +258,48 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     event.preventDefault();
   };
 
+  private onFormulaPanelDrop(event: DragEvent, view: EditorView): boolean {
+    const encoded = event.dataTransfer?.getData(FORMULA_PANEL_INSERT_MIME) ?? "";
+    const payload = decodeFormulaPanelDragPayload(encoded);
+    if (!payload) return false;
+
+    const offset = view.posAtCoords({ x: event.clientX, y: event.clientY });
+    const editor = this.findEditor(view);
+    if (offset === null || !editor) return false;
+
+    event.preventDefault();
+    event.stopPropagation();
+    view.dispatch({ effects: setFormulaPanelDropPosition.of(null) });
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+    editor.setCursor(editor.offsetToPos(offset));
+
+    if (payload.kind === "shortcut") {
+      this.insertShortcutForEditor(editor, payload.shortcut);
+    } else if (payload.kind === "environment") {
+      if (!this.settings.mathEnvWrapEnabled) {
+        new Notice(t("noticeEnableEnvWrap"));
+      } else {
+        wrapMathWithEnvironment(editor, payload.environment);
+      }
+    } else if (!payload.content) {
+      new Notice(t("templateEmptyHint"));
+    } else {
+      editor.replaceSelection(payload.content);
+    }
+
+    editor.focus();
+    return true;
+  }
+
+  clearFormulaPanelDropCursors(): void {
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      if (!(leaf.view instanceof MarkdownView)) return;
+      this.getEditorView(leaf.view.editor)?.dispatch({
+        effects: setFormulaPanelDropPosition.of(null),
+      });
+    });
+  }
+
   private isActiveEditorView(view: EditorView): boolean {
     const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!markdownView) return false;
@@ -248,6 +328,20 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       })),
       formulaPanelGroupOrder: [...this.settings.formulaPanelGroupOrder],
       formulaPanelCollapsedGroups: [...this.settings.formulaPanelCollapsedGroups],
+      formulaPanelSectionOrder: [...this.settings.formulaPanelSectionOrder],
+      formulaPanelCollapsedSections: [...this.settings.formulaPanelCollapsedSections],
+      formulaPanelTemplates: cloneFormulaTemplateNodes(
+        this.settings.formulaPanelTemplates,
+      ),
+      settingsCollapsedManagementSections: [
+        ...this.settings.settingsCollapsedManagementSections,
+      ],
+      settingsCollapsedShortcutGroups: [
+        ...this.settings.settingsCollapsedShortcutGroups,
+      ],
+      settingsCollapsedTemplateFolders: [
+        ...this.settings.settingsCollapsedTemplateFolders,
+      ],
     };
     const write = this.settingsWriteChain.then(() => this.saveData(snapshot));
     this.settingsWriteChain = write.catch(() => undefined);
@@ -361,7 +455,49 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       else collapsedGroups.delete(groupId);
     }
     this.settings.formulaPanelCollapsedGroups = [...collapsedGroups];
+    this.settings.formulaPanelTemplates = setAllFormulaTemplateNodesCollapsed(
+      this.settings.formulaPanelTemplates,
+      collapsed,
+    );
+    this.refreshFormulaPanels();
     await this.saveSettings();
+  }
+
+  async updateFormulaPanelSectionOrder(order: FormulaPanelSectionId[]): Promise<void> {
+    this.settings.formulaPanelSectionOrder = [...order];
+    this.refreshFormulaPanels();
+    await this.saveSettings();
+  }
+
+  async setFormulaPanelSectionCollapsed(
+    sectionId: FormulaPanelSectionId,
+    collapsed: boolean,
+  ): Promise<void> {
+    const sections = new Set(this.settings.formulaPanelCollapsedSections);
+    if (collapsed) sections.add(sectionId);
+    else sections.delete(sectionId);
+    this.settings.formulaPanelCollapsedSections = [...sections];
+    await this.saveSettings();
+  }
+
+  async updateFormulaPanelTemplates(templates: FormulaTemplateNode[]): Promise<void> {
+    this.settings.formulaPanelTemplates = cloneFormulaTemplateNodes(templates);
+    this.refreshFormulaPanels();
+    await this.saveSettings();
+  }
+
+  insertTemplateFromFormulaPanel(content: string): void {
+    if (!content) {
+      new Notice(t("templateEmptyHint"));
+      return;
+    }
+    const editor = this.resolveFormulaPanelEditor();
+    if (!editor) {
+      new Notice(t("noticeOpenMarkdownToInsert"));
+      return;
+    }
+    editor.replaceSelection(content);
+    editor.focus();
   }
 
   insertMathEnvironmentFromFormulaPanel(environment: MathEnvironment): void {

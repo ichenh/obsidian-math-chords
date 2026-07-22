@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   extractMathContent,
+  findEmptyInlinePlaceholderAtForEdit,
   findMathRegionAt,
   findMathRegionAtForEdit,
   hasUnclosedDisplayMath,
@@ -61,6 +62,26 @@ describe("findMathRegionAt", () => {
   });
 });
 
+describe("findEmptyInlinePlaceholderAtForEdit", () => {
+  it("recognizes only a caret between an empty inline pair", () => {
+    expect(findEmptyInlinePlaceholderAtForEdit("before $$ after", 8)).toEqual({
+      from: 7,
+      to: 9,
+      kind: "inline",
+    });
+    expect(findEmptyInlinePlaceholderAtForEdit("$$", 0)).toBeNull();
+    expect(findEmptyInlinePlaceholderAtForEdit("$$", 2)).toBeNull();
+    expect(findMathRegionAtForEdit("$$", 1)?.kind).toBe("inline");
+  });
+
+  it("does not reinterpret display delimiters or protected text", () => {
+    const display = "$$\n\n$$";
+    expect(findEmptyInlinePlaceholderAtForEdit(display, 1)).toBeNull();
+    expect(findEmptyInlinePlaceholderAtForEdit(display, 5)).toBeNull();
+    expect(findEmptyInlinePlaceholderAtForEdit("`$$`", 2)).toBeNull();
+  });
+});
+
 describe("isInMath", () => {
   it("returns false outside math", () => {
     expect(isInMath("hello", 2)).toBe(false);
@@ -74,6 +95,10 @@ describe("isInMath", () => {
 describe("shouldAutoWrapSnippet", () => {
   it("does not wrap inside inline math", () => {
     expect(shouldAutoWrapSnippet("$x+y$", 2, 2)).toBe(false);
+  });
+
+  it("does not wrap a shortcut inserted into an empty inline placeholder", () => {
+    expect(shouldAutoWrapSnippet("$$", 1, 1)).toBe(false);
   });
 
   it("does not wrap when inline math is unclosed before the cursor", () => {

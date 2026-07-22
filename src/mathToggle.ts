@@ -1,4 +1,7 @@
-import { extractMathContent, findMathRegionAtForEdit } from "./math";
+import {
+  extractMathContent,
+  findMathRegionAtForEdit,
+} from "./math";
 import type { MathRegion } from "./types";
 
 export type MathKind = MathRegion["kind"];
@@ -54,12 +57,13 @@ export function planMathToggle(
     };
   }
 
+  const lineBreak = preferredLineBreak(document);
   return {
     type: "replace",
     from: region.from,
     to: region.to,
-    text: `$$\n${rawContent}\n$$`,
-    caret: region.from + 3 + caretInContent,
+    text: `$$${lineBreak}${rawContent}${lineBreak}$$`,
+    caret: region.from + 2 + lineBreak.length + caretInContent,
   };
 }
 
@@ -95,7 +99,20 @@ function normalizeDisplayContentForInline(
     boundaryMap[index] = normalized.length;
   }
 
-  return { text: normalized, caret: boundaryMap[caret] ?? normalized.length };
+  const normalizedCaret = boundaryMap[caret] ?? normalized.length;
+  const leadingWhitespace = normalized.match(/^\s*/u)?.[0].length ?? 0;
+  const trailingWhitespace = normalized.match(/\s*$/u)?.[0].length ?? 0;
+  const trimmedEnd = Math.max(leadingWhitespace, normalized.length - trailingWhitespace);
+  const text = normalized.slice(leadingWhitespace, trimmedEnd);
+
+  return {
+    text,
+    caret: clamp(normalizedCaret - leadingWhitespace, 0, text.length),
+  };
+}
+
+function preferredLineBreak(text: string): "\n" | "\r\n" {
+  return text.includes("\r\n") ? "\r\n" : "\n";
 }
 
 function lineBreakLengthAt(text: string, index: number): number {
