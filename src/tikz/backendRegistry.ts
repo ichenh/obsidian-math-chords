@@ -2,7 +2,13 @@ import { moment, Platform } from "obsidian";
 import type { ObsidianMathChordsSettings } from "../settings";
 import { NativeLatexBackend } from "./backends/nativeLatexBackend";
 import { ChordTikzWasmBackend } from "./backends/chordTikzWasmBackend";
-import { loadDesktopNodeModule } from "./desktopNode";
+import {
+  getDesktopFileSystem,
+  getDesktopPath,
+  getDesktopProcess,
+  type DesktopFileSystem,
+  type DesktopPath,
+} from "./desktopNode";
 import {
   AutomaticTikzBackend,
   selectAutomaticTikzBackend,
@@ -139,9 +145,9 @@ async function discoverNativeTikzEngines(
   configuredPath: string,
 ): Promise<NativeTikzEngine[]> {
   if (!Platform.isDesktop) return [];
-  const fs = loadDesktopNodeModule("node:fs/promises");
-  const path = loadDesktopNodeModule("node:path");
-  const nodeProcess = loadDesktopNodeModule("node:process");
+  const fs = getDesktopFileSystem();
+  const path = getDesktopPath();
+  const nodeProcess = getDesktopProcess();
   const executableSuffix = nodeProcess.platform === "win32" ? ".exe" : "";
   const directories: string[] = [];
   const explicitEngines: NativeTikzEngine[] = [];
@@ -239,8 +245,8 @@ async function discoverNativeTikzEngines(
 }
 
 async function findExecutable(
-  fs: typeof import("node:fs/promises"),
-  path: typeof import("node:path"),
+  fs: DesktopFileSystem,
+  path: DesktopPath,
   directories: readonly string[],
   filename: string,
 ): Promise<string | null> {

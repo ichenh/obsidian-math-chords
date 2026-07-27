@@ -1,5 +1,8 @@
 import type { TikzRenderArtifact } from "./types";
-import { loadDesktopNodeModule } from "./desktopNode";
+import {
+  getDesktopFileSystem,
+  getDesktopSaveDialog,
+} from "./desktopNode";
 
 export type TikzExportFormat = "svg" | "png" | "jpg" | "pdf";
 
@@ -177,7 +180,8 @@ async function rasterizeSvg(
   const scale = Math.min(3, Math.max(1, 2400 / Math.max(width, height)));
   const pixelWidth = Math.max(1, Math.round(width * scale));
   const pixelHeight = Math.max(1, Math.round(height * scale));
-  const canvas = ownerDocument.createDocumentFragment().createEl("canvas");
+  const canvas = ownerDocument.body.createEl("canvas");
+  canvas.detach();
   canvas.width = pixelWidth;
   canvas.height = pixelHeight;
   const context = canvas.getContext("2d");
@@ -255,32 +259,11 @@ async function chooseExportTarget(
       { name: "PDF", extensions: ["pdf"] },
     ],
   };
-  try {
-    const remote = loadDesktopNodeModule(
-      "@electron/remote",
-      ownerDocument.defaultView,
-    );
-    if (remote.dialog) {
-      const result = await remote.dialog.showSaveDialog(options);
-      if (result.canceled || !result.filePath) return null;
-      return localFileTarget(result.filePath);
-    }
-  } catch {
-    // Older Obsidian/Electron builds expose the dialog through electron.remote.
-  }
-  try {
-    const electron = loadDesktopNodeModule(
-      "electron",
-      ownerDocument.defaultView,
-    );
-    const dialog = electron.remote?.dialog;
-    if (dialog) {
-      const result = await dialog.showSaveDialog(options);
-      if (result.canceled || !result.filePath) return null;
-      return localFileTarget(result.filePath);
-    }
-  } catch {
-    // Fall through to Chromium's file picker when Electron remote is disabled.
+  const desktopDialog = getDesktopSaveDialog(ownerDocument.defaultView);
+  if (desktopDialog) {
+    const result = await desktopDialog.showSaveDialog(options);
+    if (result.canceled || !result.filePath) return null;
+    return localFileTarget(result.filePath);
   }
 
   const win = ownerDocument.defaultView as unknown as {
@@ -353,7 +336,7 @@ async function writeLocalFile(
   path: string,
   bytes: Uint8Array,
 ): Promise<void> {
-  const fs = loadDesktopNodeModule("node:fs/promises");
+  const fs = getDesktopFileSystem();
   await fs.writeFile(path, bytes);
 }
 

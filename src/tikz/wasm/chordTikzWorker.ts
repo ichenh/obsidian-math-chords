@@ -51,9 +51,7 @@ async function initialize(message: InitializeMessage): Promise<void> {
     }
 
     const instantiated = await WebAssembly.instantiate(wasm, {});
-    const wasmExports = instantiated.instance.exports;
-    validateExports(wasmExports);
-    engine = wasmExports;
+    engine = parseExports(instantiated.instance.exports);
     self.postMessage({
       type: "ready",
       protocolVersion: PROTOCOL_VERSION,
@@ -109,19 +107,33 @@ function compile(message: CompileMessage): void {
   }
 }
 
-function validateExports(
-  exports: WebAssembly.Exports,
-): asserts exports is WebAssembly.Exports & ChordTikzExports {
+function parseExports(exports: WebAssembly.Exports): ChordTikzExports {
+  const memory = exports.memory;
+  const allocate = exports.chord_tikz_alloc;
+  const deallocate = exports.chord_tikz_dealloc;
+  const render = exports.chord_tikz_render;
+  const resultPointer = exports.chord_tikz_result_ptr;
+  const resultLength = exports.chord_tikz_result_len;
   if (
-    !(exports.memory instanceof WebAssembly.Memory) ||
-    typeof exports.chord_tikz_alloc !== "function" ||
-    typeof exports.chord_tikz_dealloc !== "function" ||
-    typeof exports.chord_tikz_render !== "function" ||
-    typeof exports.chord_tikz_result_ptr !== "function" ||
-    typeof exports.chord_tikz_result_len !== "function"
+    !(memory instanceof WebAssembly.Memory) ||
+    typeof allocate !== "function" ||
+    typeof deallocate !== "function" ||
+    typeof render !== "function" ||
+    typeof resultPointer !== "function" ||
+    typeof resultLength !== "function"
   ) {
     throw new Error("The Chord TikZ WASM core exports are invalid.");
   }
+  return {
+    memory,
+    chord_tikz_alloc: allocate as ChordTikzExports["chord_tikz_alloc"],
+    chord_tikz_dealloc: deallocate as ChordTikzExports["chord_tikz_dealloc"],
+    chord_tikz_render: render as ChordTikzExports["chord_tikz_render"],
+    chord_tikz_result_ptr:
+      resultPointer as ChordTikzExports["chord_tikz_result_ptr"],
+    chord_tikz_result_len:
+      resultLength as ChordTikzExports["chord_tikz_result_len"],
+  };
 }
 
 function decodeBase64(value: string): Uint8Array {

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-07-28
+
+### Fixed
+
+- Removed the remaining source-audit warnings by replacing the generic desktop runtime bridge with capability-specific validated adapters and by creating detached preview elements through Obsidian's DOM helpers.
+
 ## [0.5.1] - 2026-07-27
 
 ### Changed

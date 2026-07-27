@@ -230,9 +230,10 @@ function parseSafeSvg(bytes: Uint8Array, ownerDocument: Document): SVGSVGElement
 
 function ensureSvgContentGroup(root: Element): void {
   if (root.querySelector('g[data-chord-tikz-content="true"]')) return;
-  const group = root.ownerDocument.createDocumentFragment().createSvg("g");
+  const children = Array.from(root.children);
+  const group = root.createSvg("g");
   group.setAttribute("data-chord-tikz-content", "true");
-  for (const child of Array.from(root.children)) {
+  for (const child of children) {
     if (["defs", "title", "desc"].includes(child.localName.toLowerCase())) {
       continue;
     }
@@ -509,14 +510,16 @@ function parseTikzOverlayPlacement(
 }
 
 function renderMathLabel(source: string, ownerDocument: Document): HTMLElement {
-  const element = ownerDocument.createDocumentFragment().createSpan();
+  const element = ownerDocument.body.createSpan();
+  element.detach();
   element.addClass("is-math-only");
   element.appendChild(renderMath(source, false));
   return element;
 }
 
 function renderMixedLabel(source: string, ownerDocument: Document): HTMLElement {
-  const element = ownerDocument.createDocumentFragment().createSpan();
+  const element = ownerDocument.body.createSpan();
+  element.detach();
   element.addClass("is-mixed-label");
   let cursor = 0;
   for (const match of source.matchAll(/\$([^$]+)\$/g)) {
@@ -566,10 +569,8 @@ async function renderPdf(
         2,
       );
       const viewport = page.getViewport({ scale: cssScale * pixelRatio });
-      const canvas = containerEl
-        .ownerDocument
-        .createDocumentFragment()
-        .createEl("canvas");
+      const canvas = containerEl.createEl("canvas");
+      canvas.detach();
       canvas.width = Math.ceil(viewport.width);
       canvas.height = Math.ceil(viewport.height);
       canvas.style.width = `${Math.ceil(viewport.width / pixelRatio)}px`;

@@ -59,8 +59,7 @@ export function createTikzLivePreviewExtension(
 
       constructor(private view: EditorView) {
         const ownerDocument = view.dom.ownerDocument;
-        const fragment = ownerDocument.createDocumentFragment();
-        this.panelEl = fragment.createDiv();
+        this.panelEl = ownerDocument.body.createDiv();
         this.panelEl.className =
           "obsidian-math-chords-tikz-floating-preview";
         this.panelEl.hidden = true;
@@ -101,7 +100,6 @@ export function createTikzLivePreviewExtension(
             this.startResizing(direction, event);
           });
         }
-        ownerDocument.body.appendChild(this.panelEl);
         ownerDocument.addEventListener(
           "pointerdown",
           this.onDocumentPointerDown,

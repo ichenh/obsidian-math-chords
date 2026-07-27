@@ -43,7 +43,8 @@ export class TikzPreviewSurface {
     ownerDocument: Document,
     private readonly options: TikzPreviewSurfaceOptions,
   ) {
-    this.containerEl = ownerDocument.createDocumentFragment().createDiv();
+    this.containerEl = ownerDocument.body.createDiv();
+    this.containerEl.detach();
     this.containerEl.className = "obsidian-math-chords-tikz-preview";
     this.outputEl = this.containerEl.createDiv({
       cls: "obsidian-math-chords-tikz-preview-output",
@@ -155,20 +156,14 @@ export class TikzPreviewSurface {
 
   private showError(error: Error): void {
     const message = error.message.split(/\r?\n/).slice(-6).join("\n");
-    const errorEl = this.outputEl
-      .ownerDocument
-      .createDocumentFragment()
-      .createEl("pre");
+    const errorEl = this.outputEl.createEl("pre");
     errorEl.className = "obsidian-math-chords-tikz-preview-error";
     errorEl.setText(message);
     this.outputEl.replaceChildren(errorEl);
   }
 
   private showSource(): void {
-    const sourceEl = this.outputEl
-      .ownerDocument
-      .createDocumentFragment()
-      .createEl("pre");
+    const sourceEl = this.outputEl.createEl("pre");
     sourceEl.className = "obsidian-math-chords-tikz-preview-source";
     sourceEl.setText(this.source);
     this.outputEl.replaceChildren(sourceEl);
@@ -176,10 +171,7 @@ export class TikzPreviewSurface {
 
   private createStagingOutput(previousOutput: HTMLElement): HTMLElement {
     const rect = previousOutput.getBoundingClientRect();
-    const staging = previousOutput
-      .ownerDocument
-      .createDocumentFragment()
-      .createDiv();
+    const staging = previousOutput.ownerDocument.body.createDiv();
     staging.className = previousOutput.className;
     staging.addClass("is-staging");
     staging.setCssProps({
@@ -188,7 +180,6 @@ export class TikzPreviewSurface {
       "--obsidian-math-chords-tikz-staging-height":
         `${Math.max(1, rect.height)}px`,
     });
-    previousOutput.ownerDocument.body.appendChild(staging);
     return staging;
   }
 }

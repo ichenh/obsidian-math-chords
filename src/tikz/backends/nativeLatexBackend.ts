@@ -1,5 +1,12 @@
 import { Platform } from "obsidian";
-import { loadDesktopNodeModule } from "../desktopNode";
+import {
+  getDesktopChildProcess,
+  getDesktopFileSystem,
+  getDesktopPath,
+  getDesktopProcess,
+  getDesktopTempDirectory,
+  type DesktopFileSystem,
+} from "../desktopNode";
 import { createTikzDocument } from "../document";
 import {
   type NativeTikzEngine,
@@ -32,7 +39,7 @@ export class NativeLatexBackend implements TikzRenderBackend {
 
   async isAvailable(): Promise<boolean> {
     if (!Platform.isDesktop) return false;
-    const fs = loadDesktopNodeModule("node:fs/promises");
+    const fs = getDesktopFileSystem();
     try {
       await fs.access(this.options.engine.executablePath);
       if (this.options.engine.kind === "latex-dvi") {
@@ -55,16 +62,16 @@ export class NativeLatexBackend implements TikzRenderBackend {
     if (new TextEncoder().encode(source).byteLength > MAX_NATIVE_SOURCE_BYTES) {
       throw new Error("The TikZ source exceeds the 256 KiB native-render limit.");
     }
-    const fs = loadDesktopNodeModule("node:fs/promises");
-    const os = loadDesktopNodeModule("node:os");
-    const path = loadDesktopNodeModule("node:path");
+    const fs = getDesktopFileSystem();
+    const tempDirectory = getDesktopTempDirectory();
+    const path = getDesktopPath();
     const startedAt = performance.now();
     const workDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), "math-chords-tikz-"),
+      path.join(tempDirectory, "math-chords-tikz-"),
     );
-    const cacheDir = path.join(os.tmpdir(), "math-chords-tex-cache");
+    const cacheDir = path.join(tempDirectory, "math-chords-tex-cache");
     await fs.mkdir(cacheDir, { recursive: true });
-    const resolvedTemp = path.resolve(os.tmpdir());
+    const resolvedTemp = path.resolve(tempDirectory);
     const resolvedWorkDir = path.resolve(workDir);
 
     const relativeWorkDir = path.relative(resolvedTemp, resolvedWorkDir);
@@ -185,7 +192,7 @@ function commonLatexArguments(workDir: string, texPath: string): string[] {
 }
 
 async function readPdfArtifact(
-  fs: typeof import("node:fs/promises"),
+  fs: DesktopFileSystem,
   pdfPath: string,
   startedAt: number,
   result: ProcessResult,
@@ -201,7 +208,7 @@ async function readPdfArtifact(
 }
 
 async function readBoundedFile(
-  fs: typeof import("node:fs/promises"),
+  fs: DesktopFileSystem,
   filePath: string,
 ): Promise<Uint8Array> {
   const stat = await fs.stat(filePath);
@@ -225,8 +232,8 @@ async function runProcess(
   if (!Platform.isDesktop) {
     throw new Error("Native process execution is available on desktop only.");
   }
-  const childProcess = loadDesktopNodeModule("node:child_process");
-  const nodeProcess = loadDesktopNodeModule("node:process");
+  const childProcess = getDesktopChildProcess();
+  const nodeProcess = getDesktopProcess();
   return new Promise((resolve, reject) => {
     childProcess.execFile(
       executable,
