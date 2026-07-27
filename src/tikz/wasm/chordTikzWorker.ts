@@ -50,8 +50,9 @@ async function initialize(message: InitializeMessage): Promise<void> {
       throw new Error("The Chord TikZ WASM core version is invalid.");
     }
 
-    const instantiated = await WebAssembly.instantiate(wasm, {});
-    engine = parseExports(instantiated.instance.exports);
+    const module = await WebAssembly.compile(wasm);
+    const instance = await WebAssembly.instantiate(module, {});
+    engine = parseExports(instance.exports);
     self.postMessage({
       type: "ready",
       protocolVersion: PROTOCOL_VERSION,

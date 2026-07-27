@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-07-28
+
+### Fixed
+
+- Removed the remaining WASM worker audit warnings by compiling the embedded bytes to an explicit WebAssembly module before instantiation.
+- Kept preview export dialog selection and filesystem writes on the same Obsidian window so exports remain reliable from popout windows.
+
 ## [0.5.2] - 2026-07-28
 
 ### Fixed

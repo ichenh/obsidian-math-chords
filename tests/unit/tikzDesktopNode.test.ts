@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  getDesktopChildProcess,
   getDesktopFileSystem,
+  getDesktopPath,
   getDesktopProcess,
   getDesktopSaveDialog,
   getDesktopTempDirectory,
@@ -44,6 +46,36 @@ describe("desktop runtime capability adapters", () => {
     });
     expect(() => getDesktopFileSystem(host)).toThrow(
       "desktop filesystem module is unavailable",
+    );
+  });
+
+  it("validates the complete path and child-process capabilities", () => {
+    const pathModule = {
+      delimiter: ";",
+      basename: vi.fn(),
+      dirname: vi.fn(),
+      extname: vi.fn(),
+      isAbsolute: vi.fn(),
+      join: vi.fn(),
+      relative: vi.fn(),
+      resolve: vi.fn(),
+    };
+    const childProcess = { execFile: vi.fn() };
+    const host = desktopWindow({
+      "node:path": pathModule,
+      "node:child_process": childProcess,
+    });
+
+    expect(getDesktopPath(host)).toBe(pathModule);
+    expect(getDesktopChildProcess(host)).toBe(childProcess);
+  });
+
+  it("rejects incomplete process-launch capabilities", () => {
+    const host = desktopWindow({
+      "node:child_process": {},
+    });
+    expect(() => getDesktopChildProcess(host)).toThrow(
+      "desktop process launcher is unavailable",
     );
   });
 

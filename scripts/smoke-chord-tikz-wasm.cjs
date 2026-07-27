@@ -74,6 +74,28 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
   if ((outputs[6].match(/<polyline/g) ?? []).length !== 8) {
     throw new Error("Foreach range smoke test produced the wrong ray count.");
   }
+  const expectedDimensions = [
+    [137.386, 137.386],
+    [106.623, 61.991],
+    [284.787, 284.787],
+    [335.759, 335.759],
+    [409.512, 250.772],
+    [409.512, 86.698],
+    [341.48, 341.48],
+  ];
+  outputs.map(svgMetrics).forEach((metrics, index) => {
+    const [expectedWidth, expectedHeight] = expectedDimensions[index];
+    if (
+      Math.abs(metrics.width - expectedWidth) > 0.001 ||
+      Math.abs(metrics.height - expectedHeight) > 0.001 ||
+      Math.abs(metrics.width / metrics.viewBox[2] - 1.5) > 0.001 ||
+      Math.abs(metrics.height / metrics.viewBox[3] - 1.5) > 0.001
+    ) {
+      throw new Error(
+        `WASM sample ${index + 1} changed its display bounds or scale.`,
+      );
+    }
+  });
   process.stdout.write(
     `Rendered ${cases.length} WASM samples in ${duration.toFixed(3)} ms\n`,
   );
@@ -93,5 +115,23 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
     );
     if (status !== 0) throw new Error(output);
     return output;
+  }
+
+  function svgMetrics(svg) {
+    const root = /<svg\b([^>]*)>/.exec(svg)?.[1] ?? "";
+    const width = Number(/\bwidth="([0-9.]+)"/.exec(root)?.[1]);
+    const height = Number(/\bheight="([0-9.]+)"/.exec(root)?.[1]);
+    const viewBox = /\bviewBox="([^"]+)"/.exec(root)?.[1]
+      ?.split(/\s+/)
+      .map(Number);
+    if (
+      !Number.isFinite(width) ||
+      !Number.isFinite(height) ||
+      viewBox?.length !== 4 ||
+      viewBox.some((value) => !Number.isFinite(value))
+    ) {
+      throw new Error("A WASM smoke sample has invalid SVG display metrics.");
+    }
+    return { width, height, viewBox };
   }
 });

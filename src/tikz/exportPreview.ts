@@ -263,7 +263,7 @@ async function chooseExportTarget(
   if (desktopDialog) {
     const result = await desktopDialog.showSaveDialog(options);
     if (result.canceled || !result.filePath) return null;
-    return localFileTarget(result.filePath);
+    return localFileTarget(result.filePath, ownerDocument.defaultView);
   }
 
   const win = ownerDocument.defaultView as unknown as {
@@ -310,11 +310,14 @@ async function chooseExportTarget(
   throw new Error("Could not open a desktop save dialog.");
 }
 
-function localFileTarget(path: string): ExportTarget {
+function localFileTarget(
+  path: string,
+  hostWindow: Window | null,
+): ExportTarget {
   const format = exportFormatFromFilename(path);
   return {
     format,
-    write: (file) => writeLocalFile(path, file.bytes),
+    write: (file) => writeLocalFile(path, file.bytes, hostWindow),
   };
 }
 
@@ -335,8 +338,9 @@ export function exportFormatFromFilename(
 async function writeLocalFile(
   path: string,
   bytes: Uint8Array,
+  hostWindow: Window | null,
 ): Promise<void> {
-  const fs = getDesktopFileSystem();
+  const fs = getDesktopFileSystem(hostWindow);
   await fs.writeFile(path, bytes);
 }
 
