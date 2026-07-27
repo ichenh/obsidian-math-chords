@@ -34,7 +34,7 @@ interface TemplateTreeOptions {
   sourcePath: string;
   renderComponent: Component;
   onChange: (roots: FormulaTemplateNode[]) => void;
-  onInsert?: (content: string) => void;
+  onInsert?: (template: FormulaTemplate) => void;
   onDragEnd?: () => void;
 }
 
@@ -197,6 +197,31 @@ export function renderFormulaTemplateTree(
           t("deleteTemplateFolderDesc", nodeLabel),
         );
       } else {
+        const favoriteButton = controlsEl.createEl("button", {
+          cls: `clickable-icon obsidian-math-chords-template-icon-button${
+            node.favorite ? " is-favorite" : ""
+          }`,
+          attr: {
+            type: "button",
+            title: t(node.favorite ? "unfavoriteTemplate" : "favoriteTemplate"),
+            "aria-label": t(
+              node.favorite ? "unfavoriteTemplate" : "favoriteTemplate",
+            ),
+            "aria-pressed": String(node.favorite),
+          },
+        });
+        preserveEditorFocusOnMouseDown(favoriteButton);
+        setIcon(favoriteButton, "star");
+        favoriteButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          persist(
+            updateFormulaTemplateNode(options.roots, node.id, (current) =>
+              current.type === "template"
+                ? { ...current, favorite: !current.favorite }
+                : current,
+            ),
+          );
+        });
         const editButton = controlsEl.createEl("button", {
           cls: "clickable-icon obsidian-math-chords-template-icon-button",
           attr: {
@@ -247,7 +272,11 @@ export function renderFormulaTemplateTree(
           nodeEl.addClass("is-dragging");
           event.dataTransfer.setData(
             FORMULA_PANEL_INSERT_MIME,
-            encodeFormulaPanelDragPayload({ kind: "template", content: node.content }),
+            encodeFormulaPanelDragPayload({
+              kind: "template",
+              id: node.id,
+              content: node.content,
+            }),
           );
           event.dataTransfer.setData("text/plain", node.content);
           event.dataTransfer.effectAllowed = "copy";
@@ -274,7 +303,7 @@ export function renderFormulaTemplateTree(
         const insert = (event?: Event): void => {
           event?.preventDefault();
           event?.stopPropagation();
-          options.onInsert?.(node.content);
+          options.onInsert?.(node);
         };
         nameEl.addEventListener("click", insert);
         bodyEl.addEventListener("click", insert);
@@ -314,7 +343,11 @@ export function renderFormulaTemplateTree(
         if (node.type === "template") {
           event.dataTransfer?.setData(
             FORMULA_PANEL_INSERT_MIME,
-            encodeFormulaPanelDragPayload({ kind: "template", content: node.content }),
+            encodeFormulaPanelDragPayload({
+              kind: "template",
+              id: node.id,
+              content: node.content,
+            }),
           );
           event.dataTransfer?.setData("text/plain", node.content);
           if (event.dataTransfer) event.dataTransfer.effectAllowed = "copyMove";

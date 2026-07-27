@@ -3,14 +3,22 @@ import type {
   FormulaTemplateNode,
   MathEnvironment,
 } from "./types";
-import { normalizeFormulaTemplateNodes } from "./formulaTemplateModel";
+import {
+  flattenFormulaTemplates,
+  normalizeFormulaTemplateNodes,
+} from "./formulaTemplateModel";
 import { isValidChord, isValidKeySequence } from "./keys";
 import { validateMathEnvironment } from "./inputValidation";
+import { normalizeTikzFontName } from "./tikz/fonts";
 
 export const DEFAULT_MATH_BRACE_NAV_NEXT = "Alt+ArrowRight";
 export const DEFAULT_MATH_BRACE_NAV_PREV = "Alt+ArrowLeft";
-export const SETTINGS_SCHEMA_VERSION = 6;
+export const SETTINGS_SCHEMA_VERSION = 11;
 export const FORMULA_PANEL_ENVIRONMENT_GROUP_ID = "__math_environments__";
+export const DEFAULT_TIKZ_CODE_BLOCK_LANGUAGE = "tikz";
+export const DEFAULT_TIKZ_DEBOUNCE_MS = 250;
+
+export type TikzBackendMode = "wasm" | "native" | "auto";
 
 export const DEFAULT_FORMULA_PANEL_GROUP_ORDER = [
   "Structures",
@@ -72,12 +80,25 @@ export interface ObsidianMathChordsSettings {
   autoConvertPastedLatexDelimiters: boolean;
   mathEnvWrapEnabled: boolean;
   mathEnvWrapKeys: string;
+  tikzRenderingEnabled: boolean;
+  tikzLivePreview: boolean;
+  tikzCodeBlockLanguage: string;
+  tikzBackend: TikzBackendMode;
+  tikzDebounceMs: number;
+  tikzNativeEnginePath: string;
+  tikzCustomFontsEnabled: boolean;
+  tikzLatinFont: string;
+  tikzSimplifiedChineseFont: string;
+  tikzTraditionalChineseFont: string;
+  tikzJapaneseFont: string;
+  tikzKoreanFont: string;
   mathEnvironments: MathEnvironment[];
   formulaPanelGroupOrder: string[];
   formulaPanelCollapsedGroups: string[];
   formulaPanelSectionOrder: FormulaPanelSectionId[];
   formulaPanelCollapsedSections: FormulaPanelSectionId[];
   formulaPanelTemplates: FormulaTemplateNode[];
+  formulaPanelRecentTemplateIds: string[];
   settingsCollapsedManagementSections: string[];
   settingsCollapsedShortcutGroups: string[];
   settingsCollapsedTemplateFolders: string[];
@@ -98,12 +119,25 @@ export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
   autoConvertPastedLatexDelimiters: false,
   mathEnvWrapEnabled: true,
   mathEnvWrapKeys: "Shift+E",
+  tikzRenderingEnabled: false,
+  tikzLivePreview: false,
+  tikzCodeBlockLanguage: DEFAULT_TIKZ_CODE_BLOCK_LANGUAGE,
+  tikzBackend: "wasm",
+  tikzDebounceMs: DEFAULT_TIKZ_DEBOUNCE_MS,
+  tikzNativeEnginePath: "",
+  tikzCustomFontsEnabled: false,
+  tikzLatinFont: "",
+  tikzSimplifiedChineseFont: "",
+  tikzTraditionalChineseFont: "",
+  tikzJapaneseFont: "",
+  tikzKoreanFont: "",
   mathEnvironments: DEFAULT_MATH_ENVIRONMENTS.map((env) => ({ ...env })),
   formulaPanelGroupOrder: [...DEFAULT_FORMULA_PANEL_GROUP_ORDER],
   formulaPanelCollapsedGroups: [],
   formulaPanelSectionOrder: [...DEFAULT_FORMULA_PANEL_SECTION_ORDER],
   formulaPanelCollapsedSections: [],
   formulaPanelTemplates: [],
+  formulaPanelRecentTemplateIds: [],
   settingsCollapsedManagementSections: [],
   settingsCollapsedShortcutGroups: [],
   settingsCollapsedTemplateFolders: [],
@@ -116,6 +150,27 @@ function normalizeStringList(raw: unknown, fallback: string[]): string[] {
     .map((entry) => entry.trim());
   return [...new Set(values)];
 }
+
+export function normalizeTikzCodeBlockLanguage(raw: unknown): string {
+  if (typeof raw !== "string") return DEFAULT_TIKZ_CODE_BLOCK_LANGUAGE;
+  const normalized = raw.trim().toLowerCase();
+  return /^[a-z][a-z0-9_-]{0,31}$/.test(normalized)
+    ? normalized
+    : DEFAULT_TIKZ_CODE_BLOCK_LANGUAGE;
+}
+
+export function normalizeTikzBackend(raw: unknown): TikzBackendMode {
+  return raw === "native" || raw === "auto" ? raw : "wasm";
+}
+
+export function normalizeTikzDebounceMs(raw: unknown): number {
+  if (typeof raw !== "number" || !Number.isFinite(raw)) {
+    return DEFAULT_TIKZ_DEBOUNCE_MS;
+  }
+  return Math.min(1_000, Math.max(50, Math.round(raw)));
+}
+
+export { normalizeTikzFontName } from "./tikz/fonts";
 
 function normalizeFormulaPanelSectionList(
   raw: unknown,
@@ -157,6 +212,29 @@ export function migrateSettingsData(
     order.splice(structuresAt >= 0 ? structuresAt + 1 : 0, 0, FORMULA_PANEL_ENVIRONMENT_GROUP_ID);
     migrated.formulaPanelGroupOrder = order;
   }
+  if (
+    savedSchema > 0 &&
+    savedSchema < 9 &&
+    migrated.tikzDebounceMs === 120
+  ) {
+    migrated.tikzDebounceMs = DEFAULT_TIKZ_DEBOUNCE_MS;
+  }
+  if (
+    savedSchema > 0 &&
+    savedSchema < 11 &&
+    migrated.tikzDebounceMs === 500
+  ) {
+    migrated.tikzDebounceMs = DEFAULT_TIKZ_DEBOUNCE_MS;
+  }
+  if (typeof migrated.tikzCustomFontsEnabled !== "boolean") {
+    migrated.tikzCustomFontsEnabled = [
+      migrated.tikzLatinFont,
+      migrated.tikzSimplifiedChineseFont,
+      migrated.tikzTraditionalChineseFont,
+      migrated.tikzJapaneseFont,
+      migrated.tikzKoreanFont,
+    ].some((value) => typeof value === "string" && value.trim().length > 0);
+  }
   migrated.schemaVersion = SETTINGS_SCHEMA_VERSION;
   return migrated;
 }
@@ -179,6 +257,12 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
       : validSavedEnvironments && validSavedEnvironments.length > 0
         ? validSavedEnvironments
         : DEFAULT_MATH_ENVIRONMENTS.map((env) => ({ ...env }));
+  const formulaPanelTemplates = normalizeFormulaTemplateNodes(
+    raw.formulaPanelTemplates,
+  );
+  const templateIds = new Set(
+    flattenFormulaTemplates(formulaPanelTemplates).map((template) => template.id),
+  );
 
   return {
     schemaVersion: SETTINGS_SCHEMA_VERSION,
@@ -207,6 +291,27 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
       raw.mathEnvWrapKeys,
       DEFAULT_SETTINGS.mathEnvWrapKeys,
     ),
+    tikzRenderingEnabled: raw.tikzRenderingEnabled === true,
+    tikzLivePreview: raw.tikzLivePreview === true,
+    tikzCodeBlockLanguage: normalizeTikzCodeBlockLanguage(
+      raw.tikzCodeBlockLanguage,
+    ),
+    tikzBackend: normalizeTikzBackend(raw.tikzBackend),
+    tikzDebounceMs: normalizeTikzDebounceMs(raw.tikzDebounceMs),
+    tikzNativeEnginePath:
+      typeof raw.tikzNativeEnginePath === "string"
+        ? raw.tikzNativeEnginePath.trim()
+        : "",
+    tikzCustomFontsEnabled: raw.tikzCustomFontsEnabled === true,
+    tikzLatinFont: normalizeTikzFontName(raw.tikzLatinFont),
+    tikzSimplifiedChineseFont: normalizeTikzFontName(
+      raw.tikzSimplifiedChineseFont,
+    ),
+    tikzTraditionalChineseFont: normalizeTikzFontName(
+      raw.tikzTraditionalChineseFont,
+    ),
+    tikzJapaneseFont: normalizeTikzFontName(raw.tikzJapaneseFont),
+    tikzKoreanFont: normalizeTikzFontName(raw.tikzKoreanFont),
     mathEnvironments: environments,
     formulaPanelGroupOrder: normalizeStringList(
       raw.formulaPanelGroupOrder,
@@ -224,7 +329,13 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
       raw.formulaPanelCollapsedSections,
       [],
     ),
-    formulaPanelTemplates: normalizeFormulaTemplateNodes(raw.formulaPanelTemplates),
+    formulaPanelTemplates,
+    formulaPanelRecentTemplateIds: normalizeStringList(
+      raw.formulaPanelRecentTemplateIds,
+      [],
+    )
+      .filter((id) => templateIds.has(id))
+      .slice(0, 12),
     settingsCollapsedManagementSections: normalizeStringList(
       raw.settingsCollapsedManagementSections,
       DEFAULT_SETTINGS.settingsCollapsedManagementSections,

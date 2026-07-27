@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-27
+
+### Added
+
+- Added `Shift+B` as the default shortcut for inserting `\boldsymbol{}` with the cursor inside the braces.
+- Changed the default `D` shortcut from a display-math block to `\mathrm{d}` with the cursor immediately after it.
+- Added opt-in TikZ code-block rendering with a latest-wins live preview, bounded render cache, and reading-view output. The feature is disabled by default to avoid renderer-plugin conflicts.
+- Added the independent Chord TikZ Rust/WASM vector core and in-memory Worker: approximately 135 KB before compression, lazy-loaded, bounded to 32 MiB memory, cancellable, and able to render the first supported TikZ primitives directly to SVG without TeX, downloads, extra plugin files, or a CJK font bundle.
+- Extended the lightweight Chord TikZ WASM core with bounded numeric `\def` expansion, `\pgfmathsetmacro` arithmetic (`sqrt`, `abs`, and degree-based trigonometric functions), and list-form `\foreach`, guarded by expansion-depth, loop-count, source-size, and output-size limits.
+- Added lightweight WASM rendering for axis-aligned TikZ ellipses, bounded `domain`/`samples` parametric plots, expression-based coordinates, closed plot sectors, and common relative node positions. Capability analysis keeps this reviewed subset on the fast path and sends unsupported plot or node options to TeX.
+- Added lightweight WASM flowchart support for named nodes, reusable basic box styles, minimum dimensions, rounded corners, multiline labels, cardinal anchors, automatic node-border intersections, and `|-` orthogonal projections. Unsupported style effects remain on the TeX compatibility path.
+- Matched TeX flowchart semantics more closely by expanding bounded `\foreach` ellipsis ranges, rendering mixed text-and-math labels through Obsidian MathJax, honoring bold node text and `xshift`/`yshift`, applying picture-level `thick`, and drawing both arrowheads for `<->`.
+- Replaced the generic triangular WASM arrow marker with a larger concave stealth-style marker and added `color!percentage` opacity handling such as `black!12`, preserving fill-only paths without an unintended outline.
+- Preserved SVG marker orientation and reference attributes through sanitization so WASM arrowheads follow horizontal, vertical, diagonal, and reverse path directions.
+- Added AMS math support to generated local-TeX documents, centered MathJax label wrappers for commands such as `\boldsymbol`, and removed the generic `TikZ diagram` hover label when no explicit `% alt:` description is present.
+- Centered full-formula WASM labels from the rendered MathJax ink bounds rather than the asymmetric inline font box, correcting visual offsets for bold italic symbols and their subscripts.
+- Restored TeX-style line breaks and baselines in mixed text-and-math WASM node labels, and added independent resize handles to all four edges and four corners of the floating TikZ preview.
+- Unified parametric `plot` samples with normal TikZ coordinate units so closed `\fill ... plot ... -- cycle` sectors retain their intended area instead of collapsing into thin wedges.
+- Measured `\boldsymbol`, `\mathrm`, and related math font wrappers from their visible arguments rather than their command names, preventing positioned WASM labels from being pushed far away from their TikZ anchors.
+- Positioned directional WASM nodes from the final MathJax box edges and the original TikZ anchor, matching TeX `above`/`below`/`left`/`right` spacing even when bold or subscripted glyph metrics differ from the fallback estimate.
+- Sized `fill=white` WASM formula backgrounds from the rendered MathJax label with the requested `inner sep`, replacing oversized fallback rectangles such as the mask behind `$A_2$`.
+- Replaced fixed node spacing with TeX-relative font sizes and `inner sep` semantics for `\tiny`, `\scriptsize`, `\small`, and `\normalsize`, including explicit per-node overrides.
+- Made the vector subset fail closed for unknown path and picture options, so automatic mode routes unsupported styling to local TeX instead of silently producing a plausible but incorrect diagram.
+- Unified WASM, native SVG, and native PDF previews under one 1.5x display contract, converting SVG physical units before cropping so backend switches preserve apparent size and aspect ratio.
+- Added a distribution-independent desktop backend for LuaLaTeX, XeLaTeX, pdfLaTeX, traditional LaTeX plus `dvisvgm`, and Tectonic, including mixed CJK font fallback for LuaLaTeX.
+- Added a draggable, resizable, no-scroll TikZ live-render window whose export button opens the system save dialog directly and selects SVG, PNG, JPEG, or PDF encoding from the filename extension.
+- Added bounded persistent TikZ artifact caching, viewport-aware Reading-view scheduling, a compact diagnostics tool with cache clear and engine restart actions, and optional `% alt:` accessibility metadata.
+- Added persistent template favorites and a bounded 12-item recent-template list, shown as compact quick-access rows above the full template tree and updated by both click and drag insertion. The new controls are localized across all 72 supported UI languages.
+- Bundled all 72 supported UI languages into `main.js`, removing the separate language-pack download and restoring the standard three-file Obsidian installation and release layout.
+- Updated every locale bundle with the current TikZ backend semantics, completed reviewed TikZ translations for the ten primary UI languages, and kept accurate English fallback text for the remaining Obsidian locales.
+- Added bilingual architecture documentation covering the original Rust/WASM core, automatic and local-TeX boundaries, preview scheduling, SVG sanitization, caching, localization, and release assets.
+
+### Fixed
+
+- Hardened SVG ingestion with element and attribute allowlists, blocked unsafe `dvisvgm:raw` specials, added infrastructure-only Automatic fallback to local TeX, versioned TikZ caches by renderer assets, preserved source or the previous successful preview during edits, and hid desktop-only export controls on mobile.
+- Added deterministic fingerprints for the original Chord TikZ vector core to the normal verification path so generated WASM assets cannot drift from their reviewed Rust sources.
+- Removed the former TikZJax-derived binaries, memory snapshot, worker protocol, backend, and provenance metadata completely; the built-in path now consists only of the reviewed Rust vector core and its small generated WASM asset.
+- Removed the unused portable-DVI/resource-pack prototype and compatibility-engine bootstrap so dead experimental code no longer expands the maintenance or release surface.
+- Hardened SVG rendering against external paint URLs, bounded native TeX source and artifact sizes, and moved persistent-cache pruning to a metadata-only store so pruning no longer reads every cached render body into memory.
+- Minified production bundles, reducing install size without changing development diagnostics or runtime behavior.
+- Updated the bilingual README, roadmap, and official blog drafts to define the built-in WASM renderer as the recommended TikZ path, local TeX as an explicit advanced-compatibility backend, and document-scoped LaTeX macros as a distinct future capability rather than a shortcut duplicate.
+- Fixed first-run TikZ activation after plugin data is cleared: enabling TikZ now registers the renderer immediately and rerenders open Markdown views instead of requiring cached settings or an application restart.
+- Unified the add actions in shortcut, math-environment, and template management as matching Obsidian icon buttons, including nested template folders.
+- Reworked the settings-page hierarchy with shared section insets for shortcut and template management, calmer vertical rhythm, readable description widths, and direction-aware nested indentation so headings and their content stay on the same visual grid.
+- Reduced the self-contained plugin bundle without removing any language: the original vector WASM is losslessly compressed and expanded inside its worker, redundant runtime hashing was replaced by build-time integrity checks, and only the active bundled locale is expanded at startup.
+- Improved TikZ preview responsiveness without background prewarming: opening a block and reading-view cache lookup now bypass the edit debounce, the editing default is 250 ms, and the previous successful frame remains visible during compilation.
+- Clarified that local TeX is detected automatically unless a path override is supplied, and collapsed the five script-specific font fields behind one opt-in custom-font setting.
+- Restored the opt-in TikZ editor preview as a fixed overlay outside CodeMirror content. It follows only the active TikZ fence, never adds block decorations or replaces editor ranges, and therefore avoids the earlier layout feedback loop.
+- Preferred pdfLaTeX for ordinary TikZ and reserved Unicode engines for CJK or explicit Unicode-engine commands, reducing latency without adding background compilation, generated formats, or extra installation requirements.
+- Automatic TikZ mode now routes known macro, PGF math, loop, plot, ellipse, and other compatibility syntax directly to local TeX, and retries unclassified WASM compatibility failures there instead of leaving a misleading parser error. WASM-only mode remains an isolated fast path.
+- TikZ editor updates are now rendered in a connected off-screen surface and swapped into the preview atomically, so SVG bounds and math overlays cannot visibly resize the panel mid-render.
+- Loaded desktop Node APIs through Obsidian's CommonJS runtime and relaxed TeX input protection from paranoid to restricted mode so TeX Live 2025 `luaotfload` can read its bundled Unicode data.
+
 ## [0.4.2] - 2026-07-22
 
 ### Fixed

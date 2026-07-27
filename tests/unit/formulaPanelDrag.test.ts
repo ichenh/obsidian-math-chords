@@ -17,7 +17,11 @@ describe("formula panel drag payload", () => {
         kind: "environment" as const,
         environment: { name: "aligned", begin: "\\begin{aligned}", end: "\\end{aligned}" },
       },
-      { kind: "template" as const, content: "## Maxwell\n\n$$E=mc^2$$" },
+      {
+        kind: "template" as const,
+        id: "maxwell",
+        content: "## Maxwell\n\n$$E=mc^2$$",
+      },
     ];
 
     for (const payload of payloads) {

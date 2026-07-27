@@ -12,7 +12,6 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { keys: "Shift+R", command: "\\sqrt[$$]{}", name: "Nth root", group: "Structures" },
   { keys: "^", command: "^{$$}", name: "Superscript", group: "Structures" },
   { keys: "Shift+_", command: "_{$$}", name: "Subscript", group: "Structures" },
-  { keys: "D", command: "__DISPLAY_MATH__", name: "Display math", group: "Structures" },
 
   // Operators & symbols
   { keys: "U", command: "\\sum", name: "Sum", group: "Operators" },
@@ -20,6 +19,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { keys: "Shift+I", command: "\\int_{$$}^{}", name: "Integral with limits", group: "Operators" },
   { keys: "Y", command: "\\oint", name: "Contour integral", group: "Operators" },
   { keys: "P", command: "\\partial", name: "Partial", group: "Operators" },
+  { keys: "D", command: "\\mathrm{d}$$", name: "Derivative", group: "Operators" },
   { keys: "Shift+P", command: "\\prod_{$$}^{}", name: "Product", group: "Operators" },
   { keys: "L", command: "\\lim_{$$}", name: "Limit", group: "Operators" },
   { keys: "8", command: "\\infty", name: "Infinity", group: "Operators" },
@@ -118,7 +118,8 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { keys: "O Shift+U", command: "\\cap", name: "Intersection", group: "Operators" },
   { keys: "O Shift+N", command: "\\nabla", name: "Nabla", group: "Operators" },
 
-  // Fonts (T prefix)
+  // Fonts
+  { keys: "Shift+B", command: "\\boldsymbol{$$}", name: "Bold symbol", group: "Fonts" },
   { keys: "T B", command: "\\mathbf{$$}", name: "Bold", group: "Fonts" },
   { keys: "T C", command: "\\mathcal{$$}", name: "Caligraphic", group: "Fonts" },
   { keys: "T R", command: "\\mathrm{$$}", name: "Roman", group: "Fonts" },

@@ -36,7 +36,6 @@ jobs:
             main.js
             manifest.json
             styles.css
-            locales-extras.json
 
       - name: Create release
         env:
@@ -49,4 +48,4 @@ jobs:
             --title="Math Chords $tag" \
             --verify-tag \
             --notes-file release-notes.md \
-            main.js manifest.json styles.css locales-extras.json
+            main.js manifest.json styles.css

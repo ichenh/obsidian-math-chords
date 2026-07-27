@@ -19,6 +19,7 @@ export function createFormulaTemplate(
     name: "",
     content: "",
     collapsed: false,
+    favorite: false,
   };
 }
 
@@ -103,6 +104,7 @@ export function normalizeFormulaTemplateNodes(
             ),
         content: typeof record.content === "string" ? record.content : "",
         collapsed: record.collapsed === true,
+        favorite: record.favorite === true,
       };
     }
     if (record.type !== "folder") return null;
@@ -124,6 +126,33 @@ export function normalizeFormulaTemplateNodes(
   return raw
     .map((entry) => normalizeNode(entry))
     .filter((entry): entry is FormulaTemplateNode => entry !== null);
+}
+
+export function flattenFormulaTemplates(
+  nodes: readonly FormulaTemplateNode[],
+): FormulaTemplate[] {
+  const templates: FormulaTemplate[] = [];
+  const visit = (entries: readonly FormulaTemplateNode[]): void => {
+    for (const node of entries) {
+      if (node.type === "template") templates.push(node);
+      else visit(node.children);
+    }
+  };
+  visit(nodes);
+  return templates;
+}
+
+export function recordRecentFormulaTemplate(
+  recentIds: readonly string[],
+  templateId: string,
+  limit = 12,
+): string[] {
+  const normalizedId = templateId.trim();
+  if (!normalizedId || limit <= 0) return [];
+  return [
+    normalizedId,
+    ...recentIds.filter((id) => id !== normalizedId),
+  ].slice(0, limit);
 }
 
 export function appendFormulaTemplateFolder(

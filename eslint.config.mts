@@ -13,6 +13,7 @@ export default defineConfig(
     "src/l10n/bundled.ts",
     "src/l10n/lazy-codes.ts",
     "src/l10n/locales/index.ts",
+    "tikz-wasm/",
   ]),
   {
     languageOptions: {
@@ -27,6 +28,7 @@ export default defineConfig(
             "vitest.config.ts",
             "scripts/*.cjs",
           ],
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 16,
         },
         tsconfigRootDir: import.meta.dirname,
       },
@@ -45,7 +47,25 @@ export default defineConfig(
       // runtime restrictions and plugin console guidance do not apply here.
       "@typescript-eslint/no-require-imports": "off",
       "obsidianmd/no-nodejs-modules": "off",
+      "obsidianmd/prefer-window-timers": "off",
       "obsidianmd/rule-custom-message": "off",
+    },
+  },
+  {
+    files: [
+      "src/tikz/backendRegistry.ts",
+      "src/tikz/backends/nativeLatexBackend.ts",
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      // These narrowly scoped desktop adapters execute through Obsidian's
+      // CommonJS Electron runtime. Browser-facing TikZ modules remain free of
+      // Node.js imports and continue to work on mobile.
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
   {

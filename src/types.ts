@@ -17,6 +17,7 @@ export interface FormulaTemplate {
   name: string;
   content: string;
   collapsed: boolean;
+  favorite: boolean;
 }
 
 export interface FormulaTemplateFolder {

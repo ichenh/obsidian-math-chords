@@ -13,8 +13,9 @@ const readme = readText("README.md");
 const readmeZh = readText("README.zh-CN.md");
 const mainSource = readText("src/main.ts");
 const settingsTabSource = readText("src/settingsTab.ts");
+const releaseWorkflow = readText(".github/workflows/release.yml");
 const errors = [];
-const releaseAssets = ["main.js", "manifest.json", "styles.css", "locales-extras.json"];
+const releaseAssets = ["main.js", "manifest.json", "styles.css"];
 const releaseBadgeUrl =
   "img.shields.io/github/v/release/ichenh/obsidian-math-chords?display_name=tag&sort=semver";
 
@@ -68,6 +69,16 @@ checkIncludes("README.md release badge", readme, releaseBadgeUrl);
 checkIncludes("README.md current release", readme, `Current release: v${pkg.version}`);
 checkIncludes("README.zh-CN.md release badge", readmeZh, releaseBadgeUrl);
 checkIncludes("README.zh-CN.md current release", readmeZh, `当前版本：v${pkg.version}`);
+for (const asset of releaseAssets) {
+  checkIncludes("release workflow asset list", releaseWorkflow, asset);
+}
+if (
+  readme.includes("locales-extras.json") ||
+  readmeZh.includes("locales-extras.json") ||
+  releaseWorkflow.includes("locales-extras.json")
+) {
+  errors.push("current installation and release documentation still references locales-extras.json");
+}
 
 if (process.env.GITHUB_REF_TYPE === "tag") {
   checkEqual("release tag", process.env.GITHUB_REF_NAME ?? "", pkg.version);

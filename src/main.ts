@@ -1,5 +1,12 @@
 import { EditorView } from "@codemirror/view";
-import { Editor, MarkdownView, Notice, Plugin } from "obsidian";
+import {
+  apiVersion,
+  Editor,
+  MarkdownView,
+  moment,
+  Notice,
+  Plugin,
+} from "obsidian";
 import { loadShortcuts, mergeShortcuts, saveShortcuts } from "./config";
 import { DEFAULT_SHORTCUTS } from "./defaults";
 import {
@@ -32,6 +39,8 @@ import type {
 } from "./types";
 import {
   cloneFormulaTemplateNodes,
+  flattenFormulaTemplates,
+  recordRecentFormulaTemplate,
   setAllFormulaTemplateNodesCollapsed,
 } from "./formulaTemplateModel";
 import {
@@ -52,6 +61,14 @@ import {
   formulaPanelDropCursorField,
   setFormulaPanelDropPosition,
 } from "./formulaPanelDropCursor";
+import { TikzBackendRegistry } from "./tikz/backendRegistry";
+import { TikzRenderCoordinator } from "./tikz/coordinator";
+import { processTikzCodeBlock } from "./tikz/markdownProcessor";
+import { refreshActiveTikzPreviews } from "./tikz/previewSurface";
+import { tikzFontPreferencesFromSettings } from "./tikz/fonts";
+import { createTikzLivePreviewExtension } from "./tikz/livePreviewExtension";
+import { IndexedDbTikzCache } from "./tikz/persistentCache";
+import { hashTikzRenderInput } from "./tikz/hash";
 
 export default class ObsidianMathChordsPlugin extends Plugin {
   settings: ObsidianMathChordsSettings = { ...DEFAULT_SETTINGS };
@@ -66,11 +83,15 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   private readonly keydownDocuments = new Map<Document, () => void>();
   private settingsWriteChain: Promise<void> = Promise.resolve();
   private shortcutWriteChain: Promise<void> = Promise.resolve();
+  private tikzBackends: TikzBackendRegistry | null = null;
+  private tikzCoordinator: TikzRenderCoordinator | null = null;
+  private tikzRenderingRegistered = false;
 
   async onload(): Promise<void> {
     await this.loadSettings();
     await initLocale(this);
     await runWithNotice(() => this.reloadShortcuts(), t("noticeCouldNotLoadYaml"));
+    this.initializeTikzRendering();
 
     this.registerView(
       FORMULA_PANEL_VIEW_TYPE,
@@ -196,6 +217,66 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   onunload(): void {
     this.leaderController?.destroy();
     this.leaderController = null;
+    this.tikzCoordinator?.dispose();
+    this.tikzBackends?.dispose();
+    this.tikzCoordinator = null;
+    this.tikzBackends = null;
+  }
+
+  private initializeTikzRendering(): void {
+    if (
+      !this.settings.tikzRenderingEnabled ||
+      this.tikzRenderingRegistered
+    ) {
+      return;
+    }
+    this.tikzRenderingRegistered = true;
+
+    this.tikzBackends = new TikzBackendRegistry({
+      getSettings: () => this.settings,
+    });
+    this.tikzCoordinator = new TikzRenderCoordinator({
+      debounceMs: () => this.settings.tikzDebounceMs,
+      selectBackend: (request) => this.tikzBackends!.select(request),
+      persistentCache: new IndexedDbTikzCache(
+        hashTikzRenderInput(this.app.vault.getName()),
+      ),
+    });
+    this.registerEditorExtension(
+      createTikzLivePreviewExtension({
+        coordinator: this.tikzCoordinator,
+        isEnabled: () =>
+          this.settings.tikzRenderingEnabled &&
+          this.settings.tikzLivePreview,
+        getLanguage: () => this.settings.tikzCodeBlockLanguage,
+        getBackend: () => this.settings.tikzBackend,
+        getFonts: () => tikzFontPreferencesFromSettings(this.settings),
+        getLocale: () => moment.locale(),
+      }),
+    );
+
+    this.registerMarkdownCodeBlockProcessor(
+      this.settings.tikzCodeBlockLanguage,
+      (source, el, ctx) => {
+        if (
+          !this.settings.tikzRenderingEnabled ||
+          !this.tikzCoordinator
+        ) {
+          renderTikzSourceCodeBlock(
+            source,
+            el,
+            this.settings.tikzCodeBlockLanguage,
+          );
+          return;
+        }
+        processTikzCodeBlock(source, el, ctx, {
+          coordinator: this.tikzCoordinator,
+          getBackend: () => this.settings.tikzBackend,
+          getFonts: () => tikzFontPreferencesFromSettings(this.settings),
+          getLocale: () => moment.locale(),
+        });
+      },
+    );
   }
 
   private onDocumentKeyDown = (event: KeyboardEvent): void => {
@@ -285,6 +366,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       new Notice(t("templateEmptyHint"));
     } else {
       editor.replaceSelection(payload.content);
+      if (payload.id) this.recordFormulaTemplateUse(payload.id);
     }
 
     editor.focus();
@@ -482,12 +564,21 @@ export default class ObsidianMathChordsPlugin extends Plugin {
 
   async updateFormulaPanelTemplates(templates: FormulaTemplateNode[]): Promise<void> {
     this.settings.formulaPanelTemplates = cloneFormulaTemplateNodes(templates);
+    const templateIds = new Set(
+      flattenFormulaTemplates(this.settings.formulaPanelTemplates).map(
+        (template) => template.id,
+      ),
+    );
+    this.settings.formulaPanelRecentTemplateIds =
+      this.settings.formulaPanelRecentTemplateIds.filter((id) =>
+        templateIds.has(id),
+      );
     this.refreshFormulaPanels();
     await this.saveSettings();
   }
 
-  insertTemplateFromFormulaPanel(content: string): void {
-    if (!content) {
+  insertTemplateFromFormulaPanel(template: FormulaTemplateNode): void {
+    if (template.type !== "template" || !template.content) {
       new Notice(t("templateEmptyHint"));
       return;
     }
@@ -496,8 +587,30 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       new Notice(t("noticeOpenMarkdownToInsert"));
       return;
     }
-    editor.replaceSelection(content);
+    editor.replaceSelection(template.content);
     editor.focus();
+    this.recordFormulaTemplateUse(template.id);
+  }
+
+  private recordFormulaTemplateUse(templateId: string): void {
+    const recent = recordRecentFormulaTemplate(
+      this.settings.formulaPanelRecentTemplateIds,
+      templateId,
+    );
+    if (
+      recent.length === this.settings.formulaPanelRecentTemplateIds.length &&
+      recent.every(
+        (id, index) => id === this.settings.formulaPanelRecentTemplateIds[index],
+      )
+    ) {
+      return;
+    }
+    this.settings.formulaPanelRecentTemplateIds = recent;
+    this.refreshFormulaPanels();
+    void runWithNotice(
+      () => this.saveSettings(),
+      t("noticeCouldNotSaveSettings"),
+    );
   }
 
   insertMathEnvironmentFromFormulaPanel(environment: MathEnvironment): void {
@@ -544,6 +657,58 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       if (!(leaf.view instanceof MarkdownView)) return;
       this.getEditorView(leaf.view.editor)?.dispatch({});
     });
+  }
+
+  refreshTikzPreviews(): void {
+    refreshActiveTikzPreviews();
+  }
+
+  syncTikzRenderingState(): void {
+    if (this.settings.tikzRenderingEnabled) {
+      this.initializeTikzRendering();
+    }
+    this.refreshInteractiveState();
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      if (leaf.view instanceof MarkdownView) {
+        leaf.view.previewMode.rerender(true);
+      }
+    });
+  }
+
+  async getTikzDiagnosticsReport(): Promise<string> {
+    const backends = await this.tikzBackends?.diagnose();
+    const coordinator = this.tikzCoordinator?.getDiagnostics();
+    const nativeEngines =
+      backends?.nativeEngines
+        .map((engine) => `${engine.kind}: ${engine.executablePath}`)
+        .join("\n") || "none";
+    const lastRender = coordinator?.lastRender
+      ? JSON.stringify(coordinator.lastRender)
+      : "none";
+    return [
+      `Math Chords ${this.manifest.version}`,
+      `Obsidian API ${apiVersion}`,
+      `Platform: ${backends?.desktop ? "desktop" : "mobile"}`,
+      `Selected backend: ${this.settings.tikzBackend}`,
+      `Built-in renderer available: ${backends?.builtInAvailable ?? false}`,
+      `Configured local path: ${backends?.configuredNativePath || "automatic"}`,
+      "Detected local engines:",
+      nativeEngines,
+      `Active renders: ${coordinator?.activeRenders ?? 0}`,
+      `Queued renders: ${coordinator?.queuedRenders ?? 0}`,
+      `Memory cache: ${coordinator?.memoryCacheEntries ?? 0} entries, ${coordinator?.memoryCacheBytes ?? 0} bytes`,
+      `Last render: ${lastRender}`,
+    ].join("\n");
+  }
+
+  async clearTikzRenderCache(): Promise<void> {
+    await this.tikzCoordinator?.clearCache();
+  }
+
+  restartTikzRendering(): void {
+    this.tikzCoordinator?.restart();
+    this.tikzBackends?.dispose();
+    refreshActiveTikzPreviews(true);
   }
 
   private updateFormulaPanelAvailability(): void {
@@ -734,4 +899,16 @@ export default class ObsidianMathChordsPlugin extends Plugin {
 
     openEnvironmentPicker(this.app, editor, this.settings.mathEnvironments);
   }
+}
+
+function renderTikzSourceCodeBlock(
+  source: string,
+  containerEl: HTMLElement,
+  language: string,
+): void {
+  const pre = containerEl.ownerDocument.createElement("pre");
+  const code = pre.createEl("code");
+  code.className = `language-${language}`;
+  code.setText(source);
+  containerEl.replaceChildren(pre);
 }

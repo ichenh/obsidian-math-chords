@@ -31,7 +31,7 @@ Math remains the primary workflow, but templates are deliberately not limited to
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.4.2.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.5.0.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
@@ -49,9 +49,11 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 - [Display-math environment wrap](#display-math-environment-wrap)
 - [Configuration](#configuration)
 - [LaTeX delimiter conversion](#latex-delimiter-conversion)
+- [TikZ rendering](#tikz-rendering)
 - [Settings](#settings)
 - [Updating shortcuts](#updating-shortcuts)
 - [Project structure](#project-structure)
+- [Architecture](ARCHITECTURE.md)
 - [Development](#development)
 - [AI assistance](#ai-assistance)
 - [License](#license)
@@ -59,6 +61,12 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 ---
 
 ## What Math Chords does
+
+Math Chords is an authoring layer for math-heavy Markdown notes: it speeds up
+structured LaTeX input, keeps recurring source reusable, normalizes imported math,
+and optionally renders TikZ without turning notes into a plugin-specific format.
+The built-in path is designed for everyday work; Obsidian's MathJax and an optional
+local TeX installation remain available where their broader compatibility matters.
 
 | Feature | Description |
 | :--- | :--- |
@@ -71,8 +79,9 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 | **Display-math environments** | Wrap block content with `\begin{…}…\end{…}` via a fuzzy-search picker; inserts `$$…$$` when needed. |
 | **Built-in math commands** | Wrap selected text, insert inline/display math, or remove a matching wrapper; optional smart toggle enables conversion between inline and display math. |
 | **LaTeX delimiter conversion** | Convert `\(...\)` / `\[...\]` to `$...$` / `$$...$$` in a selection, the current file, or optionally on paste, while excluding protected Markdown regions. |
+| **Optional TikZ rendering** | Render fenced TikZ with the self-contained WASM backend, preview edits in a separate window, and export SVG, PNG, JPEG, or PDF; local TeX remains an advanced compatibility option. |
 | **YAML + UI config** | Edit `shortcuts.yaml` or use the settings tab; changes rebuild the shortcut trie immediately. |
-| **Localized UI** | 11 mainstream locales bundled in `main.js` (incl. Simplified/Traditional Chinese). The other 61 [official Obsidian locales](https://github.com/obsidianmd/obsidian-translations#existing-languages) need `locales-extras.json` in the plugin folder (not installed automatically from the community directory). |
+| **Localized UI** | All 72 locale bundles are included in `main.js`. Ten primary languages are maintained end to end; current English fallback text covers the remaining [official Obsidian locales](https://github.com/obsidianmd/obsidian-translations#existing-languages) until reviewed translations are available. No language download is required. |
 | **Non-destructive merge** | On load, missing default shortcuts are merged in; your custom key bindings are never overwritten. |
 
 ---
@@ -83,23 +92,11 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 
 In **Settings → Community plugins → Browse**, search for **Math Chords** and install.
 
-Obsidian's installer downloads only **`main.js`**, **`manifest.json`**, and **`styles.css`** from the plugin's GitHub release — not any other release assets. That is enough for all plugin features. Settings UI text is available immediately for the **11 bundled locales** (English plus the languages listed under [Settings](#settings)); other Obsidian display languages fall back to English until you add `locales-extras.json` (see below).
+Obsidian's installer downloads **`main.js`**, **`manifest.json`**, and **`styles.css`**. Those three files contain every plugin feature and all 72 locale bundles; no second download is required.
 
 ### Manual install from a release
 
-Download **`main.js`**, **`manifest.json`**, **`styles.css`**, and **`locales-extras.json`** from [Releases](https://github.com/ichenh/obsidian-math-chords/releases) into `.obsidian/plugins/math-chords/` inside your vault (create the folder if needed). Use the **`locales-extras.json`** from the **same release tag** as the installed plugin version. Copy **`shortcuts.yaml`** from the repo if you want the default shortcut catalog on disk.
-
-### Optional: extra UI languages (`locales-extras.json`)
-
-If your Obsidian display language is **not** one of the 11 bundled locales, install or update this file yourself:
-
-1. Open [Releases](https://github.com/ichenh/obsidian-math-chords/releases) and download **`locales-extras.json`** from the release that matches your installed plugin version (check **Settings → Community plugins** or `manifest.json` in the plugin folder).
-2. Place it at **`.obsidian/plugins/math-chords/locales-extras.json`** (same folder as `main.js`, not inside your notes).
-3. Reload Obsidian or toggle the plugin off and on.
-
-Without this file, the plugin still works; only the **Math Chords settings UI** stays in English. After adding the file, the settings UI follows your Obsidian language on the next load (for any of the 61 locales shipped in that JSON).
-
-When you update the plugin from the community directory, repeat these steps if you rely on a non-bundled locale — updates replace `main.js` / `manifest.json` / `styles.css` but do not refresh `locales-extras.json`.
+Download **`main.js`**, **`manifest.json`**, and **`styles.css`** from [Releases](https://github.com/ichenh/obsidian-math-chords/releases) into `.obsidian/plugins/math-chords/` inside your vault (create the folder if needed). Copy **`shortcuts.yaml`** from the repo only if you want the default shortcut catalog on disk.
 
 ### From source
 
@@ -110,7 +107,7 @@ npm install
 npm run build
 ```
 
-Copy `main.js`, `manifest.json`, `styles.css`, `locales-extras.json`, and `shortcuts.yaml` into `.obsidian/plugins/math-chords/`.
+Copy `main.js`, `manifest.json`, `styles.css`, and optionally `shortcuts.yaml` into `.obsidian/plugins/math-chords/`.
 
 ---
 
@@ -158,6 +155,7 @@ The **Templates** section is a general reusable-content library optimized for ma
 - A new folder is empty. Add templates explicitly with the clearly separated file-plus action.
 - Every template has a title and a Markdown body. Obsidian renders the body—including display math, headings, lists, links, tables, callouts, and other supported Markdown—as a preview. Template and folder headers include a delete action with confirmation.
 - Click the title or preview to insert the original Markdown at the current selection. Drag the title or preview into the editor to insert at the displayed drop cursor; the left handle remains dedicated to reorganizing the template tree.
+- Use the star action to pin important templates. Favorites and up to 12 recently used templates appear in compact quick-access rows above the full tree; click and drag insertion both update the recent list.
 - Drag any folder or template handle before or after a sibling, into another folder, or back to the root. Empty folders remain empty; moving or deleting the last template does not create a placeholder.
 
 A template can be as focused as one Maxwell equation system or as broad as a reusable Markdown document section. Content is stored in Math Chords settings rather than as files in the vault.
@@ -174,7 +172,7 @@ Panel insertion uses the same selection replacement, `$$` caret marker, auto-wra
 
 ## Shortcut reference
 
-### Structures & display math
+### Structures
 
 | Keys | Inserts | Description |
 | :--- | :--- | :--- |
@@ -183,7 +181,6 @@ Panel insertion uses the same selection replacement, `$$` caret marker, auto-wra
 | `Shift+R` | `\sqrt[]{}` | Nth root |
 | `^` | `^{}` | Superscript |
 | `Shift+_` | `_{}` | Subscript |
-| `D` | `$$…$$` | Display math block |
 
 ### Operators & symbols
 
@@ -194,6 +191,7 @@ Panel insertion uses the same selection replacement, `$$` caret marker, auto-wra
 | `Shift+I` | `\int_{}^{}` | Integral with limits |
 | `Y` | `\oint` | Contour integral |
 | `P` | `\partial` | Partial derivative |
+| `D` | `\mathrm{d}` | Derivative |
 | `Shift+P` | `\prod_{}^{}` | Product |
 | `L` | `\lim_{}` | Limit |
 | `8` | `\infty` | Infinity |
@@ -273,7 +271,7 @@ Panel insertion uses the same selection replacement, `$$` caret marker, auto-wra
 
 **Matrices** (`M` prefix): `M P` pmatrix, `M B` bmatrix, `M C` cases. Their UI previews use compact 2-by-2 matrices or a two-row cases example; insertion still places the caret in an empty environment.
 
-The full list lives in [`shortcuts.yaml`](shortcuts.yaml) (102 default shortcuts).
+The full list lives in [`shortcuts.yaml`](shortcuts.yaml) (103 default shortcuts).
 
 ---
 
@@ -326,7 +324,7 @@ Shortcuts are a YAML array. The **leader key** is global (settings), not per ent
 | `name` | no | Label in the settings table and which-key popup. |
 | `group` | no | Grouping label in the settings table. |
 
-Special command `__DISPLAY_MATH__` inserts a `$$…$$` block (used by `D`).
+Special command `__DISPLAY_MATH__` inserts a `$$…$$` block and can be assigned to a custom shortcut.
 
 ### Key normalization
 
@@ -351,13 +349,62 @@ Enable **Automatically convert pasted LaTeX math delimiters** to apply the same 
 
 ---
 
+## TikZ rendering
+
+TikZ rendering is optional and disabled by default to avoid taking over code blocks
+already handled by another plugin. Enabling it immediately registers fenced blocks
+using the configured identifier (default: `tikz`) in Reading view. The separately
+opt-in editor preview never replaces or inserts content into CodeMirror layout:
+clicking a TikZ block opens an independent draggable and resizable live-render
+window, while clicking elsewhere closes it. Source remains visible until the first
+diagram is ready, and the previous successful frame remains in place during edits.
+The diagram fits the window without scrollbars. On desktop, the export button opens
+the system save dialog directly; the chosen
+`.svg`, `.png`, `.jpg`/`.jpeg`, or `.pdf` filename extension selects the output
+format.
+
+Reading view starts work only for diagrams near the viewport. Completed artifacts are
+kept in a bounded in-memory cache (up to 24 entries / 16 MiB) and a bounded persistent
+cache (up to 96 entries / 32 MiB), so revisiting unchanged diagrams usually avoids a
+new compile. The settings page can copy a compact diagnostic report, clear these
+caches, or restart the render engines without adding a status-bar item.
+
+```tikz
+\begin{tikzpicture}
+  \draw[->] (0,0) -- (2,0);
+  \node at (2.3,0) {$\rho$};
+\end{tikzpicture}
+```
+
+TikZ is part of the same source-first workflow as formula input: the fenced source
+remains ordinary Markdown, and changing the backend does not rewrite the note. Math
+inside built-in-renderer nodes is typeset by Obsidian's MathJax, so formulas match
+ordinary Markdown math.
+
+- **Built-in WASM (default and recommended):** uses Math Chords' original Rust vector core, starts quickly, requires no TeX installation or runtime download, and renders away from the main editing thread. It is the primary renderer and is expanded directly as more TikZ syntax is supported.
+- **Local TeX (advanced compatibility):** slower and desktop-only because it launches an installed TeX toolchain. Keep it for packages such as `pgfplots` or `circuitikz`, document-specific macros and styles, specialized OpenType/CJK font work, and cases where output must match a formal TeX build. Math Chords detects TeX Live, MiKTeX, MacTeX, TinyTeX, Tectonic, and compatible executables through PATH or an override path.
+- **Automatic:** uses the same built-in WASM instance and cache for supported diagrams, then selects local TeX for syntax the capability check cannot reproduce faithfully or when WASM fails. This preserves the fast path without returning a plausible but incorrect diagram.
+
+This division keeps the common path fast and installation-free without removing the
+full TeX ecosystem as an explicit escape hatch. Math Chords does not download an
+engine or silently install TeX.
+
+Only render TikZ source you trust. Although the native backend disables shell escape and restricts TeX file access, TeX is a complex interpreter. The WASM backend stays inside Obsidian's renderer process and does not invoke local executables.
+
+For screen readers, add a concise first-line description such as
+`% alt: Gravitational field around a point mass`. The comment remains valid TikZ source
+and becomes the rendered diagram's accessible name.
+
+---
+
 ## Settings
 
 Open **Settings → Math Chords**. The settings UI follows your Obsidian display language when a translation is available. On Obsidian 1.13.0 and later, individual Math Chords settings are also indexed by Obsidian's settings search.
 
-**Bundled in `main.js`** (no extra file; works after community-plugin install): English, 简体中文, 繁體中文, 日本語, 한국어, Deutsch, Français, Español, Русский, Português (BR), Italiano.
-
-**Other [official Obsidian locales](https://github.com/obsidianmd/obsidian-translations#existing-languages)** (e.g. Polski, Nederlands, ไทย, العربية, English (UK), Português) require **`locales-extras.json`** in the plugin folder. Obsidian does not download that file when installing from the community directory; see [Optional: extra UI languages](#optional-extra-ui-languages-locales-extrasjson).
+All 72 locale bundles are included in `main.js`, so community-plugin and manual
+installations never need a separate language download. Ten primary translations are
+maintained end to end; other Obsidian locales use current English fallback text where
+a reviewed translation is not yet available.
 
 | Setting | Default | Description |
 | :--- | :--- | :--- |
@@ -367,7 +414,14 @@ Open **Settings → Math Chords**. The settings UI follows your Obsidian display
 | Auto-wrap outside math | on | Auto-insert `$…$` around snippets when not in math. |
 | Smart math toggle | on | Allow inline/display commands to convert an existing block to the other kind. Matching commands always remove their wrapper. |
 | Inline math live preview | on | MathJax preview above `$…$`. |
-| Enable formula panel | on | Show the sigma ribbon action and make the searchable sidebar command available. Disabling it removes the action, closes the panel, and disables the command. |
+| Enable TikZ rendering | off | Register TikZ fenced-code rendering immediately; restart after disabling only when the processor must be fully released for another plugin. |
+| TikZ live preview while editing | off | Opening a TikZ block starts its first render immediately. Later edits render after a configurable pause, 250 ms by default, while the previous successful frame remains visible. |
+| TikZ code-block identifier | `tikz` | Text after the opening code fence; change it only when another renderer already uses `tikz`. |
+| TikZ backend | Built-in | Use recommended self-contained WASM, explicit local TeX compatibility mode, or Automatic, which keeps supported diagrams on WASM and falls back only when faithful output cannot be promised. |
+| Local TeX installation | auto-detect | Detect TeX from the system and common installation locations. An executable or distribution directory can override detection. |
+| TikZ custom fonts | off | Automatic language-aware selection is used by default. Enable this advanced section to specify Latin, Simplified Chinese, Traditional Chinese, Japanese, or Korean families. |
+| TikZ diagnostics | — | Copy backend availability and recent-render details, clear bounded caches, or restart render engines. |
+| Enable formula panel | on | Show the searchable shortcut/template sidebar, including persistent favorites and a bounded 12-item recent-template row. Disabling it removes the ribbon action, closes the panel, and disables the command. |
 | Brace navigation in math | on | Jump between `{…}` inside math; defaults `Alt+→` / `Alt+←`. |
 | Next / previous brace keys | `Alt+→` / `Alt+←` | Chords for brace navigation (when enabled). |
 | Automatically convert pasted LaTeX math delimiters | off | Safely convert `\(...\)` / `\[...\]` in pasted text. |
@@ -426,18 +480,22 @@ math-chords/                  # Plugin id; install folder .obsidian/plugins/math
 │   ├── defaults.ts         # Default shortcut catalog
 │   ├── config.ts           # YAML load/save/merge
 │   ├── shortcutPreviewRenderer.ts # Shared lazy MathJax preview rendering
-│   ├── l10n/               # bundled locales + lazy extras loader
-│   └── …                   # math, preview, settings UI, etc.
+│   ├── l10n/               # compressed offline locale bundles
+│   ├── tikz/               # scheduling, backends, preview, safety, export
+│   └── …                   # math, templates, settings UI, etc.
+├── crates/
+│   └── chord-tikz-core/    # original dependency-free Rust/WASM renderer
 ├── tests/
 │   ├── unit/               # Vitest unit and regression tests
 │   └── performance/        # Opt-in parser performance baselines
 ├── vitest.config.ts
-├── shortcuts.yaml          # Shipped default shortcuts (102 entries)
+├── shortcuts.yaml          # Shipped default shortcuts (103 entries)
 ├── styles.css              # Preview & settings styles
 ├── manifest.json           # Obsidian plugin manifest
 ├── scripts/                 # Generation, shared utilities, and validation
 ├── .github/                 # CI, release, Dependabot, and contribution templates
 ├── AGENTS.md                # Canonical Codex, engineering, and workflow rules
+├── ARCHITECTURE.md          # Runtime, renderer, cache, and trust boundaries
 ├── CONTRIBUTING.md          # Contributor workflow and submission requirements
 ├── SECURITY.md              # Private vulnerability reporting policy
 ├── CODE_OF_CONDUCT.md       # Community participation standards
@@ -462,7 +520,7 @@ npm test       # Vitest unit tests
 npm run bench  # opt-in parser and delimiter-conversion benchmarks
 npm run seed   # rewrite shortcuts.yaml from src/defaults.ts
 npm run check:shortcuts # verify shortcuts.yaml matches src/defaults.ts
-npm run seed:locales  # bundled TS locales + locales-extras.json from scripts/locale-catalog.json
+npm run seed:locales  # bundled TS locales from scripts/locale-catalog.json
 npm run check:locales # verify locale schema and generated artifacts
 npm run check:release # verify metadata, changelog, and README version references
 npm run check  # complete build, test, generated-artifact, and metadata verification
@@ -487,7 +545,7 @@ Potential future work and its design constraints are tracked in [ROADMAP.md](ROA
 2. Replace the `Unreleased` changelog section with a dated release section and create a new empty `Unreleased` section above it. Update the current-release line in both READMEs; the release badges track the latest GitHub release automatically.
 3. Run `npm run check`, review the release assets, and complete the relevant manual Obsidian acceptance checks.
 4. Commit, then tag with the exact version (no `v` prefix), e.g. `git tag 0.3.0 && git push origin 0.3.0`.
-5. The [release workflow](.github/workflows/release.yml) reruns the complete verification path, builds and attaches `main.js`, `manifest.json`, `styles.css`, and `locales-extras.json`, and creates artifact attestations for every asset. Existing releases are not deleted or recreated.
+5. The [release workflow](.github/workflows/release.yml) reruns the complete verification path, builds and attaches `main.js`, `manifest.json`, and `styles.css`, and creates artifact attestations for every asset. Existing releases are not deleted or recreated.
 
 ---
 
