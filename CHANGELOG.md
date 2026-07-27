@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-07-27
+
+### Changed
+
+- Documented the exact filesystem, process, export-path, and clipboard boundaries of the optional desktop integrations.
+
+### Fixed
+
+- Replaced untyped desktop module loading with a validated, allowlisted bridge while preserving local-TeX detection, compilation, and file export.
+- Switched HTML and SVG construction to Obsidian DOM helpers so previews and exports retain the correct owner document in popout windows.
+- Removed obsolete lint exceptions, unnecessary WebAssembly assertions, and a partially supported scrollbar declaration.
+
 ## [0.5.0] - 2026-07-27
 
 ### Added

@@ -1326,7 +1326,6 @@ body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
   box-shadow: var(--shadow-l);
   contain: size layout paint;
   box-sizing: border-box;
-  scrollbar-width: none;
 }
 
 .obsidian-math-chords-tikz-floating-preview[hidden] {

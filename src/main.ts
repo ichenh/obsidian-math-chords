@@ -906,7 +906,7 @@ function renderTikzSourceCodeBlock(
   containerEl: HTMLElement,
   language: string,
 ): void {
-  const pre = containerEl.ownerDocument.createElement("pre");
+  const pre = containerEl.createEl("pre");
   const code = pre.createEl("code");
   code.className = `language-${language}`;
   code.setText(source);

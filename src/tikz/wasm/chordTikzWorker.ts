@@ -51,8 +51,9 @@ async function initialize(message: InitializeMessage): Promise<void> {
     }
 
     const instantiated = await WebAssembly.instantiate(wasm, {});
-    engine = instantiated.instance.exports as unknown as ChordTikzExports;
-    validateExports(engine);
+    const wasmExports = instantiated.instance.exports;
+    validateExports(wasmExports);
+    engine = wasmExports;
     self.postMessage({
       type: "ready",
       protocolVersion: PROTOCOL_VERSION,
@@ -108,7 +109,9 @@ function compile(message: CompileMessage): void {
   }
 }
 
-function validateExports(exports: ChordTikzExports): void {
+function validateExports(
+  exports: WebAssembly.Exports,
+): asserts exports is WebAssembly.Exports & ChordTikzExports {
   if (
     !(exports.memory instanceof WebAssembly.Memory) ||
     typeof exports.chord_tikz_alloc !== "function" ||

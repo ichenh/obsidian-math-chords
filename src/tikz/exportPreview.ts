@@ -1,4 +1,5 @@
 import type { TikzRenderArtifact } from "./types";
+import { loadDesktopNodeModule } from "./desktopNode";
 
 export type TikzExportFormat = "svg" | "png" | "jpg" | "pdf";
 
@@ -176,7 +177,7 @@ async function rasterizeSvg(
   const scale = Math.min(3, Math.max(1, 2400 / Math.max(width, height)));
   const pixelWidth = Math.max(1, Math.round(width * scale));
   const pixelHeight = Math.max(1, Math.round(height * scale));
-  const canvas = ownerDocument.createElement("canvas");
+  const canvas = ownerDocument.createDocumentFragment().createEl("canvas");
   canvas.width = pixelWidth;
   canvas.height = pixelHeight;
   const context = canvas.getContext("2d");
@@ -255,14 +256,10 @@ async function chooseExportTarget(
     ],
   };
   try {
-    const remote = runtimeRequire<{
-      dialog?: {
-        showSaveDialog(options: unknown): Promise<{
-          canceled: boolean;
-          filePath?: string;
-        }>;
-      };
-    }>("@electron/remote");
+    const remote = loadDesktopNodeModule(
+      "@electron/remote",
+      ownerDocument.defaultView,
+    );
     if (remote.dialog) {
       const result = await remote.dialog.showSaveDialog(options);
       if (result.canceled || !result.filePath) return null;
@@ -272,16 +269,10 @@ async function chooseExportTarget(
     // Older Obsidian/Electron builds expose the dialog through electron.remote.
   }
   try {
-    const electron = runtimeRequire<{
-      remote?: {
-        dialog?: {
-          showSaveDialog(options: unknown): Promise<{
-            canceled: boolean;
-            filePath?: string;
-          }>;
-        };
-      };
-    }>("electron");
+    const electron = loadDesktopNodeModule(
+      "electron",
+      ownerDocument.defaultView,
+    );
     const dialog = electron.remote?.dialog;
     if (dialog) {
       const result = await dialog.showSaveDialog(options);
@@ -362,18 +353,8 @@ async function writeLocalFile(
   path: string,
   bytes: Uint8Array,
 ): Promise<void> {
-  const fs = runtimeRequire<{
-    writeFile(path: string, data: Uint8Array): Promise<void>;
-  }>("node:fs/promises");
+  const fs = loadDesktopNodeModule("node:fs/promises");
   await fs.writeFile(path, bytes);
-}
-
-function runtimeRequire<T>(id: string): T {
-  const loader = (window as unknown as {
-    require?: (moduleId: string) => unknown;
-  }).require;
-  if (!loader) throw new Error("The desktop module loader is unavailable.");
-  return loader(id) as T;
 }
 
 function overlayBoundsInSvg(

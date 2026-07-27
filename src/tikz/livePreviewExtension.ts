@@ -59,14 +59,15 @@ export function createTikzLivePreviewExtension(
 
       constructor(private view: EditorView) {
         const ownerDocument = view.dom.ownerDocument;
-        this.panelEl = ownerDocument.createElement("div");
+        const fragment = ownerDocument.createDocumentFragment();
+        this.panelEl = fragment.createDiv();
         this.panelEl.className =
           "obsidian-math-chords-tikz-floating-preview";
         this.panelEl.hidden = true;
         this.panelEl.addEventListener("pointerdown", () => {
           this.userPositioned = true;
         });
-        this.dragHandleEl = ownerDocument.createElement("div");
+        this.dragHandleEl = this.panelEl.createDiv();
         this.dragHandleEl.className =
           "obsidian-math-chords-tikz-floating-drag-handle";
         this.dragHandleEl.setAttribute("aria-label", "Drag preview");
@@ -74,7 +75,7 @@ export function createTikzLivePreviewExtension(
           "pointerdown",
           this.startDragging,
         );
-        this.exportButtonEl = ownerDocument.createElement("button");
+        this.exportButtonEl = this.dragHandleEl.createEl("button");
         this.exportButtonEl.className =
           "clickable-icon obsidian-math-chords-tikz-export-button";
         this.exportButtonEl.type = "button";
@@ -91,17 +92,14 @@ export function createTikzLivePreviewExtension(
           event.stopPropagation();
           void this.exportPreview();
         });
-        this.dragHandleEl.appendChild(this.exportButtonEl);
-        this.panelEl.appendChild(this.dragHandleEl);
         for (const direction of RESIZE_DIRECTIONS) {
-          const handle = ownerDocument.createElement("div");
+          const handle = this.panelEl.createDiv();
           handle.className =
             `obsidian-math-chords-tikz-resize-handle is-${direction}`;
           handle.setAttribute("aria-hidden", "true");
           handle.addEventListener("pointerdown", (event) => {
             this.startResizing(direction, event);
           });
-          this.panelEl.appendChild(handle);
         }
         ownerDocument.body.appendChild(this.panelEl);
         ownerDocument.addEventListener(

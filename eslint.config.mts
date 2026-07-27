@@ -52,23 +52,6 @@ export default defineConfig(
     },
   },
   {
-    files: [
-      "src/tikz/backendRegistry.ts",
-      "src/tikz/backends/nativeLatexBackend.ts",
-    ],
-    languageOptions: {
-      globals: {
-        ...globals.node,
-      },
-    },
-    rules: {
-      // These narrowly scoped desktop adapters execute through Obsidian's
-      // CommonJS Electron runtime. Browser-facing TikZ modules remain free of
-      // Node.js imports and continue to work on mobile.
-      "@typescript-eslint/no-require-imports": "off",
-    },
-  },
-  {
     rules: {
       // The declarative settings API starts in Obsidian 1.13. Math Chords keeps
       // PluginSettingTab.display() while its declared minimum remains 1.5.0.

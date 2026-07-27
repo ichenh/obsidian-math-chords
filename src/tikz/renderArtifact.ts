@@ -230,10 +230,7 @@ function parseSafeSvg(bytes: Uint8Array, ownerDocument: Document): SVGSVGElement
 
 function ensureSvgContentGroup(root: Element): void {
   if (root.querySelector('g[data-chord-tikz-content="true"]')) return;
-  const group = root.ownerDocument.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "g",
-  );
+  const group = root.ownerDocument.createDocumentFragment().createSvg("g");
   group.setAttribute("data-chord-tikz-content", "true");
   for (const child of Array.from(root.children)) {
     if (["defs", "title", "desc"].includes(child.localName.toLowerCase())) {
@@ -512,14 +509,14 @@ function parseTikzOverlayPlacement(
 }
 
 function renderMathLabel(source: string, ownerDocument: Document): HTMLElement {
-  const element = ownerDocument.createElement("span");
+  const element = ownerDocument.createDocumentFragment().createSpan();
   element.addClass("is-math-only");
   element.appendChild(renderMath(source, false));
   return element;
 }
 
 function renderMixedLabel(source: string, ownerDocument: Document): HTMLElement {
-  const element = ownerDocument.createElement("span");
+  const element = ownerDocument.createDocumentFragment().createSpan();
   element.addClass("is-mixed-label");
   let cursor = 0;
   for (const match of source.matchAll(/\$([^$]+)\$/g)) {
@@ -543,7 +540,7 @@ function appendMixedText(
 ): void {
   const lines = source.split(String.raw`\\`);
   lines.forEach((line, index) => {
-    if (index > 0) element.appendChild(ownerDocument.createElement("br"));
+    if (index > 0) element.createEl("br");
     if (line) element.appendChild(ownerDocument.createTextNode(line));
   });
 }
@@ -556,7 +553,7 @@ async function renderPdf(
   const loadingTask = pdfjs.getDocument({ data: bytes.slice() });
   const pdf = await loadingTask.promise;
   try {
-      const page = await pdf.getPage(1);
+    const page = await pdf.getPage(1);
     try {
       const baseViewport = page.getViewport({ scale: 1 });
       const availableWidth = availableRenderWidth(containerEl);
@@ -569,7 +566,10 @@ async function renderPdf(
         2,
       );
       const viewport = page.getViewport({ scale: cssScale * pixelRatio });
-      const canvas = containerEl.ownerDocument.createElement("canvas");
+      const canvas = containerEl
+        .ownerDocument
+        .createDocumentFragment()
+        .createEl("canvas");
       canvas.width = Math.ceil(viewport.width);
       canvas.height = Math.ceil(viewport.height);
       canvas.style.width = `${Math.ceil(viewport.width / pixelRatio)}px`;

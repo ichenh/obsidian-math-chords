@@ -31,7 +31,7 @@ Math remains the primary workflow, but templates are deliberately not limited to
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.5.0.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.5.1.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
@@ -390,6 +390,12 @@ full TeX ecosystem as an explicit escape hatch. Math Chords does not download an
 engine or silently install TeX.
 
 Only render TikZ source you trust. Although the native backend disables shell escape and restricts TeX file access, TeX is a complex interpreter. The WASM backend stays inside Obsidian's renderer process and does not invoke local executables.
+
+On desktop, choosing local TeX allows Math Chords to inspect configured and common
+TeX executable paths, create bounded work files under the system temporary directory,
+and launch the selected executable directly without a command shell. Export writes
+only to the path selected in the system save dialog. Clipboard access is limited to
+user paste events and the explicit copy-diagnostics action.
 
 For screen readers, add a concise first-line description such as
 `% alt: Gravitational field around a point mass`. The comment remains valid TikZ source

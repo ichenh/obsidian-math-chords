@@ -39,7 +39,10 @@ class TikzMarkdownRenderChild extends MarkdownRenderChild {
   }
 
   onload(): void {
-    this.sourceEl = this.containerEl.ownerDocument.createElement("pre");
+    this.sourceEl = this.containerEl
+      .ownerDocument
+      .createDocumentFragment()
+      .createEl("pre");
     this.sourceEl.className = "obsidian-math-chords-tikz-source";
     const codeEl = this.sourceEl.createEl("code");
     codeEl.className = "language-tikz";

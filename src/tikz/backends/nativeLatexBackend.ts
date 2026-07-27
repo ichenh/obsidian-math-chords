@@ -1,4 +1,5 @@
 import { Platform } from "obsidian";
+import { loadDesktopNodeModule } from "../desktopNode";
 import { createTikzDocument } from "../document";
 import {
   type NativeTikzEngine,
@@ -31,7 +32,7 @@ export class NativeLatexBackend implements TikzRenderBackend {
 
   async isAvailable(): Promise<boolean> {
     if (!Platform.isDesktop) return false;
-    const fs = require("node:fs/promises") as typeof import("node:fs/promises");
+    const fs = loadDesktopNodeModule("node:fs/promises");
     try {
       await fs.access(this.options.engine.executablePath);
       if (this.options.engine.kind === "latex-dvi") {
@@ -54,9 +55,9 @@ export class NativeLatexBackend implements TikzRenderBackend {
     if (new TextEncoder().encode(source).byteLength > MAX_NATIVE_SOURCE_BYTES) {
       throw new Error("The TikZ source exceeds the 256 KiB native-render limit.");
     }
-    const fs = require("node:fs/promises") as typeof import("node:fs/promises");
-    const os = require("node:os") as typeof import("node:os");
-    const path = require("node:path") as typeof import("node:path");
+    const fs = loadDesktopNodeModule("node:fs/promises");
+    const os = loadDesktopNodeModule("node:os");
+    const path = loadDesktopNodeModule("node:path");
     const startedAt = performance.now();
     const workDir = await fs.mkdtemp(
       path.join(os.tmpdir(), "math-chords-tikz-"),
@@ -202,7 +203,7 @@ async function readPdfArtifact(
 async function readBoundedFile(
   fs: typeof import("node:fs/promises"),
   filePath: string,
-): Promise<Buffer> {
+): Promise<Uint8Array> {
   const stat = await fs.stat(filePath);
   if (!stat.isFile() || stat.size <= 0) {
     throw new Error("The native TeX engine did not produce a render artifact.");
@@ -224,8 +225,8 @@ async function runProcess(
   if (!Platform.isDesktop) {
     throw new Error("Native process execution is available on desktop only.");
   }
-  const childProcess = require("node:child_process") as typeof import("node:child_process");
-  const nodeProcess = require("node:process") as typeof import("node:process");
+  const childProcess = loadDesktopNodeModule("node:child_process");
+  const nodeProcess = loadDesktopNodeModule("node:process");
   return new Promise((resolve, reject) => {
     childProcess.execFile(
       executable,
