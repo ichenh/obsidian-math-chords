@@ -29,9 +29,8 @@ an explicit design and compatibility review.
   `npm run seed` generates `shortcuts.yaml`; `npm run check:shortcuts` detects drift.
 - `src/l10n/locales/en.ts` defines translation keys and English text.
 - `scripts/locale-catalog.json` is the source of truth for non-English translations.
-  `npm run seed:locales` generates bundled locale modules,
-  `src/l10n/bundled.ts`, `src/l10n/locales/index.ts`, `src/l10n/lazy-codes.ts`, and
-  `locales-extras.json`.
+  `npm run seed:locales` generates locale modules, `src/l10n/bundled.ts`, and
+  `src/l10n/locales/index.ts`; every supported language is embedded in `main.js`.
 - Do not edit generated locale files or `shortcuts.yaml` directly. Change their
   source files and regenerate them.
 - `main.js` is a build artifact and must not be edited manually.
@@ -142,8 +141,7 @@ do not replace relevant application testing.
 - Release tags have no `v` prefix and must exactly equal the package version. Published
   releases are treated as immutable; the workflow must fail rather than delete and
   recreate an existing release.
-- Release assets are `main.js`, `manifest.json`, `styles.css`, and
-  `locales-extras.json`.
+- Release assets are `main.js`, `manifest.json`, and `styles.css`.
 
 ## AI-assisted contributions
 

@@ -20,6 +20,7 @@ import {
 import { FORMULA_PANEL_ENVIRONMENT_GROUP_ID } from "./settings";
 import type {
   FormulaPanelSectionId,
+  FormulaTemplate,
   MathEnvironment,
   Shortcut,
 } from "./types";
@@ -29,6 +30,7 @@ import {
   appendFormulaTemplateFolder,
   createFormulaTemplate,
   createFormulaTemplateFolder,
+  flattenFormulaTemplates,
 } from "./formulaTemplateModel";
 import {
   openFormulaTemplateEditorModal,
@@ -360,7 +362,11 @@ export class FormulaPanelView extends ItemView {
     const groupsEl = sectionBodies.get("shortcuts")!.createDiv({
       cls: "obsidian-math-chords-formula-panel-groups",
     });
-    const templatesEl = sectionBodies.get("templates")!.createDiv({
+    const templateBodyEl = sectionBodies.get("templates")!;
+    const quickTemplatesEl = templateBodyEl.createDiv({
+      cls: "obsidian-math-chords-template-quick-access",
+    });
+    const templatesEl = templateBodyEl.createDiv({
       cls: "obsidian-math-chords-template-tree",
     });
     const emptyEl = contentEl.createDiv({
@@ -595,12 +601,91 @@ export class FormulaPanelView extends ItemView {
       }
     }
 
+    const allTemplates = flattenFormulaTemplates(
+      this.plugin.settings.formulaPanelTemplates,
+    );
+    const templatesById = new Map(
+      allTemplates.map((template) => [template.id, template]),
+    );
+    const quickGroups: Array<{
+      title: string;
+      icon: string;
+      templates: FormulaTemplate[];
+    }> = [
+      {
+        title: t("favoriteTemplates"),
+        icon: "star",
+        templates: allTemplates.filter((template) => template.favorite),
+      },
+      {
+        title: t("recentTemplates"),
+        icon: "history",
+        templates: this.plugin.settings.formulaPanelRecentTemplateIds
+          .map((id) => templatesById.get(id))
+          .filter((template): template is FormulaTemplate => template !== undefined),
+      },
+    ];
+    for (const group of quickGroups) {
+      if (group.templates.length === 0) continue;
+      const groupEl = quickTemplatesEl.createEl("section", {
+        cls: "obsidian-math-chords-template-quick-group",
+      });
+      const headingEl = groupEl.createEl("h4", {
+        cls: "obsidian-math-chords-template-quick-heading",
+        text: group.title,
+      });
+      const headingIconEl = headingEl.createSpan({
+        cls: "obsidian-math-chords-template-quick-heading-icon",
+      });
+      headingEl.prepend(headingIconEl);
+      setIcon(headingIconEl, group.icon);
+      const listEl = groupEl.createDiv({
+        cls: "obsidian-math-chords-template-quick-list",
+      });
+      for (const template of group.templates) {
+        const label = template.name ||
+          template.content.split(/\r?\n/u).find((line) => line.trim())?.trim() ||
+          t("untitledTemplate");
+        const buttonEl = listEl.createEl("button", {
+          cls: "obsidian-math-chords-template-quick-item",
+          attr: {
+            type: "button",
+            title: `${label} — ${template.content}`,
+            "aria-label": t("insertTemplateNamed", label),
+          },
+        });
+        preserveEditorFocusOnMouseDown(buttonEl);
+        makeFormulaPanelItemDraggable(
+          buttonEl,
+          { kind: "template", id: template.id, content: template.content },
+          template.content,
+          () => this.plugin.clearFormulaPanelDropCursors(),
+        );
+        const iconEl = buttonEl.createSpan({
+          cls: "obsidian-math-chords-template-quick-item-icon",
+        });
+        setIcon(iconEl, template.favorite ? "star" : "file-text");
+        buttonEl.createSpan({
+          cls: "obsidian-math-chords-template-quick-item-label",
+          text: label,
+        });
+        buttonEl.addEventListener("click", (event) => {
+          event.stopPropagation();
+          this.plugin.insertTemplateFromFormulaPanel(template);
+        });
+      }
+    }
+    quickTemplatesEl.toggleClass(
+      "is-hidden",
+      quickGroups.every((group) => group.templates.length === 0),
+    );
+
     const renderedTemplateTree = renderFormulaTemplateTree(templatesEl, {
       app: this.app,
       roots: this.plugin.settings.formulaPanelTemplates,
       sourcePath: this.app.workspace.getActiveFile()?.path ?? "",
       renderComponent: templateRenderComponent,
-      onInsert: (content) => this.plugin.insertTemplateFromFormulaPanel(content),
+      onInsert: (template) => this.plugin.insertTemplateFromFormulaPanel(template),
       onDragEnd: () => this.plugin.clearFormulaPanelDropCursors(),
       onChange: (templates) => {
         void runWithNotice(
@@ -669,6 +754,10 @@ export class FormulaPanelView extends ItemView {
     const applyFilter = (): void => {
       this.search = searchEl.value;
       const searching = this.search.trim().length > 0;
+      quickTemplatesEl.toggleClass(
+        "is-hidden",
+        searching || quickGroups.every((group) => group.templates.length === 0),
+      );
       let visibleShortcutTotal = 0;
       for (const group of renderedGroups) {
         let visible = 0;

@@ -10,3 +10,7 @@ release-notes.md
 scripts/.defaults.cjs
 fonts/
 katex.min.css
+*_d.md
+/tikz-wasm/
+/vendor-cache/
+/crates/chord-tikz-core/target/

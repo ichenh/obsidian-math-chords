@@ -31,7 +31,7 @@
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.4.2。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.5.0。** 见 [CHANGELOG](CHANGELOG.md)。
 
 **需要 Obsidian 1.5.0+。** 以键盘操作为主，建议在桌面端使用。
 
@@ -49,9 +49,11 @@
 - [行间公式环境包裹](#行间公式环境包裹)
 - [配置](#配置)
 - [LaTeX 定界符转换](#latex-定界符转换)
+- [TikZ 渲染](#tikz-渲染)
 - [设置](#设置)
 - [更新快捷键](#更新快捷键)
 - [项目结构](#项目结构)
+- [架构](ARCHITECTURE.zh-CN.md)
 - [开发](#开发)
 - [AI 辅助说明](#ai-辅助说明)
 - [许可证](#许可证)
@@ -59,6 +61,11 @@
 ---
 
 ## Math Chords 能做什么
+
+Math Chords 面向公式密集的 Markdown 笔记：加快结构化 LaTeX 输入，复用经常出现的
+源码，规范化外部公式，并可选渲染 TikZ；笔记始终保持为普通 Markdown/LaTeX 文本，
+不会变成插件专属格式。日常工作以轻快的内置路径为主，需要更广兼容性时再使用
+Obsidian MathJax 或可选的本机 TeX。
 
 | 功能 | 说明 |
 | :--- | :--- |
@@ -71,8 +78,9 @@
 | **行间公式环境** | 通过模糊搜索选择 `\begin{…}…\end{…}` 包裹块内容；必要时先插入 `$$…$$`。 |
 | **内置数学命令** | 包裹选中文本、插入行内/行间公式，或移除同类型包裹；可选的智能切换允许在行内和行间公式之间转换。 |
 | **LaTeX 定界符转换** | 将选区、当前文件或粘贴文本中的 `\(...\)` / `\[...\]` 转为 `$...$` / `$$...$$`，同时排除受保护的 Markdown 区域。 |
+| **可选 TikZ 渲染** | 使用自包含 WASM 渲染 TikZ 围栏代码块，在独立窗口中实时预览，并导出 SVG、PNG、JPEG 或 PDF；本机 TeX 作为高级兼容选项保留。 |
 | **YAML + 设置界面** | 编辑 `shortcuts.yaml` 或使用设置页；修改后立即重建快捷键查找树。 |
-| **界面本地化** | 11 种主流语言内置于 `main.js`（含简/繁中文）。其余 61 种 [Obsidian 官方语言](https://github.com/obsidianmd/obsidian-translations#existing-languages) 需在插件目录放置 `locales-extras.json`（社区插件安装不会自动下载该文件）。 |
+| **界面本地化** | 全部 72 个语言包均内置于 `main.js`。十种主要语言持续完整维护，其余 [Obsidian 官方语言](https://github.com/obsidianmd/obsidian-translations#existing-languages) 在暂无审校翻译时使用当前英语回退文本，无需额外下载语言包。 |
 | **非破坏性合并** | 加载时合并缺失的默认快捷键，不会覆盖你的自定义绑定。 |
 
 ---
@@ -83,23 +91,11 @@
 
 在 **设置 → 社区插件 → 浏览** 中搜索 **Math Chords** 并安装。
 
-Obsidian 安装器只会从 GitHub Release 下载 **`main.js`**、**`manifest.json`**、**`styles.css`** 这三个文件，不会下载 Release 中的其他附件。这对插件全部功能已足够。**11 种内置语言**（见下方 [设置](#设置)）的设置界面可立即显示对应翻译；若 Obsidian 界面语言不在其中，Math Chords 设置页会显示英文，直到你自行添加 `locales-extras.json`（见下文）。
+Obsidian 安装器会下载 **`main.js`**、**`manifest.json`**、**`styles.css`**。这三个文件已经包含全部插件功能和 72 个语言包，不需要第二次下载。
 
 ### 从 Release 手动安装
 
-从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`main.js`**、**`manifest.json`**、**`styles.css`**、**`locales-extras.json`** 到库内的 `.obsidian/plugins/math-chords/`（若无此目录请先创建）。`locales-extras.json` 须与当前插件版本 **同一 Release 标签**。如需默认快捷键文件，可从仓库复制 **`shortcuts.yaml`**。
-
-### 可选：额外界面语言（`locales-extras.json`）
-
-若 Obsidian 显示语言 **不在** 上述 11 种内置语言之列，请自行安装或更新该文件：
-
-1. 打开 [Releases](https://github.com/ichenh/obsidian-math-chords/releases)，下载与已安装插件版本一致的 **`locales-extras.json`**（版本可在 **设置 → 社区插件** 或插件目录下的 `manifest.json` 中查看）。
-2. 放到 **`.obsidian/plugins/math-chords/locales-extras.json`**（与 `main.js` 同级，不要放在笔记目录里）。
-3. 重载 Obsidian，或关闭再开启本插件。
-
-没有该文件时插件功能正常，只是 **Math Chords 设置界面** 为英文。添加后，下次加载时设置页会跟随 Obsidian 语言显示（JSON 中包含的 61 种语言均支持）。
-
-通过社区插件更新版本时，若你依赖非内置语言，需 **重复上述步骤** —— 更新只会替换 `main.js` / `manifest.json` / `styles.css`，不会更新 `locales-extras.json`。
+从 [Releases](https://github.com/ichenh/obsidian-math-chords/releases) 下载 **`main.js`**、**`manifest.json`**、**`styles.css`** 到库内的 `.obsidian/plugins/math-chords/`（若无此目录请先创建）。如需默认快捷键文件，可另外从仓库复制 **`shortcuts.yaml`**。
 
 ### 从源码构建
 
@@ -110,7 +106,7 @@ npm install
 npm run build
 ```
 
-将 `main.js`、`manifest.json`、`styles.css`、`locales-extras.json` 和 `shortcuts.yaml` 复制到 `.obsidian/plugins/math-chords/`。
+将 `main.js`、`manifest.json`、`styles.css`，以及可选的 `shortcuts.yaml` 复制到 `.obsidian/plugins/math-chords/`。
 
 ---
 
@@ -158,6 +154,7 @@ npm run build
 - 新文件夹保持为空，需要模板时再点击清晰区分的“新建模板”图标。
 - 每个模板分别保存标题和 Markdown 正文。正文中的行间公式、标题、列表、链接、表格、callout 及其他 Obsidian 支持的 Markdown 会直接显示为预览；模板和文件夹标题栏均提供需要确认的删除操作。
 - 点击模板标题或预览可把原始 Markdown 插入当前选区；拖动标题或预览区可按编辑器中显示的落点光标插入正文，左侧手柄则专门用于重组模板树。
+- 点击星标可收藏重要模板。完整模板树上方会显示紧凑的“收藏”和“最近使用”快捷区；最近使用最多保留 12 项，点击或拖入笔记都会更新顺序。
 - 拖动任意文件夹或模板，可放到同级项目之前或之后、移入其他文件夹，或移回根目录。空文件夹会保持为空；移动或删除最后一个模板后不会自动生成占位模板。
 
 模板既可以只保存一组麦克斯韦方程，也可以保存一整段可重复使用的 Markdown 文档结构。内容存储在 Math Chords 的插件设置中，而不是作为库内文件存在。
@@ -174,7 +171,7 @@ npm run build
 
 ## 快捷键参考
 
-### 结构与行间公式
+### 结构
 
 | 按键 | 插入 | 说明 |
 | :--- | :--- | :--- |
@@ -183,7 +180,6 @@ npm run build
 | `Shift+R` | `\sqrt[]{}` | n 次根 |
 | `^` | `^{}` | 上标 |
 | `Shift+_` | `_{}` | 下标 |
-| `D` | `$$…$$` | 行间公式块 |
 
 ### 运算符与符号
 
@@ -194,6 +190,7 @@ npm run build
 | `Shift+I` | `\int_{}^{}` | 带上下限积分 |
 | `Y` | `\oint` | 环路积分 |
 | `P` | `\partial` | 偏导 |
+| `D` | `\mathrm{d}` | 微分符号 |
 | `Shift+P` | `\prod_{}^{}` | 连乘 |
 | `L` | `\lim_{}` | 极限 |
 | `8` | `\infty` | 无穷 |
@@ -273,7 +270,7 @@ npm run build
 
 **矩阵**（`M` 前缀）：`M P` pmatrix，`M B` bmatrix，`M C` cases。界面预览使用紧凑的 2×2 矩阵或两行 cases 示例；实际插入时仍会生成空环境并将光标放入其中。
 
-完整列表见 [`shortcuts.yaml`](shortcuts.yaml)（102 条默认快捷键）。
+完整列表见 [`shortcuts.yaml`](shortcuts.yaml)（103 条默认快捷键）。
 
 ---
 
@@ -326,7 +323,7 @@ npm run build
 | `name` | 否 | 设置表与 which-key 面板中的显示名称。 |
 | `group` | 否 | 设置表中的分组标签。 |
 
-特殊命令 `__DISPLAY_MATH__` 插入 `$$…$$` 块（`D` 使用）。
+特殊命令 `__DISPLAY_MATH__` 用于插入 `$$…$$` 块，可将其分配给自定义快捷键。
 
 ### 按键规范化
 
@@ -349,13 +346,50 @@ Math Chords 可以只替换标准 LaTeX 数学定界符，并原样保留公式�
 
 ---
 
+## TikZ 渲染
+
+TikZ 渲染是可选功能，默认关闭，以免接管已由其他插件处理的代码块。启用后，
+使用所配置标识（默认 `tikz`）的围栏代码块会立即在阅读视图中注册渲染，无需重启。
+编辑实时预览使用单独开关，不会替换 CodeMirror 内容或向编辑排版中插入组件：
+点击 TikZ 代码块时打开独立的可拖曳、可缩放实时渲染窗口，点击其他位置时自动关闭。
+首张图完成前会保留源码，编辑过程中也会保留上一张成功图，不会被临时错误替换。
+图形完整适应窗口且不显示滚动条。在桌面端，点击导出按钮会直接打开系统保存对话框；文件名
+使用 `.svg`、`.png`、`.jpg`/`.jpeg` 或 `.pdf` 后缀即可选择对应格式。
+
+阅读视图只会启动视口附近图形的渲染。完成的结果保存在有上限的内存缓存（最多 24 项 / 16 MiB）和持久缓存（最多 96 项 / 32 MiB）中，因此再次查看未改动的图形通常无需重新编译。设置页提供精简的诊断工具，可复制后端报告、清除缓存或重启渲染引擎，不增加状态栏项目。
+
+```tikz
+\begin{tikzpicture}
+  \draw[->] (0,0) -- (2,0);
+  \node at (2.3,0) {$\rho$};
+\end{tikzpicture}
+```
+
+TikZ 与公式输入属于同一种“源码优先”工作流：代码块仍是普通 Markdown，切换后端
+不会改写笔记。内置渲染器中的节点公式交给 Obsidian MathJax 排版，因此与普通
+Markdown 公式保持一致。
+
+- **内置 WASM（默认并推荐）：**使用 Math Chords 原创的 Rust 矢量核心，启动快，无需安装 TeX，也不会在运行时下载引擎，渲染工作避开主编辑线程。它是主要渲染器，后续 TikZ 语法会直接在这套核心中扩展。
+- **本机 TeX（高级兼容模式）：**需要桌面端已安装 TeX，并因启动外部工具链而明显更慢。它适合 `pgfplots`、`circuitikz` 等宏包、文档专用宏和样式、特殊 OpenType/CJK 字体，以及必须与正式 TeX 编译结果一致的场景。Math Chords 可从 TeX Live、MiKTeX、MacTeX、TinyTeX、Tectonic、PATH 或用户指定路径检测兼容引擎。
+- **自动模式：**受支持的图形使用与手动 WASM 完全相同的实例和缓存；当能力检查确认某些语法无法忠实复现或 WASM 失败时，再选择本机 TeX。这样既保留快速路径，也避免返回看似可用但实际错误的图形。
+
+这样的分工让普通用户获得快速、免安装的默认体验，同时把完整 TeX 生态作为明确的
+专业出口保留下来。插件不会下载渲染引擎，也不会静默安装 TeX。
+
+只渲染你信任的 TikZ 源码。虽然本机后端会关闭 shell escape 并限制 TeX 文件访问，但 TeX 本身仍是复杂的解释器。WASM 后端只在 Obsidian 的渲染进程内运行，不调用本机可执行文件。
+
+如需支持屏幕阅读器，可在源码首行加入简短说明，例如
+`% alt: 点质量周围的引力场`。该注释仍是合法 TikZ 源码，并会作为渲染图形的无障碍名称。
+
+---
+
 ## 设置
 
 打开 **设置 → Math Chords**。在有可用翻译时，设置界面会跟随 Obsidian 的显示语言。在 Obsidian 1.13.0 及更高版本中，各项 Math Chords 设置也会被 Obsidian 的设置搜索单独索引。
 
-**内置于 `main.js`**（无需额外文件；社区插件安装即可）：English、简体中文、繁體中文、日本語、한국어、Deutsch、Français、Español、Русский、Português (BR)、Italiano。
-
-**其余 [Obsidian 官方语言](https://github.com/obsidianmd/obsidian-translations#existing-languages)**（如 Polski、Nederlands、ไทย、العربية、English (UK)、Português 等）需要在插件目录放置 **`locales-extras.json`**。社区插件安装不会下载该文件；步骤见 [可选：额外界面语言](#可选额外界面语言locales-extrasjson)。
+全部 72 个语言包都内置于 `main.js`，社区插件安装与手动安装均不需要额外下载语言
+文件。十种主要语言持续维护完整翻译；其他 Obsidian 语言在尚无经过审校的翻译时
+使用当前英语回退文本，避免保留过期文案。
 
 | 设置项 | 默认值 | 说明 |
 | :--- | :--- | :--- |
@@ -365,7 +399,14 @@ Math Chords 可以只替换标准 LaTeX 数学定界符，并原样保留公式�
 | Auto-wrap outside math（公式外自动包裹） | 开 | 非公式区域插入时自动加 `$…$`。 |
 | Smart math toggle（智能公式切换） | 开 | 允许用另一种公式命令转换现有公式块；同类型命令始终移除包裹。 |
 | Inline math live preview（行内公式实时预览） | 开 | 在 `$…$` 上方 MathJax 预览。 |
-| Enable formula panel（启用公式面板） | 开 | 显示 sigma Ribbon 入口并启用可搜索侧边栏命令；关闭时移除入口、关闭面板并停用命令。 |
+| Enable TikZ rendering（启用 TikZ 渲染） | 关 | 立即注册 TikZ 围栏代码块渲染；关闭后若要为其他插件彻底释放处理器，再重启 Obsidian。 |
+| TikZ live preview while editing（编辑时实时预览） | 关 | 打开 TikZ 代码块时立即开始首次渲染；后续编辑经过可配置的延迟再渲染，默认 250 毫秒，并在新结果完成前保留上一帧。 |
+| TikZ code-block identifier（代码块标识） | `tikz` | 代码块起始标记后的文字；仅在其他渲染器已使用 `tikz` 时修改。 |
+| TikZ backend（渲染后端） | 内置 | 使用推荐的自包含 WASM、显式本机 TeX 兼容模式，或自动模式；自动模式让受支持图形留在 WASM，仅在无法保证忠实输出时回退。 |
+| Local TeX installation（本机 TeX 安装） | 自动检测 | 默认从系统和常见安装位置检测 TeX；也可填写可执行文件或发行版目录覆盖自动结果。 |
+| TikZ custom fonts（自定义字体） | 关 | 默认按语言自动选择字体。启用这个高级区域后，才显示拉丁、简中、繁中、日文和韩文字体设置。 |
+| TikZ diagnostics（诊断） | — | 复制后端可用性和最近渲染信息、清除有上限的缓存，或重启渲染引擎。 |
+| Enable formula panel（启用公式面板） | 开 | 显示可搜索的快捷键/模板侧边栏，包括持久收藏和最多 12 项的最近模板；关闭时移除 Ribbon 入口、关闭面板并停用命令。 |
 | Brace navigation in math（公式内大括号跳转） | 开 | 在公式内 `{…}` 之间跳转；默认 `Alt+→` / `Alt+←`。 |
 | Next / previous brace keys（下/上一大括号键） | `Alt+→` / `Alt+←` | 大括号跳转快捷键（启用后生效）。 |
 | Automatically convert pasted LaTeX math delimiters（自动转换粘贴的 LaTeX 数学定界符） | 关 | 安全转换粘贴文本中的 `\(...\)` / `\[...\]`。 |
@@ -424,18 +465,22 @@ math-chords/                  # 插件 id；安装目录 .obsidian/plugins/math-
 │   ├── defaults.ts         # 默认快捷键目录
 │   ├── config.ts           # YAML 读写与合并
 │   ├── shortcutPreviewRenderer.ts # 共享的延迟 MathJax 预览渲染
-│   ├── l10n/               # 内置语言包 + 按需加载 extras
-│   └── …                   # 公式检测、预览、设置界面等
+│   ├── l10n/               # 压缩的离线语言包
+│   ├── tikz/               # 调度、后端、预览、安全清洗与导出
+│   └── …                   # 公式、模板、设置界面等
+├── crates/
+│   └── chord-tikz-core/    # 原创、无第三方依赖的 Rust/WASM 渲染器
 ├── tests/
 │   ├── unit/               # Vitest 单元测试与回归测试
 │   └── performance/        # 按需运行的解析性能基准
 ├── vitest.config.ts
-├── shortcuts.yaml          # 随仓库分发的默认快捷键（102 条）
+├── shortcuts.yaml          # 随仓库分发的默认快捷键（103 条）
 ├── styles.css              # 预览与设置样式
 ├── manifest.json           # Obsidian 插件清单
 ├── scripts/                 # 生成、共享脚本工具与校验逻辑
 ├── .github/                 # CI、发布、Dependabot 与贡献模板
 ├── AGENTS.md                # 统一的 Codex、工程与工作流规范
+├── ARCHITECTURE.zh-CN.md    # 运行、渲染、缓存与信任边界
 ├── CONTRIBUTING.zh-CN.md    # 贡献流程与提交要求
 ├── SECURITY.md              # 私密漏洞报告策略
 ├── CODE_OF_CONDUCT.md       # 社区参与行为准则
@@ -460,7 +505,7 @@ npm test       # Vitest 单元测试
 npm run bench  # 按需运行解析器与定界符转换性能基准
 npm run seed   # 从 src/defaults.ts 重写 shortcuts.yaml
 npm run check:shortcuts # 检查 shortcuts.yaml 是否与 src/defaults.ts 一致
-npm run seed:locales  # 从 scripts/locale-catalog.json 生成内置 TS 语言包与 locales-extras.json
+npm run seed:locales  # 从 scripts/locale-catalog.json 生成全部内置 TS 语言包
 npm run check:locales # 检查语言键结构及全部生成物
 npm run check:release # 检查元数据、Changelog 与 README 版本引用
 npm run check  # 完整执行构建、测试、生成物与元数据检查
@@ -482,7 +527,7 @@ npm run check  # 完整执行构建、测试、生成物与元数据检查
 2. 将 Changelog 的 `Unreleased` 内容转为带日期的发布章节，并在其上方重新建立空的 `Unreleased` 章节；同时更新中英文 README 的当前版本说明，版本徽章会自动跟随最新 GitHub Release。
 3. 运行 `npm run check`，复核发布资产，并完成相关的 Obsidian 应用内验收。
 4. 提交后打精确版本 tag（不要加 `v` 前缀），例如 `git tag 0.3.0 && git push origin 0.3.0`。
-5. [release 工作流](.github/workflows/release.yml) 会重新执行完整检查、构建并附上 `main.js`、`manifest.json`、`styles.css` 和 `locales-extras.json`，同时为全部资产生成 artifact attestations；不会删除或重建已有 Release。
+5. [release 工作流](.github/workflows/release.yml) 会重新执行完整检查、构建并附上 `main.js`、`manifest.json` 和 `styles.css`，同时为全部资产生成 artifact attestations；不会删除或重建已有 Release。
 
 ---
 

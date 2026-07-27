@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-27
+
+### Added
+
+- Added optional TikZ code-block rendering in Reading view and Live Preview. The feature is disabled by default to avoid conflicts with other rendering plugins.
+- Added a lightweight built-in Rust/WASM renderer that works without TeX, downloads, or additional plugin files. It supports common paths, nodes, flowcharts, formulas, loops, numeric macros, ellipses, plots, fills, and arrow styles.
+- Added Automatic and local-TeX backends. Automatic mode uses the built-in renderer when possible and can use an installed TeX system for unsupported TikZ features.
+- Added automatic detection for LuaLaTeX, XeLaTeX, pdfLaTeX, traditional LaTeX with `dvisvgm`, and Tectonic, with optional executable-path and CJK font overrides.
+- Added a draggable and resizable TikZ preview window with SVG, PNG, JPEG, and PDF export through the system save dialog.
+- Added bounded memory and persistent render caches, viewport-aware scheduling, diagnostics, cache clearing, renderer restart, and optional `% alt:` accessibility descriptions.
+- Added persistent template favorites and a 12-item recent-template list to the formula panel.
+- Added `Shift+B` as the default shortcut for inserting `\boldsymbol{}`.
+- Bundled all 72 supported interface languages for complete offline use.
+- Added English and Chinese architecture documentation for the TikZ renderer, preview pipeline, caching, localization, and release layout.
+
+### Changed
+
+- Changed the default `D` shortcut from a display-math block to `\mathrm{d}` with the cursor placed after the command.
+- Kept the standard Obsidian three-file installation layout while including the built-in renderer and all interface languages in `main.js`.
+- Made TikZ backend changes refresh open Markdown views immediately.
+- Reorganized TikZ and font settings so advanced paths and CJK options stay collapsed until enabled.
+- Unified add buttons, section indentation, and spacing across shortcut, math-environment, and template management.
+- Reduced production bundle size and startup work through minification, lazy renderer loading, compressed embedded assets, and expansion of only the active locale.
+
+### Fixed
+
+- Fixed first-run TikZ activation after plugin data is cleared.
+- Improved preview responsiveness while typing and kept the source or previous successful render visible until a replacement is ready.
+- Prevented preview-panel jitter by measuring and swapping completed output atomically outside CodeMirror layout.
+- Improved visual consistency between WASM and local TeX for diagram scale, SVG cropping, arrows, fills, curves, plots, flowcharts, multiline labels, CJK text, and mixed text-and-math baselines.
+- Improved formula positioning and sizing for bold symbols, subscripts, relative node placement, font-size commands, `inner sep`, and white label backgrounds.
+- Routed unsupported syntax safely to local TeX in Automatic mode instead of displaying a partial or misleading WASM result.
+- Hardened generated SVG handling, external URL filtering, TeX input and artifact limits, worker cancellation, cache bounds, and generated-asset verification.
+- Fixed local TeX compatibility with common TeX Live installations and Unicode font loading.
+
 ## [0.4.2] - 2026-07-22
 
 ### Fixed

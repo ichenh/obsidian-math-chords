@@ -1,0 +1,31 @@
+\begin{document}
+\begin{tikzpicture}[
+  >=stealth,
+  every node/.style={font=\small},
+  box/.style={
+    draw,
+    rounded corners,
+    minimum width=2.8cm,
+    minimum height=0.9cm
+  }
+]
+
+\node[box] (obs) at (0,0) {现象};
+\node[box] (laws) at (4,0) {Laws};
+\node[box] (theory) at (8,0) {Theory};
+\node[box] (pred) at (12,0) {Predictions};
+
+\node[box] (exp) at (8,2.2) {Explanation};
+\node[box] (newobs) at (12,-2.2) {New\\observations};
+
+\draw[->,thick] (obs) -- (laws);
+\draw[->,thick] (laws) -- (theory);
+\draw[->,thick] (theory) -- (pred);
+\draw[->,thick] (theory) -- (exp);
+\draw[->,thick] (pred) -- (newobs);
+\draw[->,thick]
+  (newobs.west) -- (obs.south |- newobs.west)
+  -- (obs.south);
+
+\end{tikzpicture}
+\end{document}

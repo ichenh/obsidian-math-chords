@@ -23,11 +23,6 @@
   name: "Subscript"
   group: "Structures"
 
-- keys: "D"
-  command: "__DISPLAY_MATH__"
-  name: "Display math"
-  group: "Structures"
-
 - keys: "U"
   command: "\\sum"
   name: "Sum"
@@ -51,6 +46,11 @@
 - keys: "P"
   command: "\\partial"
   name: "Partial"
+  group: "Operators"
+
+- keys: "D"
+  command: "\\mathrm{d}$$"
+  name: "Derivative"
   group: "Operators"
 
 - keys: "Shift+P"
@@ -467,6 +467,11 @@
   command: "\\nabla"
   name: "Nabla"
   group: "Operators"
+
+- keys: "Shift+B"
+  command: "\\boldsymbol{$$}"
+  name: "Bold symbol"
+  group: "Fonts"
 
 - keys: "T B"
   command: "\\mathbf{$$}"

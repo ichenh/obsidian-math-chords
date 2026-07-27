@@ -9,6 +9,47 @@ export const en = {
   inlinePreviewName: "Inline math live preview",
   inlinePreviewDesc:
     "While the caret is inside $…$, show a MathJax preview above the formula. Obsidian Live Preview already renders display math ($$…$$).",
+  tikzRenderingHeading: "TikZ rendering",
+  tikzRenderingEnabledName: "Enable TikZ rendering",
+  tikzRenderingEnabledDesc:
+    "Render TikZ diagrams in Markdown notes. Off by default.",
+  tikzLivePreviewName: "Live preview while editing",
+  tikzLivePreviewDesc:
+    "Click inside a TikZ block to open a draggable, resizable live-render window; click elsewhere to close it. Uses the selected backend and is disabled by default.",
+  tikzCodeBlockLanguageName: "TikZ code block identifier",
+  tikzCodeBlockLanguageDesc:
+    'Text written after the opening code fence. The default is "tikz". Use another value only when needed.',
+  tikzBackendName: "Rendering backend",
+  tikzBackendDesc:
+    "Built-in starts quickly and needs no TeX installation. Local TeX supports broader TikZ, installed packages, and formal TeX output, but compiles more slowly. Automatic keeps supported diagrams on WASM and uses local TeX when capability checks cannot promise faithful output or WASM fails.",
+  tikzBackendWasm: "Built-in renderer",
+  tikzBackendNative: "Local TeX installation",
+  tikzBackendAuto: "Built-in with local TeX fallback",
+  tikzDebounceName: "Live-preview delay",
+  tikzDebounceDesc:
+    "Milliseconds to wait after the latest edit before compiling. Allowed range: 50–1000.",
+  tikzNativeEnginePathName: "Local TeX installation",
+  tikzNativeEnginePathDesc:
+    "Detected automatically from the system and common installation locations. Enter an executable or distribution directory only to override detection.",
+  tikzNativeEngineAutomatic: "Automatic detection",
+  tikzNativeEngineAutomaticAction: "Use automatic detection",
+  tikzCustomFontsName: "Custom fonts",
+  tikzCustomFontsDesc:
+    "Use specific installed font families instead of automatic language-aware selection.",
+  tikzFontOverrideDesc:
+    "Optional installed font family. Leave blank to keep automatic selection for this script.",
+  tikzReloadNotice:
+    "Reload Math Chords to apply this change.",
+  tikzDiagnosticsName: "TikZ diagnostics",
+  tikzDiagnosticsDesc:
+    "Copy a compact backend report, clear the render cache, or restart the render engines.",
+  tikzDiagnosticsCopy: "Copy report",
+  tikzDiagnosticsCopied: "TikZ diagnostics copied.",
+  tikzDiagnosticsFailed: "Could not complete the TikZ diagnostic action.",
+  tikzDiagnosticsClearCache: "Clear render cache",
+  tikzDiagnosticsCacheCleared: "TikZ render cache cleared.",
+  tikzDiagnosticsRestart: "Restart render engines",
+  tikzDiagnosticsRestarted: "TikZ render engines restarted.",
   snippetTabStopsName: "Brace navigation in math",
   snippetTabStopsDesc:
     "While the caret is inside $…$ or $$…$$, jump between {…} argument fields with configurable keys. Obsidian’s built-in Alt/Ctrl+arrow placeholder jump is unchanged outside math.",
@@ -71,6 +112,11 @@ export const en = {
   templateMarkdownDesc:
     "Markdown and math are rendered in the panel. Drag the template into a note to insert its source.",
   insertTemplate: "Insert template",
+  insertTemplateNamed: "Insert template: %1",
+  favoriteTemplate: "Add to favorites",
+  unfavoriteTemplate: "Remove from favorites",
+  favoriteTemplates: "Favorites",
+  recentTemplates: "Recently used",
   templateManagementHeading: "Template management",
   templateManagementDesc:
     "Search, edit, and organize the folders and templates shown in the formula panel.",

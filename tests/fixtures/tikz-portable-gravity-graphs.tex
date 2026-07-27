@@ -1,0 +1,29 @@
+\begin{document}
+\begin{tikzpicture}[
+  scale=0.95,
+  >=stealth,
+  line cap=round,
+  line join=round,
+  every node/.style={font=\small}
+]
+  \draw[->] (0,0) -- (4.8,0);
+  \draw[->] (0,-3.2) -- (0,1.0);
+  \node at (4.98,-0.02) {$r$};
+  \node at (0,1.22) {$V_{\mathrm g}$};
+  \node at (-0.22,-0.22) {$0$};
+  \draw[thick]
+    (0.45,-3.0)
+    .. controls (0.75,-1.75) and (1.40,-0.85) .. (4.40,-0.28);
+  \node at (2.75,-1.55) {$V_{\mathrm g}=-GM/r$};
+
+  \draw[->] (6.1,0) -- (10.9,0);
+  \draw[->] (6.1,0) -- (6.1,3.4);
+  \node at (11.08,-0.02) {$r$};
+  \node at (6.1,3.62) {$g$};
+  \node at (5.88,-0.22) {$0$};
+  \draw[thick]
+    (6.60,3.0)
+    .. controls (6.90,1.30) and (7.60,0.45) .. (10.50,0.08);
+  \node at (9.05,1.30) {$g=GM/r^2$};
+\end{tikzpicture}
+\end{document}

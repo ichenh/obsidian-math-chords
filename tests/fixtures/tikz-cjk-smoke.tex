@@ -1,0 +1,36 @@
+\documentclass[tikz,border=2pt]{standalone}
+\usepackage{tikz}
+\usepackage{fontspec}
+\directlua{mathchordsfallbacks={}}
+\IfFontExistsTF{Noto Sans CJK SC}{%
+  \directlua{table.insert(mathchordsfallbacks,'Noto Sans CJK SC:mode=harf;')}%
+}{}
+\IfFontExistsTF{Noto Sans CJK TC}{%
+  \directlua{table.insert(mathchordsfallbacks,'Noto Sans CJK TC:mode=harf;')}%
+}{}
+\IfFontExistsTF{Noto Sans CJK JP}{%
+  \directlua{table.insert(mathchordsfallbacks,'Noto Sans CJK JP:mode=harf;')}%
+}{}
+\IfFontExistsTF{Noto Sans CJK KR}{%
+  \directlua{table.insert(mathchordsfallbacks,'Noto Sans CJK KR:mode=harf;')}%
+}{}
+\IfFontExistsTF{Microsoft YaHei}{%
+  \directlua{table.insert(mathchordsfallbacks,'Microsoft YaHei:mode=harf;')}%
+}{}
+\IfFontExistsTF{Microsoft JhengHei}{%
+  \directlua{table.insert(mathchordsfallbacks,'Microsoft JhengHei:mode=harf;')}%
+}{}
+\IfFontExistsTF{Yu Gothic}{%
+  \directlua{table.insert(mathchordsfallbacks,'Yu Gothic:mode=harf;')}%
+}{}
+\IfFontExistsTF{Malgun Gothic}{%
+  \directlua{table.insert(mathchordsfallbacks,'Malgun Gothic:mode=harf;')}%
+}{}
+\directlua{luaotfload.add_fallback('mathchordscjk',mathchordsfallbacks)}
+\setmainfont{Latin Modern Roman}[RawFeature={fallback=mathchordscjk}]
+\begin{document}
+\begin{tikzpicture}
+  \node (latin) at (0,0) {$\rho\neq\tau$};
+  \node at (0,-1) {中文・日本語・한국어};
+\end{tikzpicture}
+\end{document}

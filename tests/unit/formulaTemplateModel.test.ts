@@ -5,9 +5,11 @@ import {
   appendFormulaTemplateFolder,
   createFormulaTemplate,
   createFormulaTemplateFolder,
+  flattenFormulaTemplates,
   formulaTemplateLabel,
   moveFormulaTemplateNode,
   normalizeFormulaTemplateNodes,
+  recordRecentFormulaTemplate,
   removeFormulaTemplateNode,
   setAllFormulaTemplateNodesCollapsed,
   updateFormulaTemplateNode,
@@ -59,6 +61,7 @@ describe("formula template model", () => {
         name: "",
         content: "",
         collapsed: true,
+        favorite: false,
       },
     ]);
   });
@@ -161,6 +164,54 @@ describe("formula template model", () => {
       type: "template",
       content: "## Maxwell equations\n$$E=mc^2$$",
     }])).toEqual([expect.objectContaining({ name: "Maxwell equations" })]);
+  });
+
+  it("normalizes favorites and flattens templates in tree order", () => {
+    const normalized = normalizeFormulaTemplateNodes([
+      {
+        id: "root",
+        type: "template",
+        name: "Root",
+        content: "$x$",
+        favorite: true,
+      },
+      {
+        id: "folder",
+        type: "folder",
+        name: "Folder",
+        children: [
+          {
+            id: "nested",
+            type: "template",
+            name: "Nested",
+            content: "$y$",
+          },
+        ],
+      },
+    ]);
+
+    expect(
+      flattenFormulaTemplates(normalized).map((template) => [
+        template.id,
+        template.favorite,
+      ]),
+    ).toEqual([
+      ["root", true],
+      ["nested", false],
+    ]);
+  });
+
+  it("moves a used template to the front and bounds recent history", () => {
+    expect(recordRecentFormulaTemplate(["b", "a", "c"], "a", 3)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
+    expect(recordRecentFormulaTemplate(["b", "c", "d"], "a", 3)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
   });
 
   it("leaves a folder empty after its last template is deleted", () => {

@@ -14,7 +14,13 @@ import { normalizeCommand, validateMathEnvironment } from "./inputValidation";
 import { isValidKeySequence } from "./keys";
 import { t } from "./l10n/locale";
 import type ObsidianMathChordsPlugin from "./main";
-import { normalizeChordSetting, normalizeSequenceSetting } from "./settings";
+import {
+  normalizeChordSetting,
+  normalizeSequenceSetting,
+  normalizeTikzCodeBlockLanguage,
+  normalizeTikzFontName,
+  type ObsidianMathChordsSettings,
+} from "./settings";
 import { shortcutMatchesSearch } from "./shortcutPresentation";
 import {
   scheduleShortcutPreviews,
@@ -37,6 +43,15 @@ import {
   removeFormulaTemplateNode,
   updateFormulaTemplateNode,
 } from "./formulaTemplateModel";
+
+type TikzFontSettingKey = keyof Pick<
+  ObsidianMathChordsSettings,
+  | "tikzLatinFont"
+  | "tikzSimplifiedChineseFont"
+  | "tikzTraditionalChineseFont"
+  | "tikzJapaneseFont"
+  | "tikzKoreanFont"
+>;
 import {
   openFormulaTemplateEditorModal,
   openFormulaTemplateFolderModal,
@@ -54,9 +69,15 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
   }
 
   getSettingDefinitions(): SettingDefinitionItem[] {
-    const toggle = (name: string, desc: string, key: string): SettingDefinition => ({
+    const toggle = (
+      name: string,
+      desc: string,
+      key: string,
+      visible?: () => boolean,
+    ): SettingDefinition => ({
       name,
       desc,
+      visible,
       control: { type: "toggle", key },
     });
     const keyInput = (
@@ -112,6 +133,63 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       toggle(t("wrapOutsideMathName"), t("wrapOutsideMathDesc"), "wrapOutsideMath"),
       toggle(t("smartMathToggleName"), t("smartMathToggleDesc"), "smartMathToggle"),
       toggle(t("inlinePreviewName"), t("inlinePreviewDesc"), "showInlinePreview"),
+      {
+        type: "group",
+        items: [
+          {
+            name: t("tikzRenderingHeading"),
+            desc: t("tikzRenderingEnabledDesc"),
+            render: (setting) => this.configureTikzRenderingToggle(setting),
+          },
+          {
+            name: t("tikzLivePreviewName"),
+            desc: t("tikzLivePreviewDesc"),
+            visible: () => this.plugin.settings.tikzRenderingEnabled,
+            render: (setting) => this.configureTikzLivePreview(setting),
+          },
+          {
+            name: t("tikzDebounceName"),
+            desc: t("tikzDebounceDesc"),
+            visible: () =>
+              this.plugin.settings.tikzRenderingEnabled &&
+              this.plugin.settings.tikzLivePreview,
+            render: (setting) => this.configureTikzDebounce(setting),
+          },
+          {
+            name: t("tikzCodeBlockLanguageName"),
+            desc: t("tikzCodeBlockLanguageDesc"),
+            visible: () => this.plugin.settings.tikzRenderingEnabled,
+            render: (setting) => this.configureTikzLanguage(setting),
+          },
+          {
+            name: t("tikzBackendName"),
+            desc: t("tikzBackendDesc"),
+            visible: () => this.plugin.settings.tikzRenderingEnabled,
+            render: (setting) => this.configureTikzBackend(setting),
+          },
+          {
+            name: t("tikzNativeEnginePathName"),
+            desc: t("tikzNativeEnginePathDesc"),
+            visible: () =>
+              this.plugin.settings.tikzRenderingEnabled &&
+              this.plugin.settings.tikzBackend !== "wasm",
+            render: (setting) => this.configureTikzNativePath(setting),
+          },
+          {
+            name: t("tikzCustomFontsName"),
+            desc: t("tikzCustomFontsDesc"),
+            visible: () => this.plugin.settings.tikzRenderingEnabled,
+            render: (setting) => this.configureTikzCustomFontsToggle(setting),
+          },
+          ...this.tikzFontSettingDefinitions(),
+          {
+            name: t("tikzDiagnosticsName"),
+            desc: t("tikzDiagnosticsDesc"),
+            visible: () => this.plugin.settings.tikzRenderingEnabled,
+            render: (setting) => this.configureTikzDiagnostics(setting),
+          },
+        ],
+      },
       toggle(
         t("formulaPanelEnabledName"),
         t("formulaPanelEnabledDesc"),
@@ -220,6 +298,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       case "enabled":
       case "showHintPopup":
       case "showInlinePreview":
+      case "tikzRenderingEnabled":
       case "formulaPanelEnabled":
       case "mathBraceNavEnabled":
       case "wrapOutsideMath":
@@ -242,7 +321,14 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       this.plugin.refreshInteractiveState();
     }
     await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
-    if (key === "mathBraceNavEnabled") {
+    if (key === "tikzRenderingEnabled") {
+      this.plugin.syncTikzRenderingState();
+      if (!value) new Notice(t("tikzReloadNotice"));
+    }
+    if (
+      key === "mathBraceNavEnabled" ||
+      key === "tikzRenderingEnabled"
+    ) {
       const refreshDomState = (this as unknown as { refreshDomState?: () => void })
         .refreshDomState;
       refreshDomState?.call(this);
@@ -253,6 +339,256 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
     const update = (this as unknown as { update?: () => void }).update;
     if (typeof update === "function") update.call(this);
     else this.renderLegacySettings();
+  }
+
+  private configureTikzLanguage(setting: Setting): void {
+    setting
+      .setName(t("tikzCodeBlockLanguageName"))
+      .setDesc(t("tikzCodeBlockLanguageDesc"))
+      .addText((text) => {
+        text
+          .setValue(this.plugin.settings.tikzCodeBlockLanguage)
+          .onChange((value) => {
+            this.plugin.settings.tikzCodeBlockLanguage =
+              normalizeTikzCodeBlockLanguage(value);
+          });
+        text.inputEl.addEventListener("blur", () => {
+          text.setValue(this.plugin.settings.tikzCodeBlockLanguage);
+          void runWithNotice(
+            () => this.plugin.saveSettings(),
+            t("noticeCouldNotSaveSettings"),
+          );
+          new Notice(t("tikzReloadNotice"));
+        });
+      });
+  }
+
+  private configureTikzRenderingToggle(setting: Setting): void {
+    setting
+      .setName(t("tikzRenderingHeading"))
+      .setDesc(t("tikzRenderingEnabledDesc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.tikzRenderingEnabled)
+          .onChange(async (value) => {
+            this.plugin.settings.tikzRenderingEnabled = value;
+            await runWithNotice(
+              () => this.plugin.saveSettings(),
+              t("noticeCouldNotSaveSettings"),
+            );
+            this.plugin.syncTikzRenderingState();
+            if (!value) new Notice(t("tikzReloadNotice"));
+            this.refreshSettingsView();
+          }),
+      );
+  }
+
+  private configureTikzLivePreview(setting: Setting): void {
+    setting
+      .setName(t("tikzLivePreviewName"))
+      .setDesc(t("tikzLivePreviewDesc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.tikzLivePreview)
+          .onChange(async (value) => {
+            this.plugin.settings.tikzLivePreview = value;
+            await runWithNotice(
+              () => this.plugin.saveSettings(),
+              t("noticeCouldNotSaveSettings"),
+            );
+            this.plugin.refreshInteractiveState();
+            this.refreshSettingsView();
+          }),
+      );
+  }
+
+  private configureTikzDebounce(setting: Setting): void {
+    setting
+      .setName(t("tikzDebounceName"))
+      .setDesc(t("tikzDebounceDesc"))
+      .addSlider((slider) =>
+        slider
+          .setLimits(50, 1_000, 10)
+          .setDynamicTooltip()
+          .setValue(this.plugin.settings.tikzDebounceMs)
+          .onChange((value) => {
+            this.plugin.settings.tikzDebounceMs = value;
+            void runWithNotice(
+              () => this.plugin.saveSettings(),
+              t("noticeCouldNotSaveSettings"),
+            );
+          }),
+      );
+  }
+
+  private configureTikzNativePath(setting: Setting): void {
+    setting
+      .setName(t("tikzNativeEnginePathName"))
+      .setDesc(t("tikzNativeEnginePathDesc"))
+      .addText((text) => {
+        text
+          .setPlaceholder(t("tikzNativeEngineAutomatic"))
+          .setValue(this.plugin.settings.tikzNativeEnginePath)
+          .onChange((value) => {
+            this.plugin.settings.tikzNativeEnginePath = value.trim();
+          });
+        text.inputEl.addEventListener("blur", () => {
+          void runWithNotice(
+            () => this.plugin.saveSettings(),
+            t("noticeCouldNotSaveSettings"),
+          );
+          new Notice(t("tikzReloadNotice"));
+        });
+      })
+      .addExtraButton((button) =>
+        button
+          .setIcon("rotate-ccw")
+          .setTooltip(t("tikzNativeEngineAutomaticAction"))
+          .onClick(async () => {
+            this.plugin.settings.tikzNativeEnginePath = "";
+            const input = setting.controlEl.querySelector("input");
+            if (input) input.value = "";
+            await runWithNotice(
+              () => this.plugin.saveSettings(),
+              t("noticeCouldNotSaveSettings"),
+            );
+            new Notice(t("tikzReloadNotice"));
+          }),
+      );
+  }
+
+  private configureTikzCustomFontsToggle(setting: Setting): void {
+    setting
+      .setName(t("tikzCustomFontsName"))
+      .setDesc(t("tikzCustomFontsDesc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.tikzCustomFontsEnabled)
+          .onChange(async (value) => {
+            this.plugin.settings.tikzCustomFontsEnabled = value;
+            await runWithNotice(
+              async () => {
+                await this.plugin.saveSettings();
+                this.plugin.refreshTikzPreviews();
+              },
+              t("noticeCouldNotSaveSettings"),
+            );
+            this.refreshSettingsView();
+          }),
+      );
+  }
+
+  private tikzFontSettingDefinitions(): SettingDefinition[] {
+    const definitions: Array<{
+      key: TikzFontSettingKey;
+      name: string;
+      placeholder: string;
+    }> = [
+      { key: "tikzLatinFont", name: "Latin font", placeholder: "Latin Modern Roman" },
+      { key: "tikzSimplifiedChineseFont", name: "简体中文字体", placeholder: "Noto Serif CJK SC" },
+      { key: "tikzTraditionalChineseFont", name: "繁體中文字型", placeholder: "Noto Serif CJK TC" },
+      { key: "tikzJapaneseFont", name: "日本語フォント", placeholder: "Source Han Serif JP" },
+      { key: "tikzKoreanFont", name: "한국어 글꼴", placeholder: "Source Han Serif K" },
+    ];
+    return definitions.map(({ key, name, placeholder }) => ({
+      name,
+      desc: t("tikzFontOverrideDesc"),
+      visible: () =>
+        this.plugin.settings.tikzRenderingEnabled &&
+        this.plugin.settings.tikzCustomFontsEnabled,
+      render: (setting) =>
+        this.configureTikzFont(setting, key, name, placeholder),
+    }));
+  }
+
+  private configureTikzFont(
+    setting: Setting,
+    key: TikzFontSettingKey,
+    name: string,
+    placeholder: string,
+  ): void {
+    setting
+      .setName(name)
+      .setDesc(t("tikzFontOverrideDesc"))
+      .addText((text) => {
+        text
+          .setPlaceholder(placeholder)
+          .setValue(this.plugin.settings[key])
+          .onChange((value) => {
+            this.plugin.settings[key] = normalizeTikzFontName(value);
+          });
+        text.inputEl.addEventListener("blur", () => {
+          text.setValue(this.plugin.settings[key]);
+          void runWithNotice(
+            async () => {
+              await this.plugin.saveSettings();
+              this.plugin.refreshTikzPreviews();
+            },
+            t("noticeCouldNotSaveSettings"),
+          );
+        });
+      });
+  }
+
+  private configureTikzBackend(setting: Setting): void {
+    setting
+      .setName(t("tikzBackendName"))
+      .setDesc(t("tikzBackendDesc"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("wasm", t("tikzBackendWasm"))
+          .addOption("native", t("tikzBackendNative"))
+          .addOption("auto", t("tikzBackendAuto"))
+          .setValue(this.plugin.settings.tikzBackend)
+          .onChange(async (value) => {
+            this.plugin.settings.tikzBackend =
+              value === "native" || value === "auto" ? value : "wasm";
+            await runWithNotice(
+              () => this.plugin.saveSettings(),
+              t("noticeCouldNotSaveSettings"),
+            );
+            this.plugin.refreshTikzPreviews();
+            this.refreshSettingsView();
+          }),
+      );
+  }
+
+  private configureTikzDiagnostics(setting: Setting): void {
+    setting
+      .setName(t("tikzDiagnosticsName"))
+      .setDesc(t("tikzDiagnosticsDesc"))
+      .addButton((button) =>
+        button.setButtonText(t("tikzDiagnosticsCopy")).onClick(async () => {
+          await runWithNotice(async () => {
+            const report = await this.plugin.getTikzDiagnosticsReport();
+            const clipboard =
+              setting.settingEl.ownerDocument.defaultView?.navigator.clipboard;
+            if (!clipboard) throw new Error("Clipboard access is unavailable.");
+            await clipboard.writeText(report);
+            new Notice(t("tikzDiagnosticsCopied"));
+          }, t("tikzDiagnosticsFailed"));
+        }),
+      )
+      .addExtraButton((button) =>
+        button
+          .setIcon("trash-2")
+          .setTooltip(t("tikzDiagnosticsClearCache"))
+          .onClick(async () => {
+            await runWithNotice(async () => {
+              await this.plugin.clearTikzRenderCache();
+              new Notice(t("tikzDiagnosticsCacheCleared"));
+            }, t("tikzDiagnosticsFailed"));
+          }),
+      )
+      .addExtraButton((button) =>
+        button
+          .setIcon("refresh-cw")
+          .setTooltip(t("tikzDiagnosticsRestart"))
+          .onClick(() => {
+            this.plugin.restartTikzRendering();
+            new Notice(t("tikzDiagnosticsRestarted"));
+          }),
+      );
   }
 
   private configureReloadSetting(setting: Setting): void {
@@ -286,8 +622,12 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
   private renderEnvironmentManager(containerEl: HTMLElement): void {
     new Setting(containerEl)
       .setName(t("mathEnvironmentsName"))
-      .addButton((button) =>
-        button.setButtonText(t("addButton")).onClick(() => {
+      .addExtraButton((button) => {
+        button.extraSettingsEl.addClass("obsidian-math-chords-manager-add-action");
+        return button
+          .setIcon("plus")
+          .setTooltip(t("addButton"))
+          .onClick(() => {
           new MathEnvironmentEditorModal(this.app, null, (entry) => {
             if (!entry) return;
             void runWithNotice(async () => {
@@ -297,8 +637,8 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
               this.refreshSettingsView();
             }, t("noticeCouldNotSaveSettings"));
           }).open();
-        }),
-      );
+          });
+      });
 
     const envTableWrap = containerEl.createDiv({ cls: "obsidian-math-chords-table-wrap" });
     const envTable = envTableWrap.createEl("table", {
@@ -455,9 +795,12 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       this.plugin.settings.settingsCollapsedManagementSections,
     );
     let collapsed = collapsedEntries.has(id);
-    const heading = new Setting(containerEl).setName(title).setHeading();
+    const sectionEl = containerEl.createEl("section", {
+      cls: "obsidian-math-chords-manager-section",
+    });
+    const heading = new Setting(sectionEl).setName(title).setHeading();
     heading.settingEl.addClass("obsidian-math-chords-manager-header");
-    const bodyEl = containerEl.createDiv({
+    const bodyEl = sectionEl.createDiv({
       cls: "obsidian-math-chords-manager-body",
     });
     const update = (): void => {
@@ -510,11 +853,11 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         text.inputEl.setAttr("spellcheck", "false");
         text.inputEl.addClass("obsidian-math-chords-search-input");
       })
-      .addButton((button) => {
-        button.buttonEl.addClass("obsidian-math-chords-add-shortcut-button");
+      .addExtraButton((button) => {
+        button.extraSettingsEl.addClass("obsidian-math-chords-manager-add-action");
         return button
-          .setButtonText(t("addButton"))
-          .setCta()
+          .setIcon("plus")
+          .setTooltip(t("addButton"))
           .onClick(() => {
             new ShortcutEditorModal(this.app, null, (entry) => {
               if (!entry) return;
@@ -739,10 +1082,12 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         text.inputEl.setAttr("spellcheck", "false");
         text.inputEl.addClass("obsidian-math-chords-search-input");
       })
-      .addExtraButton((button) => button
-        .setIcon("folder-plus")
-        .setTooltip(t("addTemplateFolder"))
-        .onClick(() => {
+      .addExtraButton((button) => {
+        button.extraSettingsEl.addClass("obsidian-math-chords-manager-add-action");
+        return button
+          .setIcon("folder-plus")
+          .setTooltip(t("addTemplateFolder"))
+          .onClick(() => {
           openFormulaTemplateFolderModal(this.app, (name) => {
             persist(appendFormulaTemplateFolder(
               this.plugin.settings.formulaPanelTemplates,
@@ -750,11 +1095,15 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
               createFormulaTemplateFolder(name),
             ));
           });
-        }))
-      .addExtraButton((button) => button
-        .setIcon("file-plus")
-        .setTooltip(t("addTemplate"))
-        .onClick(() => createTemplate(null)));
+          });
+      })
+      .addExtraButton((button) => {
+        button.extraSettingsEl.addClass("obsidian-math-chords-manager-add-action");
+        return button
+          .setIcon("file-plus")
+          .setTooltip(t("addTemplate"))
+          .onClick(() => createTemplate(null));
+      });
     toolbar.settingEl.addClass(
       "obsidian-math-chords-shortcut-toolbar",
       "obsidian-math-chords-template-toolbar",
@@ -972,10 +1321,12 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         text: String(countTemplates(node.children)),
       });
       countEl.setAttr("aria-hidden", "true");
-      header.addExtraButton((button) => button
-        .setIcon("folder-plus")
-        .setTooltip(t("addTemplateFolder"))
-        .onClick(() => {
+      header.addExtraButton((button) => {
+        button.extraSettingsEl.addClass("obsidian-math-chords-manager-add-action");
+        return button
+          .setIcon("folder-plus")
+          .setTooltip(t("addTemplateFolder"))
+          .onClick(() => {
           openFormulaTemplateFolderModal(this.app, (name) => {
             persist(appendFormulaTemplateFolder(
               this.plugin.settings.formulaPanelTemplates,
@@ -983,11 +1334,15 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
               createFormulaTemplateFolder(name),
             ));
           });
-        }));
-      header.addExtraButton((button) => button
-        .setIcon("file-plus")
-        .setTooltip(t("addTemplate"))
-        .onClick(() => createTemplate(node.id)));
+          });
+      });
+      header.addExtraButton((button) => {
+        button.extraSettingsEl.addClass("obsidian-math-chords-manager-add-action");
+        return button
+          .setIcon("file-plus")
+          .setTooltip(t("addTemplate"))
+          .onClick(() => createTemplate(node.id));
+      });
       header.addExtraButton((button) => button
         .setIcon("pencil")
         .setTooltip(t("editTemplateFolder"))
@@ -1210,6 +1565,60 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
           await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
         }),
       );
+
+    const tikzGroupEl = containerEl.createDiv({
+      cls: "obsidian-math-chords-settings-group",
+    });
+    this.configureTikzRenderingToggle(new Setting(tikzGroupEl));
+
+    if (this.plugin.settings.tikzRenderingEnabled) {
+      const tikzNestedEl = tikzGroupEl.createDiv({
+        cls: "obsidian-math-chords-settings-nested",
+      });
+      this.configureTikzLivePreview(new Setting(tikzNestedEl));
+      if (this.plugin.settings.tikzLivePreview) {
+        this.configureTikzDebounce(new Setting(tikzNestedEl));
+      }
+      this.configureTikzLanguage(new Setting(tikzNestedEl));
+      this.configureTikzBackend(new Setting(tikzNestedEl));
+      if (this.plugin.settings.tikzBackend !== "wasm") {
+        this.configureTikzNativePath(new Setting(tikzNestedEl));
+      }
+      this.configureTikzCustomFontsToggle(new Setting(tikzNestedEl));
+      if (this.plugin.settings.tikzCustomFontsEnabled) {
+        this.configureTikzFont(
+          new Setting(tikzNestedEl),
+          "tikzLatinFont",
+          "Latin font",
+          "Latin Modern Roman",
+        );
+        this.configureTikzFont(
+          new Setting(tikzNestedEl),
+          "tikzSimplifiedChineseFont",
+          "简体中文字体",
+          "Noto Serif CJK SC",
+        );
+        this.configureTikzFont(
+          new Setting(tikzNestedEl),
+          "tikzTraditionalChineseFont",
+          "繁體中文字型",
+          "Noto Serif CJK TC",
+        );
+        this.configureTikzFont(
+          new Setting(tikzNestedEl),
+          "tikzJapaneseFont",
+          "日本語フォント",
+          "Source Han Serif JP",
+        );
+        this.configureTikzFont(
+          new Setting(tikzNestedEl),
+          "tikzKoreanFont",
+          "한국어 글꼴",
+          "Source Han Serif KR",
+        );
+      }
+      this.configureTikzDiagnostics(new Setting(tikzNestedEl));
+    }
 
     new Setting(containerEl)
       .setName(t("formulaPanelEnabledName"))

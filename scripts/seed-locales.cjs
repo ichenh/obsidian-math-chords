@@ -7,17 +7,13 @@ const {
   readInputs,
   renderBundledCodes,
   renderBundledIndex,
-  renderExtras,
-  renderLazyCodes,
   renderLocaleFile,
   validateCatalog,
 } = require("./locale-utils.cjs");
 
 const INDEX_PATH = path.join(LOCALES_DIR, "index.ts");
 const BUNDLED_CODES_PATH = path.join(ROOT, "src/l10n/bundled.ts");
-const LAZY_CODES_PATH = path.join(ROOT, "src/l10n/lazy-codes.ts");
-const EXTRAS_PATH = path.join(ROOT, "locales-extras.json");
-const { catalog, catalogCodes, lazyCodes, translationKeys } = readInputs();
+const { catalog, catalogCodes, translationKeys } = readInputs();
 const errors = validateCatalog(catalog, catalogCodes, translationKeys);
 if (errors.length > 0) throw new Error(errors.join("\n"));
 
@@ -31,13 +27,15 @@ for (const code of BUNDLED_LOCALE_CODES) {
     "utf8",
   );
 }
-fs.writeFileSync(INDEX_PATH, renderBundledIndex(), "utf8");
+fs.writeFileSync(
+  INDEX_PATH,
+  renderBundledIndex(catalog, translationKeys),
+  "utf8",
+);
 fs.writeFileSync(BUNDLED_CODES_PATH, renderBundledCodes(), "utf8");
-fs.writeFileSync(LAZY_CODES_PATH, renderLazyCodes(lazyCodes), "utf8");
-fs.writeFileSync(EXTRAS_PATH, renderExtras(catalog, lazyCodes), "utf8");
 
 console.log(
-  `Bundled ${BUNDLED_LOCALE_CODES.length} locales (+ en); generated ${lazyCodes.length} lazy locales in ${path.relative(ROOT, EXTRAS_PATH)}.`,
+  `Bundled all ${BUNDLED_LOCALE_CODES.length} catalog locales (+ en) into main.js.`,
 );
 
 function removeStaleLocaleFiles() {

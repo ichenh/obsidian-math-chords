@@ -6,7 +6,7 @@ export const FORMULA_PANEL_INSERT_MIME =
 export type FormulaPanelDragPayload =
   | { kind: "shortcut"; shortcut: Shortcut }
   | { kind: "environment"; environment: MathEnvironment }
-  | { kind: "template"; content: string };
+  | { kind: "template"; id?: string; content: string };
 
 export function encodeFormulaPanelDragPayload(
   payload: FormulaPanelDragPayload,
@@ -28,9 +28,13 @@ export function decodeFormulaPanelDragPayload(
   const record = value as Record<string, unknown>;
 
   if (record.kind === "template") {
-    return typeof record.content === "string"
-      ? { kind: "template", content: record.content }
-      : null;
+    if (typeof record.content !== "string") return null;
+    if (record.id !== undefined && typeof record.id !== "string") return null;
+    return {
+      kind: "template",
+      ...(typeof record.id === "string" ? { id: record.id } : {}),
+      content: record.content,
+    };
   }
 
   if (record.kind === "shortcut" && isRecord(record.shortcut)) {

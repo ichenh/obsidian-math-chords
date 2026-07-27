@@ -1,6 +1,6 @@
 {
   "name": "obsidian-math-chords",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "private": true,
   "description": "A math-writing toolkit with leader-key LaTeX input, safe delimiter conversion, previews, navigation, environments, and reusable Markdown templates.",
   "main": "main.js",
@@ -13,11 +13,14 @@
   },
   "homepage": "https://github.com/ichenh/obsidian-math-chords#readme",
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": ">=24.0.0 <25"
   },
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc --noEmit && node esbuild.config.mjs production",
+    "build:tikz-wasm": "node scripts/build-chord-tikz-wasm.cjs",
+    "test:tikz-wasm": "node scripts/smoke-chord-tikz-wasm.cjs",
+    "check:tikz-assets": "node scripts/check-tikz-assets.cjs",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
     "bench": "vitest bench --run",
@@ -26,7 +29,7 @@
     "check:shortcuts": "node scripts/seed-yaml.cjs --check",
     "check:locales": "node scripts/check-locales.cjs",
     "check:release": "node scripts/check-release.cjs",
-    "check": "npm run lint && npm run build && npm test && npm run check:shortcuts && npm run check:locales && npm run check:release"
+    "check": "npm run build:tikz-wasm && npm run lint && npm run build && npm test && npm run test:tikz-wasm && npm run check:tikz-assets && npm run check:shortcuts && npm run check:locales && npm run check:release"
   },
   "author": "CHEH Hua",
   "license": "MIT",

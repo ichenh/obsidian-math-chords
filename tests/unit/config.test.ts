@@ -37,6 +37,24 @@ describe("shortcut validation", () => {
     expect(new Set(sequences).size).toBe(DEFAULT_SHORTCUTS.length);
   });
 
+  it("includes the Shift+B bold-symbol shortcut", () => {
+    expect(DEFAULT_SHORTCUTS).toContainEqual({
+      keys: "Shift+B",
+      command: "\\boldsymbol{$$}",
+      name: "Bold symbol",
+      group: "Fonts",
+    });
+  });
+
+  it("uses D for an upright derivative symbol", () => {
+    expect(DEFAULT_SHORTCUTS).toContainEqual({
+      keys: "D",
+      command: "\\mathrm{d}$$",
+      name: "Derivative",
+      group: "Operators",
+    });
+  });
+
   it("rejects partially valid key sequences instead of truncating them", () => {
     expect(validateShortcut({ keys: "G Ctrl+Alt", command: "\\alpha" })).toBeNull();
   });
