@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  TIKZ_DISPLAY_SCALE,
   svgLengthToCssPixels,
   tikzPdfPixelRatio,
   tikzSvgCssScale,
@@ -22,11 +23,10 @@ describe("TikZ cross-backend display metrics", () => {
     expect(tikzSvgCssScale("100pt", 100, false)).toBeCloseTo(2);
   });
 
-  it("keeps pre-scaled TeX and WASM physically equivalent", () => {
+  it("keeps PDF-point WASM geometry equivalent to local TeX PDF", () => {
     const wasmCentimeter =
-      tikzSvgCssScale("56.692px", 37.795, true) * 37.795;
-    const texCentimeter =
-      tikzSvgCssScale("42.675pt", 28.45, true) * 28.45;
+      tikzSvgCssScale("42.520px", 28.346, true) * 28.346;
+    const texCentimeter = 28.346 * TIKZ_DISPLAY_SCALE;
     expect(wasmCentimeter).toBeCloseTo(texCentimeter, 0);
   });
 

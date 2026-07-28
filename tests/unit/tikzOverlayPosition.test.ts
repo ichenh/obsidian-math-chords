@@ -1,12 +1,41 @@
 import { describe, expect, it } from "vitest";
 import {
-  centerTikzMathInk,
+  fitTikzNodeBox,
+  placeTikzAnchoredNode,
   mapTikzOverlayPoint,
   placeTikzOverlay,
   tikzEmbeddedOverlayBounds,
 } from "../../src/tikz/overlayPosition";
 
 describe("TikZ MathJax overlay positioning", () => {
+  it("expands node backgrounds to the measured overlay without shrinking minima", () => {
+    expect(
+      fitTikzNodeBox(
+        { x: 100, y: 50 },
+        { width: 120, height: 40 },
+        { width: 110, height: 72 },
+      ),
+    ).toEqual({ x: 40, y: 14, width: 120, height: 72 });
+  });
+
+  it("reapplies cardinal and diagonal node anchors after actual measurement", () => {
+    expect(
+      placeTikzAnchoredNode(
+        { left: 100, top: 50 },
+        "north-east",
+        80,
+        40,
+      ),
+    ).toEqual({ left: 60, top: 70 });
+    expect(
+      placeTikzAnchoredNode(
+        { left: 100, top: 50 },
+        "west",
+        80,
+        40,
+      ),
+    ).toEqual({ left: 140, top: 50 });
+  });
   it("uses the vector anchor coordinates instead of half the label width", () => {
     expect(
       mapTikzOverlayPoint(
@@ -31,16 +60,7 @@ describe("TikZ MathJax overlay positioning", () => {
     ).toEqual({ left: 95, top: 70 });
   });
 
-  it("centers the rendered MathJax ink instead of its asymmetric line box", () => {
-    expect(
-      centerTikzMathInk(
-        { left: 100, top: 40, width: 50, height: 30 },
-        { left: 108, top: 43, width: 36, height: 20 },
-      ),
-    ).toEqual({ x: -1, y: 2 });
-  });
-
-  it("places a right node from the actual rendered formula width", () => {
+  it("places a right node from the complete rendered node box", () => {
     expect(
       placeTikzOverlay(
         { left: 100, top: 80 },

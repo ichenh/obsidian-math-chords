@@ -1,6 +1,6 @@
 {
   "name": "obsidian-math-chords",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "private": true,
   "description": "A math-writing toolkit with leader-key LaTeX input, safe delimiter conversion, previews, navigation, environments, and reusable Markdown templates.",
   "main": "main.js",
@@ -42,6 +42,7 @@
     "eslint": "^9.39.4",
     "eslint-plugin-obsidianmd": "^0.4.0",
     "globals": "^17.6.0",
+    "hyphenated": "^1.2.0",
     "jiti": "^2.6.1",
     "obsidian": "^1.13.0",
     "typescript": "^5.4.0",

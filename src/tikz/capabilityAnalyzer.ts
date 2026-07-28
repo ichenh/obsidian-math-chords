@@ -72,11 +72,8 @@ export function analyzeTikzCapabilities(source: string): TikzCapabilityAnalysis 
     if (
       options.some(
         (option) =>
-          !option.startsWith("fill=") &&
-          !option.startsWith("inner sep=") &&
-          !option.startsWith("xshift=") &&
-          !option.startsWith("yshift=") &&
-          !SUPPORTED_NODE_FONT_RE.test(option) &&
+          !isSupportedNodeStyleOption(option) &&
+          !isSupportedNodeShift(option) &&
           !supportedNodeStyles.has(option) &&
           ![
             "above",
@@ -91,7 +88,6 @@ export function analyzeTikzCapabilities(source: string): TikzCapabilityAnalysis 
             "left below",
             "below right",
             "right below",
-            "align=center",
           ].includes(option),
       )
     ) {
@@ -128,10 +124,9 @@ function hasUnsupportedPictureOptions(
           option,
         ) ||
         /^scale\s*=\s*(?:\d+(?:\.\d*)?|\.\d+)$/.test(option) ||
-        /^>=\s*(?:stealth|latex)$/.test(option) ||
-        /^every\s+node\s*\/\.style\s*=\s*\{\s*font\s*=\s*\\(?:tiny|scriptsize|small|normalsize|large|Large)\s*\}$/.test(
-          option,
-        ) ||
+        /^>=\s*stealth$/.test(option) ||
+        /^[xy]\s*=\s*1(?:\.0+)?cm$/.test(option) ||
+        isSupportedEveryNodeStyle(option) ||
         [...supportedStyles].some((name) =>
           option.startsWith(`${name}/.style=`),
         )
@@ -183,7 +178,7 @@ function hasUnsupportedCustomStyles(
   supportedStyles: ReadonlySet<string>,
 ): boolean {
   let remaining = source.replace(
-    /every\s+node\s*\/\.style\s*=\s*\{\s*font\s*=\s*\\(?:tiny|scriptsize|small|normalsize|large|Large)\s*\}/g,
+    /every\s+node\s*\/\.style\s*=\s*\{[^{}]*\}/g,
     "",
   );
   for (const name of supportedStyles) {
@@ -206,20 +201,45 @@ function supportedBasicNodeStyles(source: string): Set<string> {
       .filter(Boolean);
     if (
       options.length > 0 &&
-      options.every(
-        (option) =>
-          option === "draw" ||
-          option === "rounded corners" ||
-          option === "align=center" ||
-          /^minimum (?:width|height)\s*=\s*[0-9.+-]+(?:cm|mm|pt|in)?$/.test(
-            option,
-          ),
-      )
+      options.every(isSupportedNodeStyleOption)
     ) {
       result.add(match[1]);
     }
   }
   return result;
+}
+
+function isSupportedEveryNodeStyle(option: string): boolean {
+  const match = option.match(
+    /^every\s+node\s*\/\.style\s*=\s*\{([\s\S]*)\}$/,
+  );
+  return (
+    match !== null &&
+    splitTopLevel(match[1], ",")
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .every(isSupportedNodeStyleOption)
+  );
+}
+
+function isSupportedNodeStyleOption(option: string): boolean {
+  return (
+    option === "draw" ||
+    option === "rounded corners" ||
+    /^(?:rounded corners|minimum width|minimum height|text width|inner sep|inner xsep|inner ysep|outer sep)\s*=\s*[0-9.+-]+(?:cm|mm|pt|in)?$/.test(
+      option,
+    ) ||
+    /^align\s*=\s*(?:center|left)$/.test(option) ||
+    /^anchor\s*=\s*(?:center|north|south|east|west|north east|north west|south east|south west)$/.test(
+      option,
+    ) ||
+    /^rotate\s*=\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(option) ||
+    (
+      option.startsWith("fill=") &&
+      isSupportedVectorColor(option.slice("fill=".length))
+    ) ||
+    SUPPORTED_NODE_FONT_RE.test(option)
+  );
 }
 
 function supportedBasicPathStyles(source: string): Set<string> {
@@ -307,10 +327,37 @@ function hasUnsupportedParametricPlots(source: string): boolean {
     plots++;
     const optionsEnd = source.indexOf("]", start + 5);
     if (optionsEnd < 0) return true;
-    const options = optionMap(source.slice(start + 5, optionsEnd));
+    const optionSource = source.slice(start + 5, optionsEnd);
+    const rawOptions = splitTopLevel(optionSource, ",")
+      .map((option) => option.trim())
+      .filter(Boolean);
+    const options = optionMap(optionSource);
+    cursor = skipWhitespace(source, optionsEnd + 1);
+    if (source.startsWith("coordinates", cursor)) {
+      if (
+        !splitTopLevel(optionSource, ",").every(
+          (option) => option.trim() === "smooth",
+        )
+      ) {
+        return true;
+      }
+      cursor = skipWhitespace(source, cursor + "coordinates".length);
+      const coordinates = takeBalancedDelimited(source, cursor, "{", "}");
+      if (!coordinates || !isBoundedCoordinatePlot(coordinates.content)) {
+        return true;
+      }
+      cursor = coordinates.end;
+      continue;
+    }
     const domain = options.get("domain")?.split(":");
     const samples = Number.parseInt(options.get("samples") ?? "25", 10);
     if (
+      rawOptions.some((option) => {
+        const separator = option.indexOf("=");
+        if (separator < 0) return true;
+        const name = option.slice(0, separator).trim();
+        return name !== "domain" && name !== "samples";
+      }) ||
       domain?.length !== 2 ||
       !domain.every(isSimpleNumericExpression) ||
       !Number.isInteger(samples) ||
@@ -319,7 +366,6 @@ function hasUnsupportedParametricPlots(source: string): boolean {
     ) {
       return true;
     }
-    cursor = skipWhitespace(source, optionsEnd + 1);
     const coordinate = takeBalancedDelimited(source, cursor, "(", ")");
     if (!coordinate || !isSimpleExpressionCoordinate(coordinate.content)) {
       return true;
@@ -327,6 +373,25 @@ function hasUnsupportedParametricPlots(source: string): boolean {
     cursor = coordinate.end;
   }
   return plots === 0 && /\bplot\s*\[/.test(source);
+}
+
+function isSupportedNodeShift(option: string): boolean {
+  return /^(?:xshift|yshift)\s*=\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:cm|mm|pt|in)?$/.test(
+    option,
+  );
+}
+
+function isBoundedCoordinatePlot(source: string): boolean {
+  const matches = [...source.matchAll(/\(([^()]*)\)/g)];
+  if (matches.length < 2 || matches.length > 512) return false;
+  if (source.replace(/\([^()]*\)/g, "").trim()) return false;
+  return matches.every((match) => {
+    const values = splitTopLevel(match[1], ",");
+    return (
+      values.length === 2 &&
+      values.every((value) => isSimpleNumericExpression(value.trim()))
+    );
+  });
 }
 
 function hasUnsupportedCoordinateExpressions(source: string): boolean {

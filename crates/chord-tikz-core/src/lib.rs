@@ -6,8 +6,11 @@ mod preprocess;
 
 use preprocess::{evaluate_numeric_expression, preprocess};
 
-const UNIT: f64 = 37.795_275_590_6;
-const TEX_POINT: f64 = 96.0 / 72.27;
+// Match the PDF coordinate system used by the local TeX backend. TeX points
+// are converted to PDF big points by dvipdfmx before PDF.js applies the shared
+// display scale.
+const UNIT: f64 = 72.0 / 2.54;
+const TEX_POINT: f64 = 72.0 / 72.27;
 const DISPLAY_SCALE: f64 = 1.5;
 const MAX_SOURCE_BYTES: usize = 64 * 1024;
 const MAX_OUTPUT_BYTES: usize = 2 * 1024 * 1024;
@@ -132,8 +135,6 @@ struct Style {
 struct PictureStyle {
     round_cap: bool,
     round_join: bool,
-    node_font_size: f64,
-    node_inner_sep: f64,
     coordinate_scale: f64,
     stroke_width: f64,
 }
@@ -145,26 +146,149 @@ struct NodeGeometry {
     height: f64,
 }
 
-#[derive(Clone, Copy, Default)]
-struct NodeBoxStyle {
+#[derive(Clone, Copy, Default, PartialEq)]
+enum NodeAlign {
+    #[default]
+    Center,
+    Left,
+}
+
+#[derive(Clone, Copy)]
+enum NodeAnchor {
+    Center,
+    North,
+    South,
+    East,
+    West,
+    NorthEast,
+    NorthWest,
+    SouthEast,
+    SouthWest,
+}
+
+#[derive(Clone)]
+struct NodeStyle {
     draw: bool,
-    rounded: bool,
+    rounded_radius: f64,
+    fill: Option<(String, f64)>,
     minimum_width: f64,
     minimum_height: f64,
+    text_width: Option<f64>,
+    inner_xsep: f64,
+    inner_ysep: f64,
+    outer_sep: f64,
+    font_size: f64,
+    bold: bool,
+    italic: bool,
+    align: NodeAlign,
+    anchor: NodeAnchor,
+    rotate: f64,
+}
+
+impl Default for NodeStyle {
+    fn default() -> Self {
+        let font_size = 10.0 * TEX_POINT;
+        Self {
+            draw: false,
+            rounded_radius: 0.0,
+            fill: None,
+            minimum_width: 0.0,
+            minimum_height: 0.0,
+            text_width: None,
+            inner_xsep: font_size / 3.0,
+            inner_ysep: font_size / 3.0,
+            outer_sep: 0.5 * TEX_POINT,
+            font_size,
+            bold: false,
+            italic: false,
+            align: NodeAlign::Center,
+            anchor: NodeAnchor::Center,
+            rotate: 0.0,
+        }
+    }
+}
+
+#[derive(Clone, Default)]
+struct NodeStylePatch {
+    draw: bool,
+    rounded_radius: Option<f64>,
+    fill: Option<(String, f64)>,
+    minimum_width: Option<f64>,
+    minimum_height: Option<f64>,
+    text_width: Option<f64>,
+    inner_xsep: Option<f64>,
+    inner_ysep: Option<f64>,
+    outer_sep: Option<f64>,
+    font_size: Option<f64>,
+    bold: Option<bool>,
+    italic: Option<bool>,
+    align: Option<NodeAlign>,
+    anchor: Option<NodeAnchor>,
+    rotate: Option<f64>,
+}
+
+impl NodeStyle {
+    fn apply(&mut self, patch: &NodeStylePatch) {
+        self.draw |= patch.draw;
+        if let Some(value) = patch.rounded_radius {
+            self.rounded_radius = value;
+        }
+        if let Some(value) = &patch.fill {
+            self.fill = Some(value.clone());
+        }
+        if let Some(value) = patch.minimum_width {
+            self.minimum_width = value;
+        }
+        if let Some(value) = patch.minimum_height {
+            self.minimum_height = value;
+        }
+        if let Some(value) = patch.text_width {
+            self.text_width = Some(value);
+        }
+        if let Some(value) = patch.inner_xsep {
+            self.inner_xsep = value;
+        }
+        if let Some(value) = patch.inner_ysep {
+            self.inner_ysep = value;
+        }
+        if let Some(value) = patch.outer_sep {
+            self.outer_sep = value;
+        }
+        if let Some(value) = patch.font_size {
+            self.font_size = value;
+        }
+        if let Some(value) = patch.bold {
+            self.bold = value;
+        }
+        if let Some(value) = patch.italic {
+            self.italic = value;
+        }
+        if let Some(value) = patch.align {
+            self.align = value;
+        }
+        if let Some(value) = patch.anchor {
+            self.anchor = value;
+        }
+        if let Some(value) = patch.rotate {
+            self.rotate = value;
+        }
+    }
 }
 
 fn render_svg(source: &str) -> Result<String, String> {
     let cleaned = strip_comments(source);
     let expanded = preprocess(&cleaned)?;
-    let picture_style = parse_picture_style(tikz_picture_options(&expanded));
-    let node_styles = parse_named_node_styles(tikz_picture_options(&expanded));
-    let path_styles = parse_named_path_styles(tikz_picture_options(&expanded));
+    let picture_options = tikz_picture_options(&expanded);
+    let picture_style = parse_picture_style(picture_options);
+    let base_node_style = parse_every_node_style(picture_options);
+    let node_styles = parse_named_node_styles(picture_options);
+    let path_styles = parse_named_path_styles(picture_options);
+    validate_picture_options(picture_options, &path_styles)?;
     let body = tikz_body(&expanded);
     let commands = split_commands(body);
     let mut elements = String::new();
     let mut bounds = Bounds::empty();
     let mut rendered_commands = 0usize;
-    let mut uses_arrow = false;
     let mut named_nodes = BTreeMap::new();
 
     for command in commands {
@@ -188,7 +312,6 @@ fn render_svg(source: &str) -> Result<String, String> {
             };
             let (options, path) = take_options(rest.trim())?;
             let style = parse_style(options, kind, &picture_style, &path_styles)?;
-            uses_arrow |= style.arrow_start || style.arrow_end;
             render_path(
                 path.trim(),
                 &style,
@@ -204,6 +327,7 @@ fn render_svg(source: &str) -> Result<String, String> {
             render_node(
                 rest.trim(),
                 &picture_style,
+                &base_node_style,
                 &node_styles,
                 &mut named_nodes,
                 &mut elements,
@@ -234,11 +358,6 @@ fn render_svg(source: &str) -> Result<String, String> {
         "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{display_width:.3}\" height=\"{display_height:.3}\" data-chord-display-scale=\"{DISPLAY_SCALE}\" viewBox=\"{min_x:.3} {min_y:.3} {width:.3} {height:.3}\" role=\"img\">"
     )
     .map_err(|_| "Could not create SVG output.".to_owned())?;
-    if uses_arrow {
-        svg.push_str(
-            "<defs><marker id=\"chord-arrow\" viewBox=\"0 -5 10 10\" refX=\"9.4\" refY=\"0\" markerWidth=\"5.8\" markerHeight=\"5.8\" orient=\"auto-start-reverse\"><path d=\"M 10 0 L 0 4.2 L 2.6 0 L 0 -4.2 Z\" fill=\"currentColor\" style=\"fill:context-stroke\" stroke=\"none\"/></marker></defs>",
-        );
-    }
     svg.push_str("<g data-chord-tikz-content=\"true\">");
     svg.push_str(&elements);
     svg.push_str("</g></svg>");
@@ -388,6 +507,15 @@ fn render_path(
             style_attributes(style),
         )
         .map_err(|_| "Could not create SVG cubic curve.".to_owned())?;
+        render_arrowheads(
+            points[0],
+            points[1],
+            points[points.len() - 2],
+            *points.last().unwrap_or(&points[0]),
+            style,
+            output,
+            bounds,
+        )?;
         return Ok(());
     }
     if points.len() < 2 {
@@ -412,6 +540,15 @@ fn render_path(
         style_attributes(style)
     )
     .map_err(|_| "Could not create SVG path.".to_owned())?;
+    render_arrowheads(
+        points[0],
+        points[1],
+        points[points.len() - 2],
+        *points.last().unwrap_or(&points[0]),
+        style,
+        output,
+        bounds,
+    )?;
     Ok(())
 }
 
@@ -432,6 +569,17 @@ fn render_plot_path(
         .map(|relative| options_start + relative)
         .ok_or_else(|| "TikZ plot options are missing ']'.".to_owned())?;
     let options = &path[options_start..options_end];
+    let after_options = path[options_end + 1..].trim_start();
+    if let Some(coordinates) = after_options.strip_prefix("coordinates") {
+        return render_smooth_coordinate_plot(
+            options,
+            coordinates.trim_start(),
+            style,
+            coordinate_scale,
+            output,
+            bounds,
+        );
+    }
     let domain = option_value(options, "domain")
         .ok_or_else(|| "A lightweight TikZ plot needs a domain.".to_owned())?;
     let (domain_start, domain_end) = domain
@@ -439,12 +587,25 @@ fn render_plot_path(
         .ok_or_else(|| "A TikZ plot domain needs start:end.".to_owned())?;
     let domain_start = evaluate_numeric_expression(domain_start.trim())?;
     let domain_end = evaluate_numeric_expression(domain_end.trim())?;
+    for option in split_top_level_commas(options) {
+        let name = option
+            .split_once('=')
+            .map(|(name, _)| name.trim())
+            .ok_or_else(|| format!("Invalid TikZ plot option: {option}"))?;
+        if !matches!(name, "domain" | "samples") {
+            return Err(format!(
+                "This fast WASM core does not support the plot option yet: {name}"
+            ));
+        }
+    }
     let samples = option_value(options, "samples")
         .map(|value| value.trim().parse::<usize>())
         .transpose()
         .map_err(|_| "TikZ plot samples must be an integer.".to_owned())?
-        .unwrap_or(25)
-        .clamp(2, 256);
+        .unwrap_or(25);
+    if !(2..=256).contains(&samples) {
+        return Err("TikZ plot samples must be between 2 and 256.".to_owned());
+    }
 
     let coordinate_source = path[options_end + 1..].trim_start();
     let coordinate_start = coordinate_source
@@ -499,7 +660,119 @@ fn render_plot_path(
         style_attributes(style)
     )
     .map_err(|_| "Could not create SVG plot.".to_owned())?;
+    if points.len() >= 2 {
+        render_arrowheads(
+            points[0],
+            points[1],
+            points[points.len() - 2],
+            *points.last().unwrap_or(&points[0]),
+            style,
+            output,
+            bounds,
+        )?;
+    }
     Ok(())
+}
+
+fn render_smooth_coordinate_plot(
+    options: &str,
+    source: &str,
+    style: &Style,
+    coordinate_scale: f64,
+    output: &mut String,
+    bounds: &mut Bounds,
+) -> Result<(), String> {
+    let supported = split_top_level_commas(options)
+        .iter()
+        .all(|option| matches!(option.trim(), "" | "smooth"));
+    if !supported {
+        return Err(format!(
+            "This fast WASM core only supports the smooth coordinate plot option: {options}"
+        ));
+    }
+    let (coordinates, _) = take_braced(source)?;
+    let points = parse_coordinates(coordinates)?
+        .into_iter()
+        .map(|point| Point {
+            x: point.x * coordinate_scale,
+            y: point.y * coordinate_scale,
+        })
+        .collect::<Vec<_>>();
+    if points.len() < 2 || points.len() > 512 {
+        return Err("A smooth coordinate plot needs between 2 and 512 points.".to_owned());
+    }
+
+    // PGF's default plot tension is 0.5 * 0.2775 = 0.13875.
+    // Its open smooth handler pins the first and final outer controls to
+    // the endpoints and uses the adjacent-point difference at interiors.
+    const PGF_DEFAULT_PLOT_TENSION: f64 = 0.13875;
+    let mut data = format!("M {:.3},{:.3}", points[0].x, -points[0].y);
+    let mut first_control2 = points[1];
+    let mut last_control1 = points[points.len() - 2];
+    for index in 0..points.len() - 1 {
+        let p1 = points[index];
+        let p2 = points[index + 1];
+        let control1 = if index == 0 {
+            p1
+        } else {
+            Point {
+                x: p1.x
+                    + PGF_DEFAULT_PLOT_TENSION
+                        * (p2.x - points[index - 1].x),
+                y: p1.y
+                    + PGF_DEFAULT_PLOT_TENSION
+                        * (p2.y - points[index - 1].y),
+            }
+        };
+        let control2 = if index + 1 == points.len() - 1 {
+            p2
+        } else {
+            Point {
+                x: p2.x
+                    - PGF_DEFAULT_PLOT_TENSION
+                        * (points[index + 2].x - p1.x),
+                y: p2.y
+                    - PGF_DEFAULT_PLOT_TENSION
+                        * (points[index + 2].y - p1.y),
+            }
+        };
+        if index == 0 {
+            first_control2 = control2;
+        }
+        last_control1 = control1;
+        for point in [p1, control1, control2, p2] {
+            bounds.include(Point {
+                x: point.x,
+                y: -point.y,
+            });
+        }
+        write!(
+            data,
+            " C {:.3},{:.3} {:.3},{:.3} {:.3},{:.3}",
+            control1.x,
+            -control1.y,
+            control2.x,
+            -control2.y,
+            p2.x,
+            -p2.y,
+        )
+        .map_err(|_| "Could not create smooth coordinate plot data.".to_owned())?;
+    }
+    write!(
+        output,
+        "<path d=\"{data}\" {}/>",
+        style_attributes(style),
+    )
+    .map_err(|_| "Could not create smooth coordinate plot.".to_owned())?;
+    render_arrowheads(
+        points[0],
+        first_control2,
+        last_control1,
+        *points.last().unwrap_or(&points[0]),
+        style,
+        output,
+        bounds,
+    )
 }
 
 fn evaluate_plot_expression(source: &str, variable: &str) -> Result<f64, String> {
@@ -515,7 +788,8 @@ fn evaluate_plot_expression(source: &str, variable: &str) -> Result<f64, String>
 fn render_node(
     rest: &str,
     picture_style: &PictureStyle,
-    named_styles: &BTreeMap<String, NodeBoxStyle>,
+    base_style: &NodeStyle,
+    named_styles: &BTreeMap<String, NodeStylePatch>,
     named_nodes: &mut BTreeMap<String, NodeGeometry>,
     output: &mut String,
     bounds: &mut Bounds,
@@ -553,66 +827,82 @@ fn render_node(
     let is_math = math_source.is_some();
     let text = latex_text_to_unicode(text);
     let text_lines = text.split('\n').collect::<Vec<_>>();
-    let font_size = node_font_size(options, picture_style.node_font_size);
-    let estimated_width = (text_lines
-        .iter()
-        .map(|line| visible_character_count(line))
-        .max()
-        .unwrap_or(1) as f64
-        * font_size
-        * 0.58)
-        .max(font_size * 0.6);
-    let half_height = font_size * 0.62 * text_lines.len().max(1) as f64;
-    let node_padding = parse_node_padding(
-        options,
-        picture_style.node_inner_sep,
-    );
-    let box_style = resolved_node_box_style(options, named_styles);
-    let width = (estimated_width + 2.0 * node_padding)
-        .max(box_style.minimum_width * picture_style.coordinate_scale);
-    let height = (2.0 * (half_height + node_padding))
-        .max(box_style.minimum_height * picture_style.coordinate_scale);
+    let node_style = resolve_node_style(options, base_style, named_styles)?;
+    let font_size = node_style.font_size;
+    let (estimated_width, line_count) =
+        estimate_node_text(&text, node_style.text_width, font_size, node_style.bold);
+    let box_width = (estimated_width + 2.0 * node_style.inner_xsep)
+        .max(node_style.minimum_width);
+    let box_height = (font_size * 1.2 * line_count as f64 + 2.0 * node_style.inner_ysep)
+        .max(node_style.minimum_height);
+    let radians = node_style.rotate.to_radians();
+    let visual_width =
+        box_width * radians.cos().abs() + box_height * radians.sin().abs();
+    let visual_height =
+        box_width * radians.sin().abs() + box_height * radians.cos().abs();
     apply_node_position(
         options,
         &mut point,
-        width / 2.0,
-        height / 2.0,
+        visual_width / 2.0,
+        visual_height / 2.0,
+    )?;
+    let anchor_reference = point;
+    apply_explicit_node_anchor(
+        &mut point,
+        node_style.anchor,
+        visual_width,
+        visual_height,
     );
     let placement = node_placement(options);
     let anchor_point = placement.map(|placement| {
         node_anchor_point(
             point,
             placement,
-            width / 2.0,
-            height / 2.0,
+            visual_width / 2.0,
+            visual_height / 2.0,
         )
     });
     bounds.include(Point {
-        x: point.x - width / 2.0,
-        y: -point.y - height / 2.0,
+        x: point.x - visual_width / 2.0,
+        y: -point.y - visual_height / 2.0,
     });
     bounds.include(Point {
-        x: point.x + width / 2.0,
-        y: -point.y + height / 2.0,
+        x: point.x + visual_width / 2.0,
+        y: -point.y + visual_height / 2.0,
     });
-    if box_style.draw {
+    let rotation_attribute = if node_style.rotate.abs() > f64::EPSILON {
+        format!(
+            " transform=\"rotate({:.3} {:.3} {:.3})\"",
+            -node_style.rotate,
+            point.x,
+            -point.y,
+        )
+    } else {
+        String::new()
+    };
+    if node_style.draw || node_style.fill.is_some() {
+        let (fill, fill_opacity) = node_style
+            .fill
+            .as_ref()
+            .map(|(color, opacity)| (color.as_str(), *opacity))
+            .unwrap_or(("none", 1.0));
         write!(
             output,
-            "<rect x=\"{:.3}\" y=\"{:.3}\" width=\"{width:.3}\" height=\"{height:.3}\"{} fill=\"var(--background-primary)\" stroke=\"currentColor\" stroke-width=\"{:.3}\"/>",
-            point.x - width / 2.0,
-            -point.y - height / 2.0,
-            if box_style.rounded { " rx=\"4\" ry=\"4\"" } else { "" },
-            0.4 * TEX_POINT,
+            "<rect data-chord-node-background=\"true\" x=\"{:.3}\" y=\"{:.3}\" width=\"{box_width:.3}\" height=\"{box_height:.3}\"{}{rotation_attribute} fill=\"{fill}\" fill-opacity=\"{fill_opacity:.3}\" stroke=\"{}\" stroke-width=\"{:.3}\"/>",
+            point.x - box_width / 2.0,
+            -point.y - box_height / 2.0,
+            if node_style.rounded_radius > 0.0 {
+                format!(
+                    " rx=\"{:.3}\" ry=\"{:.3}\"",
+                    node_style.rounded_radius, node_style.rounded_radius
+                )
+            } else {
+                String::new()
+            },
+            if node_style.draw { "currentColor" } else { "none" },
+            picture_style.stroke_width,
         )
         .map_err(|_| "Could not create SVG node box.".to_owned())?;
-    } else if node_has_background(options) {
-        write!(
-            output,
-            "<rect data-chord-node-background=\"true\" x=\"{:.3}\" y=\"{:.3}\" width=\"{width:.3}\" height=\"{height:.3}\" fill=\"var(--background-primary)\" stroke=\"none\"/>",
-            point.x - width / 2.0,
-            -point.y - height / 2.0,
-        )
-        .map_err(|_| "Could not create SVG node background.".to_owned())?;
     }
     let label_attribute = if let Some(source) = math_source {
         format!(" data-chord-math=\"{}\"", escape_xml(source))
@@ -623,24 +913,46 @@ fn render_node(
         .zip(anchor_point)
         .map(|(placement, anchor)| {
             format!(
-                " data-chord-placement=\"{placement}\" data-chord-anchor-x=\"{:.3}\" data-chord-anchor-y=\"{:.3}\" data-chord-gap=\"{node_padding:.3}\"",
+                " data-chord-placement=\"{placement}\" data-chord-anchor-x=\"{:.3}\" data-chord-anchor-y=\"{:.3}\" data-chord-gap=\"{:.3}\"",
                 anchor.x,
                 -anchor.y,
+                node_style.outer_sep,
             )
         })
         .unwrap_or_default();
-    let background_attribute = if node_has_background(options) {
-        format!(
-            " data-chord-background=\"true\" data-chord-padding=\"{node_padding:.3}\""
-        )
-    } else {
-        String::new()
-    };
+    let layout_attributes = format!(
+        " data-chord-padding-x=\"{:.3}\" data-chord-padding-y=\"{:.3}\" data-chord-min-width=\"{:.3}\" data-chord-min-height=\"{:.3}\" data-chord-align=\"{}\" data-chord-node-anchor=\"{}\" data-chord-reference-x=\"{:.3}\" data-chord-reference-y=\"{:.3}\"{}{}{}",
+        node_style.inner_xsep,
+        node_style.inner_ysep,
+        node_style.minimum_width,
+        node_style.minimum_height,
+        if node_style.align == NodeAlign::Left { "left" } else { "center" },
+        node_anchor_name(node_style.anchor),
+        anchor_reference.x,
+        -anchor_reference.y,
+        node_style
+            .text_width
+            .map(|value| format!(" data-chord-text-width=\"{value:.3}\""))
+            .unwrap_or_default(),
+        if node_style.fill.is_some() {
+            format!(
+                " data-chord-background=\"true\" data-chord-padding=\"{:.3}\"",
+                node_style.inner_xsep
+            )
+        } else {
+            String::new()
+        },
+        if node_style.rotate.abs() > f64::EPSILON {
+            format!(" data-chord-rotate=\"{:.3}\"", node_style.rotate)
+        } else {
+            String::new()
+        },
+    );
     let label_anchor = format!(
-        "{label_attribute} data-chord-x=\"{:.3}\" data-chord-y=\"{:.3}\" data-chord-font-size=\"{font_size:.3}\" data-chord-width=\"{width:.3}\"{}{placement_attribute}{background_attribute}",
+        "{label_attribute} data-chord-x=\"{:.3}\" data-chord-y=\"{:.3}\" data-chord-font-size=\"{font_size:.3}\" data-chord-width=\"{box_width:.3}\"{}{placement_attribute}{layout_attributes}",
         point.x,
         -point.y,
-        if options.contains("\\bfseries")
+        if node_style.bold
         {
             " data-chord-font-weight=\"700\""
         } else {
@@ -649,11 +961,11 @@ fn render_node(
     );
     write!(
         output,
-        "<text x=\"{:.3}\" y=\"{:.3}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"currentColor\" font-family=\"STIX Two Math, Cambria Math, Times New Roman, serif\" font-size=\"{:.3}\"{}{}>",
+        "<text x=\"{:.3}\" y=\"{:.3}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"currentColor\" font-family=\"STIX Two Math, Cambria Math, Times New Roman, serif\" font-size=\"{:.3}\"{}{rotation_attribute}{}>",
         point.x,
         -point.y,
         font_size,
-        if is_math { " font-style=\"italic\"" } else { "" },
+        if is_math || node_style.italic { " font-style=\"italic\"" } else { "" },
         label_anchor,
     )
     .map_err(|_| "Could not create SVG text.".to_owned())?;
@@ -681,8 +993,8 @@ fn render_node(
             name.to_owned(),
             NodeGeometry {
                 center: point,
-                width,
-                height,
+                width: visual_width + 2.0 * node_style.outer_sep,
+                height: visual_height + 2.0 * node_style.outer_sep,
             },
         );
     }
@@ -694,7 +1006,7 @@ fn apply_node_position(
     point: &mut Point,
     half_width: f64,
     half_height: f64,
-) {
+) -> Result<(), String> {
     let mut x_shift = 0.0;
     let mut y_shift = 0.0;
     for option in options.split(',').map(str::trim) {
@@ -719,21 +1031,18 @@ fn apply_node_position(
                 point.x += half_width;
                 point.y -= half_height;
             }
-            value if value.starts_with("xshift=") => {
-                if let Ok(shift) = parse_length(&value["xshift=".len()..]) {
-                    x_shift += shift;
-                }
+            value if assignment_value(value, "xshift").is_some() => {
+                x_shift += parse_length(assignment_value(value, "xshift").unwrap_or_default())?;
             }
-            value if value.starts_with("yshift=") => {
-                if let Ok(shift) = parse_length(&value["yshift=".len()..]) {
-                    y_shift += shift;
-                }
+            value if assignment_value(value, "yshift").is_some() => {
+                y_shift += parse_length(assignment_value(value, "yshift").unwrap_or_default())?;
             }
             _ => {}
         }
     }
     point.x += x_shift;
     point.y += y_shift;
+    Ok(())
 }
 
 fn node_placement(options: &str) -> Option<&'static str> {
@@ -983,7 +1292,12 @@ fn parse_length(raw: &str) -> Result<f64, String> {
         .and_then(|value| value.strip_suffix('}'))
         .unwrap_or(raw.trim())
         .trim();
-    let units = [("cm", UNIT), ("mm", UNIT / 10.0), ("pt", 96.0 / 72.27), ("in", 96.0)];
+    let units = [
+        ("cm", UNIT),
+        ("mm", UNIT / 10.0),
+        ("pt", TEX_POINT),
+        ("in", 72.0),
+    ];
     for (suffix, scale) in units {
         if let Some(number) = value.strip_suffix(suffix) {
             return number
@@ -1046,7 +1360,128 @@ fn render_arc(
         -end.y,
         style_attributes(style),
     )
-    .map_err(|_| "Could not create SVG arc.".to_owned())
+    .map_err(|_| "Could not create SVG arc.".to_owned())?;
+    let tangent_sign = delta.signum();
+    let start_tangent = Point {
+        x: -start_radians.sin() * tangent_sign,
+        y: start_radians.cos() * tangent_sign,
+    };
+    let end_tangent = Point {
+        x: -end_radians.sin() * tangent_sign,
+        y: end_radians.cos() * tangent_sign,
+    };
+    render_arrowheads(
+        start,
+        Point {
+            x: start.x + start_tangent.x,
+            y: start.y + start_tangent.y,
+        },
+        Point {
+            x: end.x - end_tangent.x,
+            y: end.y - end_tangent.y,
+        },
+        end,
+        style,
+        output,
+        bounds,
+    )
+}
+
+fn render_arrowheads(
+    start: Point,
+    next: Point,
+    previous: Point,
+    end: Point,
+    style: &Style,
+    output: &mut String,
+    bounds: &mut Bounds,
+) -> Result<(), String> {
+    if style.arrow_start {
+        render_arrowhead(
+            start,
+            Point {
+                x: start.x - next.x,
+                y: start.y - next.y,
+            },
+            style,
+            output,
+            bounds,
+        )?;
+    }
+    if style.arrow_end {
+        render_arrowhead(
+            end,
+            Point {
+                x: end.x - previous.x,
+                y: end.y - previous.y,
+            },
+            style,
+            output,
+            bounds,
+        )?;
+    }
+    Ok(())
+}
+
+fn render_arrowhead(
+    tip: Point,
+    direction: Point,
+    style: &Style,
+    output: &mut String,
+    bounds: &mut Bounds,
+) -> Result<(), String> {
+    let length = direction.x.hypot(direction.y);
+    if length <= f64::EPSILON {
+        return Ok(());
+    }
+    let unit = Point {
+        x: direction.x / length,
+        y: direction.y / length,
+    };
+    let normal = Point {
+        x: -unit.y,
+        y: unit.x,
+    };
+    let arrow_length = 5.8 * style.stroke_width.max(0.4 * TEX_POINT);
+    let half_width = 2.44 * style.stroke_width.max(0.4 * TEX_POINT);
+    let notch_distance = 4.29 * style.stroke_width.max(0.4 * TEX_POINT);
+    let base = Point {
+        x: tip.x - unit.x * arrow_length,
+        y: tip.y - unit.y * arrow_length,
+    };
+    let left = Point {
+        x: base.x + normal.x * half_width,
+        y: base.y + normal.y * half_width,
+    };
+    let right = Point {
+        x: base.x - normal.x * half_width,
+        y: base.y - normal.y * half_width,
+    };
+    let notch = Point {
+        x: tip.x - unit.x * notch_distance,
+        y: tip.y - unit.y * notch_distance,
+    };
+    for point in [tip, left, notch, right] {
+        bounds.include(Point {
+            x: point.x,
+            y: -point.y,
+        });
+    }
+    write!(
+        output,
+        "<path data-chord-arrowhead=\"true\" d=\"M {:.3},{:.3} L {:.3},{:.3} L {:.3},{:.3} L {:.3},{:.3} Z\" fill=\"{}\" fill-opacity=\"{:.3}\" stroke=\"none\"/>",
+        tip.x,
+        -tip.y,
+        left.x,
+        -left.y,
+        notch.x,
+        -notch.y,
+        right.x,
+        -right.y,
+        escape_xml(&style.stroke),
+        style.stroke_opacity,
+    )
+    .map_err(|_| "Could not create SVG arrowhead.".to_owned())
 }
 
 fn normalized_arc_delta(start_angle: f64, end_angle: f64) -> f64 {
@@ -1171,6 +1606,11 @@ fn option_value<'a>(options: &'a str, name: &str) -> Option<&'a str> {
     })
 }
 
+fn assignment_value<'a>(option: &'a str, name: &str) -> Option<&'a str> {
+    let (key, value) = option.split_once('=')?;
+    (key.trim() == name).then_some(value.trim())
+}
+
 fn parse_style(
     options: &str,
     kind: &str,
@@ -1224,15 +1664,15 @@ fn apply_path_style_options(
             style.stroke_width = 1.2 * TEX_POINT;
         } else if option == "dashed" {
             style.dashed = true;
-        } else if let Some(value) = option.strip_prefix("shorten >=") {
+        } else if let Some(value) = assignment_value(option, "shorten >") {
             style.shorten_end = parse_length(value)?.max(0.0);
-        } else if let Some(value) = option.strip_prefix("shorten <=") {
+        } else if let Some(value) = assignment_value(option, "shorten <") {
             style.shorten_start = parse_length(value)?.max(0.0);
-        } else if let Some(color) = option.strip_prefix("draw=") {
+        } else if let Some(color) = assignment_value(option, "draw") {
             let (color, opacity) = svg_color_with_opacity(color);
             style.stroke = color;
             style.stroke_opacity = opacity;
-        } else if let Some(color) = option.strip_prefix("fill=") {
+        } else if let Some(color) = assignment_value(option, "fill") {
             let (color, opacity) = svg_color_with_opacity(color);
             style.fill = color;
             style.fill_opacity = opacity;
@@ -1257,22 +1697,12 @@ fn apply_path_style_options(
 
 fn style_attributes(style: &Style) -> String {
     format!(
-        "fill=\"{}\" stroke=\"{}\" stroke-width=\"{:.3}\" fill-opacity=\"{:.3}\" stroke-opacity=\"{:.3}\"{}{}{}{}{}",
+        "fill=\"{}\" stroke=\"{}\" stroke-width=\"{:.3}\" fill-opacity=\"{:.3}\" stroke-opacity=\"{:.3}\"{}{}{}",
         escape_xml(&style.fill),
         escape_xml(&style.stroke),
         style.stroke_width,
         style.fill_opacity,
         style.stroke_opacity,
-        if style.arrow_start {
-            " marker-start=\"url(#chord-arrow)\""
-        } else {
-            ""
-        },
-        if style.arrow_end {
-            " marker-end=\"url(#chord-arrow)\""
-        } else {
-            ""
-        },
         if style.dashed {
             " stroke-dasharray=\"5 4\""
         } else {
@@ -1337,33 +1767,89 @@ fn is_named_color(value: &str) -> bool {
 fn parse_picture_style(options: &str) -> PictureStyle {
     let coordinate_scale = options
         .split(',')
-        .find_map(|raw| raw.trim().strip_prefix("scale="))
+        .find_map(|raw| assignment_value(raw.trim(), "scale"))
         .and_then(|value| value.trim().parse::<f64>().ok())
         .filter(|value| value.is_finite() && *value > 0.0 && *value <= 10.0)
         .unwrap_or(1.0);
-    let node_font_size = tikz_node_font_size(options);
+    let stroke_width = split_top_level_commas(options).iter().fold(
+        0.4 * TEX_POINT,
+        |width, option| match option.trim() {
+            "thin" => 0.4 * TEX_POINT,
+            "thick" => 0.8 * TEX_POINT,
+            "very thick" => 1.2 * TEX_POINT,
+            _ => width,
+        },
+    );
     PictureStyle {
         round_cap: options.contains("line cap=round"),
         round_join: options.contains("line join=round"),
-        node_font_size,
-        node_inner_sep: node_font_size / 3.0,
         coordinate_scale,
-        stroke_width: if split_top_level_commas(options)
-            .iter()
-            .any(|option| option.trim() == "thick")
-        {
-            0.8 * TEX_POINT
-        } else {
-            0.4 * TEX_POINT
-        },
+        stroke_width,
     }
 }
 
-fn tikz_node_font_size(options: &str) -> f64 {
-    if !options.contains("every node/.style") {
-        return 10.0 * TEX_POINT;
+fn validate_picture_options(
+    options: &str,
+    named_styles: &BTreeMap<String, String>,
+) -> Result<(), String> {
+    for raw in split_top_level_commas(options) {
+        let option = raw.trim();
+        if option.is_empty()
+            || matches!(
+                option,
+                "thin"
+                    | "thick"
+                    | "very thick"
+                    | "line cap=round"
+                    | "line join=round"
+                    | ">=stealth"
+                    | "x=1cm"
+                    | "x=1.0cm"
+                    | "y=1cm"
+                    | "y=1.0cm"
+            )
+        {
+            continue;
+        }
+        if let Some(value) = assignment_value(option, "scale") {
+            let value = value
+                .trim()
+                .parse::<f64>()
+                .map_err(|_| format!("Invalid TikZ picture scale: {value}"))?;
+            if value.is_finite() && value > 0.0 && value <= 10.0 {
+                continue;
+            }
+            return Err(format!("Invalid TikZ picture scale: {value}"));
+        }
+        if let Some(value) = assignment_value(option, ">") {
+            if value == "stealth" {
+                continue;
+            }
+        }
+        if let Some(value) = assignment_value(option, "x")
+            .or_else(|| assignment_value(option, "y"))
+        {
+            if matches!(value, "1cm" | "1.0cm") {
+                continue;
+            }
+        }
+        let Some((name, definition)) = option.split_once("/.style=") else {
+            return Err(format!(
+                "This fast WASM core does not support the picture option yet: {option}"
+            ));
+        };
+        let definition = strip_style_braces(definition);
+        if name.trim() == "every node" {
+            parse_node_style_patch(definition)?;
+            continue;
+        }
+        if parse_node_style_patch(definition).is_ok() {
+            continue;
+        }
+        let mut style = Style::default();
+        apply_path_style_options(&mut style, definition, "draw", named_styles, 0)?;
     }
-    node_font_size(options, 10.0 * TEX_POINT)
+    Ok(())
 }
 
 fn node_font_size(options: &str, fallback: f64) -> f64 {
@@ -1384,19 +1870,38 @@ fn node_font_size(options: &str, fallback: f64) -> f64 {
     }
 }
 
-fn parse_named_node_styles(options: &str) -> BTreeMap<String, NodeBoxStyle> {
+fn parse_every_node_style(options: &str) -> NodeStyle {
+    let mut style = NodeStyle::default();
+    for option in split_top_level_commas(options) {
+        let Some((name, definition)) = option.split_once("/.style=") else {
+            continue;
+        };
+        if name.trim() != "every node" {
+            continue;
+        }
+        let definition = strip_style_braces(definition);
+        if let Ok(patch) = parse_node_style_patch(definition) {
+            style.apply(&patch);
+        }
+    }
+    style
+}
+
+fn parse_named_node_styles(options: &str) -> BTreeMap<String, NodeStylePatch> {
     let mut styles = BTreeMap::new();
     for option in split_top_level_commas(options) {
         let Some((name, definition)) = option.split_once("/.style=") else {
             continue;
         };
-        let definition = definition
-            .trim()
-            .strip_prefix('{')
-            .and_then(|value| value.strip_suffix('}'))
-            .unwrap_or(definition.trim());
-        let style = parse_node_box_style(definition, &BTreeMap::new());
-        styles.insert(name.trim().to_owned(), style);
+        if name.trim() == "every node" {
+            continue;
+        }
+        let definition = strip_style_braces(definition);
+        if let Ok(style) = parse_node_style_patch(definition) {
+            if is_node_style_patch(&style) {
+                styles.insert(name.trim().to_owned(), style);
+            }
+        }
     }
     styles
 }
@@ -1417,37 +1922,97 @@ fn parse_named_path_styles(options: &str) -> BTreeMap<String, String> {
     styles
 }
 
-fn resolved_node_box_style(
-    options: &str,
-    named_styles: &BTreeMap<String, NodeBoxStyle>,
-) -> NodeBoxStyle {
-    parse_node_box_style(options, named_styles)
+fn strip_style_braces(definition: &str) -> &str {
+    definition
+        .trim()
+        .strip_prefix('{')
+        .and_then(|value| value.strip_suffix('}'))
+        .unwrap_or(definition.trim())
 }
 
-fn parse_node_box_style(
+fn resolve_node_style(
     options: &str,
-    named_styles: &BTreeMap<String, NodeBoxStyle>,
-) -> NodeBoxStyle {
-    let mut style = NodeBoxStyle::default();
+    base: &NodeStyle,
+    named_styles: &BTreeMap<String, NodeStylePatch>,
+) -> Result<NodeStyle, String> {
+    let mut style = base.clone();
     for raw in split_top_level_commas(options) {
         let option = raw.trim();
         if let Some(named) = named_styles.get(option) {
-            style = *named;
+            style.apply(named);
+        } else if is_node_position_option(option) {
+            continue;
+        } else {
+            style.apply(&parse_node_style_patch(option)?);
+        }
+    }
+    Ok(style)
+}
+
+fn parse_node_style_patch(
+    options: &str,
+) -> Result<NodeStylePatch, String> {
+    let mut style = NodeStylePatch::default();
+    for raw in split_top_level_commas(options) {
+        let option = raw.trim();
+        if option.is_empty() {
+            continue;
         } else if option == "draw" {
             style.draw = true;
         } else if option == "rounded corners" {
-            style.rounded = true;
-        } else if let Some(value) = option.strip_prefix("minimum width=") {
-            if let Ok(width) = parse_length(value) {
-                style.minimum_width = width.max(0.0);
+            style.rounded_radius = Some(4.0);
+        } else if let Some(value) = assignment_value(option, "rounded corners") {
+            style.rounded_radius = Some(parse_length(value)?.max(0.0));
+        } else if let Some(value) = assignment_value(option, "fill") {
+            style.fill = Some(svg_color_with_opacity(value));
+        } else if let Some(value) = assignment_value(option, "minimum width") {
+            style.minimum_width = Some(parse_length(value)?.max(0.0));
+        } else if let Some(value) = assignment_value(option, "minimum height") {
+            style.minimum_height = Some(parse_length(value)?.max(0.0));
+        } else if let Some(value) = assignment_value(option, "text width") {
+            style.text_width = Some(parse_length(value)?.max(0.0));
+        } else if let Some(value) = assignment_value(option, "inner sep") {
+            let value = parse_length(value)?.max(0.0);
+            style.inner_xsep = Some(value);
+            style.inner_ysep = Some(value);
+        } else if let Some(value) = assignment_value(option, "inner xsep") {
+            style.inner_xsep = Some(parse_length(value)?.max(0.0));
+        } else if let Some(value) = assignment_value(option, "inner ysep") {
+            style.inner_ysep = Some(parse_length(value)?.max(0.0));
+        } else if let Some(value) = assignment_value(option, "outer sep") {
+            style.outer_sep = Some(parse_length(value)?.max(0.0));
+        } else if let Some(value) = assignment_value(option, "font") {
+            style.font_size = Some(node_font_size(value, 10.0 * TEX_POINT));
+            style.bold = Some(value.contains("\\bfseries"));
+            style.italic = Some(value.contains("\\itshape"));
+        } else if let Some(value) = assignment_value(option, "align") {
+            style.align = Some(match value.trim() {
+                "center" => NodeAlign::Center,
+                "left" => NodeAlign::Left,
+                value => {
+                    return Err(format!(
+                        "This fast WASM core does not support node alignment yet: {value}"
+                    ))
+                }
+            });
+        } else if let Some(value) = assignment_value(option, "anchor") {
+            style.anchor = Some(parse_node_anchor(value)?);
+        } else if let Some(value) = assignment_value(option, "rotate") {
+            let value = value
+                .trim()
+                .parse::<f64>()
+                .map_err(|_| format!("Invalid TikZ node rotation: {value}"))?;
+            if !value.is_finite() || value.abs() > 3600.0 {
+                return Err(format!("Invalid TikZ node rotation: {value}"));
             }
-        } else if let Some(value) = option.strip_prefix("minimum height=") {
-            if let Ok(height) = parse_length(value) {
-                style.minimum_height = height.max(0.0);
-            }
+            style.rotate = Some(value);
+        } else {
+            return Err(format!(
+                "This fast WASM core does not support the node option yet: {option}"
+            ));
         }
     }
-    style
+    Ok(style)
 }
 
 fn split_top_level_commas(source: &str) -> Vec<&str> {
@@ -1475,23 +2040,156 @@ fn split_top_level_commas(source: &str) -> Vec<&str> {
     values
 }
 
-fn parse_node_padding(options: &str, default_padding: f64) -> f64 {
-    for raw in options.split(',') {
-        if let Some(value) = raw.trim().strip_prefix("inner sep=") {
-            if let Ok(padding) = parse_length(value) {
-                return padding;
-            }
+fn is_node_style_patch(style: &NodeStylePatch) -> bool {
+    style.draw
+        || style.rounded_radius.is_some()
+        || style.fill.is_some()
+        || style.minimum_width.is_some()
+        || style.minimum_height.is_some()
+        || style.text_width.is_some()
+        || style.inner_xsep.is_some()
+        || style.inner_ysep.is_some()
+        || style.outer_sep.is_some()
+        || style.font_size.is_some()
+        || style.align.is_some()
+        || style.anchor.is_some()
+        || style.rotate.is_some()
+}
+
+fn is_node_position_option(option: &str) -> bool {
+    matches!(
+        option,
+        "above"
+            | "below"
+            | "left"
+            | "right"
+            | "above left"
+            | "left above"
+            | "above right"
+            | "right above"
+            | "below left"
+            | "left below"
+            | "below right"
+            | "right below"
+    ) || assignment_value(option, "xshift").is_some()
+        || assignment_value(option, "yshift").is_some()
+}
+
+fn parse_node_anchor(value: &str) -> Result<NodeAnchor, String> {
+    match value.trim() {
+        "center" => Ok(NodeAnchor::Center),
+        "north" => Ok(NodeAnchor::North),
+        "south" => Ok(NodeAnchor::South),
+        "east" => Ok(NodeAnchor::East),
+        "west" => Ok(NodeAnchor::West),
+        "north east" => Ok(NodeAnchor::NorthEast),
+        "north west" => Ok(NodeAnchor::NorthWest),
+        "south east" => Ok(NodeAnchor::SouthEast),
+        "south west" => Ok(NodeAnchor::SouthWest),
+        value => Err(format!(
+            "This fast WASM core does not support the node anchor yet: {value}"
+        )),
+    }
+}
+
+fn node_anchor_name(anchor: NodeAnchor) -> &'static str {
+    match anchor {
+        NodeAnchor::Center => "center",
+        NodeAnchor::North => "north",
+        NodeAnchor::South => "south",
+        NodeAnchor::East => "east",
+        NodeAnchor::West => "west",
+        NodeAnchor::NorthEast => "north-east",
+        NodeAnchor::NorthWest => "north-west",
+        NodeAnchor::SouthEast => "south-east",
+        NodeAnchor::SouthWest => "south-west",
+    }
+}
+
+fn apply_explicit_node_anchor(point: &mut Point, anchor: NodeAnchor, width: f64, height: f64) {
+    match anchor {
+        NodeAnchor::Center => {}
+        NodeAnchor::North => point.y -= height / 2.0,
+        NodeAnchor::South => point.y += height / 2.0,
+        NodeAnchor::East => point.x -= width / 2.0,
+        NodeAnchor::West => point.x += width / 2.0,
+        NodeAnchor::NorthEast => {
+            point.x -= width / 2.0;
+            point.y -= height / 2.0;
+        }
+        NodeAnchor::NorthWest => {
+            point.x += width / 2.0;
+            point.y -= height / 2.0;
+        }
+        NodeAnchor::SouthEast => {
+            point.x -= width / 2.0;
+            point.y += height / 2.0;
+        }
+        NodeAnchor::SouthWest => {
+            point.x += width / 2.0;
+            point.y += height / 2.0;
         }
     }
-    default_padding
 }
 
-fn node_has_background(options: &str) -> bool {
-    options
-        .split(',')
-        .any(|raw| raw.trim().starts_with("fill="))
+fn estimate_node_text(
+    text: &str,
+    text_width: Option<f64>,
+    font_size: f64,
+    bold: bool,
+) -> (f64, usize) {
+    let explicit_lines = text.lines().collect::<Vec<_>>();
+    if let Some(limit) = text_width {
+        let mut line_count = 0usize;
+        for line in explicit_lines {
+            let mut current_width = 0.0;
+            let mut wrapped_lines = 1usize;
+            for word in line.split_whitespace() {
+                let word_width = estimate_text_line_width(word, font_size, bold);
+                let separator = if current_width > 0.0 {
+                    0.25 * font_size
+                } else {
+                    0.0
+                };
+                if current_width > 0.0 && current_width + separator + word_width > limit {
+                    wrapped_lines += 1;
+                    current_width = word_width;
+                } else {
+                    current_width += separator + word_width;
+                }
+            }
+            line_count += wrapped_lines;
+        }
+        return (limit, line_count.max(1));
+    }
+    (
+        explicit_lines
+            .iter()
+            .map(|line| estimate_text_line_width(line, font_size, bold))
+            .fold(font_size * 0.5, f64::max),
+        explicit_lines.len().max(1),
+    )
 }
 
+fn estimate_text_line_width(text: &str, font_size: f64, bold: bool) -> f64 {
+    let em = text
+        .chars()
+        .filter(|character| !matches!(*character, '\u{20d7}' | '_' | '^'))
+        .map(|character| match character {
+            ' ' => 0.25,
+            'i' | 'j' | 'l' | 'I' | '!' | '|' | '.' | ',' | ':' | ';' | '\'' => 0.28,
+            'f' | 'r' | 't' | '(' | ')' | '[' | ']' => 0.38,
+            'm' | 'w' | 'M' | 'W' | '@' => 0.82,
+            'A'..='Z' => 0.66,
+            '0'..='9' => 0.5,
+            character if character.is_ascii() => 0.48,
+            _ => 1.0,
+        })
+        .sum::<f64>();
+    em * font_size * if bold { 1.02 } else { 1.0 }
+}
+
+#[cfg(test)]
 fn visible_character_count(text: &str) -> usize {
     text.chars()
         .filter(|character| !matches!(*character, '\u{20d7}' | '_' | '^'))
@@ -1645,10 +2343,23 @@ fn latex_text_to_unicode(input: &str) -> String {
         if characters.get(index + 1) == Some(&'\\') {
             output.push('\n');
             index += 2;
+            if characters.get(index) == Some(&'[') {
+                while index < characters.len() && characters[index] != ']' {
+                    index += 1;
+                }
+                if index < characters.len() {
+                    index += 1;
+                }
+            }
             continue;
         }
 
         index += 1;
+        if characters.get(index).is_some_and(|value| value.is_whitespace()) {
+            output.push(' ');
+            index += 1;
+            continue;
+        }
         let command_start = index;
         while index < characters.len() && characters[index].is_ascii_alphabetic() {
             index += 1;
@@ -1664,6 +2375,8 @@ fn latex_text_to_unicode(input: &str) -> String {
                 | "mathsf"
                 | "mathtt"
                 | "operatorname"
+                | "textbf"
+                | "textit"
         ) {
             while index < characters.len() && characters[index].is_whitespace() {
                 index += 1;
@@ -1721,6 +2434,8 @@ fn latex_text_to_unicode(input: &str) -> String {
             "times" => Some('\u{00d7}'),
             "cdot" => Some('\u{00b7}'),
             "infty" => Some('\u{221e}'),
+            "rightarrow" | "longrightarrow" => Some('\u{2192}'),
+            "leftarrow" | "longleftarrow" => Some('\u{2190}'),
             _ => None,
         };
         if let Some(symbol) = replacement {
@@ -1750,8 +2465,8 @@ mod tests {
     fn renders_circle_without_tex_runtime() {
         let svg = render_svg(r"\draw (0,0) circle (1cm);").unwrap();
         assert!(svg.contains("<circle"));
-        assert!(svg.contains("r=\"37.795\""));
-        assert!(svg.contains("width=\"137.386\" height=\"137.386\""));
+        assert!(svg.contains("r=\"28.346\""));
+        assert!(svg.contains("width=\"109.039\" height=\"109.039\""));
     }
 
     #[test]
@@ -1759,6 +2474,12 @@ mod tests {
         let fallback = latex_text_to_unicode(r"$\boldsymbol{F}_{\mathrm{e}}$");
         assert_eq!(fallback, "F_e");
         assert_eq!(visible_character_count(&fallback), 2);
+        assert_eq!(
+            latex_text_to_unicode(
+                r"electromagnetic waves $\longrightarrow$ quantized charge"
+            ),
+            "electromagnetic waves \u{2192} quantized charge",
+        );
 
         let svg = render_svg(
             r"\draw (0,0) -- (0,1);
@@ -1777,7 +2498,7 @@ mod tests {
         .unwrap();
         assert!(svg.contains("data-chord-node-background=\"true\""));
         assert!(svg.contains("data-chord-background=\"true\""));
-        assert!(svg.contains("data-chord-padding=\"1.328\""));
+        assert!(svg.contains("data-chord-padding=\"0.996\""));
     }
 
     #[test]
@@ -1829,8 +2550,8 @@ mod tests {
         assert!(svg.contains("v\u{20d7}"));
         assert!(svg.contains("a\u{20d7}=g\u{20d7}"));
         assert!(svg.contains("fill=\"var(--background-primary)\""));
-        assert!(svg.contains("viewBox=\"0 -5 10 10\""));
-        assert!(svg.contains("M 10 0 L 0 4.2 L 2.6 0 L 0 -4.2 Z"));
+        assert_eq!(svg.matches("data-chord-arrowhead=\"true\"").count(), 2);
+        assert!(!svg.contains("<marker"));
     }
 
     #[test]
@@ -1843,8 +2564,8 @@ mod tests {
 \end{tikzpicture}",
         )
         .unwrap();
-        assert!(svg.contains("<path d=\"M 16.157,107.717 C "));
-        assert!(!svg.contains("<polyline"));
+        assert!(svg.contains("<path d=\"M 12.118,80.787 C "));
+        assert_eq!(svg.matches("<polyline").count(), 0);
     }
 
     #[test]
@@ -1868,7 +2589,7 @@ mod tests {
               \draw (0,0) circle (\c);",
         )
         .unwrap();
-        assert!(svg.contains("r=\"103.920\""));
+        assert!(svg.contains("r=\"77.940\""));
     }
 
     #[test]
@@ -1906,8 +2627,8 @@ mod tests {
         assert!(svg.matches(" Z\"").count() >= 2);
         assert_eq!(svg.matches("fill-opacity=\"0.120\"").count(), 2);
         assert!(svg.contains("fill=\"currentColor\" stroke=\"none\""));
-        assert!(svg.contains("L -98."));
-        assert!(svg.contains("L 128."));
+        assert!(svg.contains("L -73."));
+        assert!(svg.contains("L 96."));
         assert_eq!(svg.matches("<circle").count(), 2);
         assert!(svg.contains("data-chord-math=\"A_1\""));
         assert!(svg.contains("Equal time intervals imply equal swept areas"));
@@ -1945,9 +2666,103 @@ mod tests {
         .unwrap();
         assert_eq!(svg.matches("<rect").count(), 6);
         assert_eq!(svg.matches("<polyline").count(), 6);
-        assert!(svg.contains("rx=\"4\" ry=\"4\""));
+        assert!(svg.contains("rx=\"4.000\" ry=\"4.000\""));
         assert_eq!(svg.matches("<tspan").count(), 2);
         assert!(svg.contains(">现象</text>"));
+    }
+
+    #[test]
+    fn renders_publication_timeline_node_styles_and_anchors() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[
+              x=1cm,
+              y=1cm,
+              >=stealth,
+              line cap=round,
+              line join=round,
+              every node/.style={font=\normalsize,outer sep=0pt},
+              year/.style={
+                draw,rounded corners=3pt,fill=gray!10,align=center,
+                font=\bfseries\normalsize,minimum width=2.25cm,
+                minimum height=0.84cm,inner xsep=6pt,inner ysep=3pt
+              },
+              event/.style={
+                draw,rounded corners=4pt,align=left,text width=5.75cm,
+                inner xsep=8pt,inner ysep=6pt
+              },
+              timeline/.style={very thick,->,shorten >=1pt,shorten <=1pt}
+            ]
+              \node[font=\bfseries\Large,anchor=south] at (0,1.95)
+                {Part I: From electrostatic effects to electric current};
+              \node[year] (y1) at (-0.70,-0.55) {c.\ 600 BCE};
+              \node[year] (y2) at (0.70,-3.45) {1600};
+              \draw[timeline] (y1.south)--(y2.north);
+              \node[event,anchor=east] (e1) at (-2.05,-0.55)
+                {\textbf{Early electrostatic observation}\\[-1pt]
+                 Rubbing \textbf{amber} causes it to attract small, light objects.\\[2pt]
+                 \textit{Electricity first appears as an observed static effect.}};
+              \draw[thick] (e1.east)--(y1.west);
+            \end{tikzpicture}",
+        )
+        .unwrap();
+
+        assert_eq!(svg.matches("<rect").count(), 3);
+        assert!(svg.contains("data-chord-text-width=\"162.992\""));
+        assert!(svg.contains("data-chord-align=\"left\""));
+        assert!(svg.contains("data-chord-min-width=\"63.780\""));
+        assert!(svg.contains("data-chord-min-height=\"23.811\""));
+        assert!(svg.contains("data-chord-font-weight=\"700\""));
+        assert!(svg.contains("rx=\"2.989\" ry=\"2.989\""));
+        assert!(svg.contains("stroke-width=\"1.196\""));
+        assert!(svg.contains("data-chord-arrowhead=\"true\""));
+        assert!(svg.contains("Early electrostatic observation"));
+    }
+
+    #[test]
+    fn renders_rotated_plate_labels_and_curved_field_arrows() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[
+              scale=1.0,>=stealth,line cap=round,line join=round,
+              every node/.style={font=\small}
+            ]
+              \draw[thick,fill=gray!8]
+                (-2.15,-2.05) rectangle (-1.90,2.05);
+              \draw[->,thick]
+                (-1.78,1.48)
+                .. controls (-0.95,1.82) and (0.95,1.82) ..
+                (1.78,1.48);
+              \node[rotate=90] at (-2.55,0) {positive plate};
+            \end{tikzpicture}",
+        )
+        .unwrap();
+
+        assert!(svg.contains("<rect"));
+        assert!(svg.contains("data-chord-arrowhead=\"true\""));
+        assert!(svg.contains("data-chord-rotate=\"90.000\""));
+        assert!(svg.contains("transform=\"rotate(-90.000"));
+    }
+
+    #[test]
+    fn renders_bounded_smooth_coordinate_field_lines() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[x=1cm,y=1cm,scale=1.0]
+              \draw[thick]
+              plot[smooth] coordinates {
+                (-2.10,0.58) (-2.90,0.78) (-2.70,1.95) (0,2.55)
+                (2.70,1.95) (2.90,0.78) (2.10,0.58)
+              };
+              \draw[->,thick] (-0.30,2.55)--(0.30,2.55);
+            \end{tikzpicture}",
+        )
+        .unwrap();
+
+        assert_eq!(svg.matches(" C ").count(), 6);
+        assert!(svg.contains(
+            "M -59.528,-16.441 C -59.528,-16.441"
+        ));
+        assert!(svg.contains("59.528,-16.441 59.528,-16.441"));
+        assert!(svg.contains("data-chord-arrowhead=\"true\""));
+        assert_eq!(svg.matches("<polyline").count(), 1);
     }
 
     #[test]
@@ -2005,8 +2820,8 @@ mod tests {
         assert!(svg.contains("data-chord-text=\"potential energy 势能"));
         assert!(svg.contains("data-chord-math=\"g=-\\Delta V/\\Delta r\""));
         assert!(svg.contains("data-chord-font-weight=\"700\""));
-        assert!(svg.contains("marker-start=\"url(#chord-arrow)\""));
-        assert!(svg.contains("stroke-width=\"1.063\""));
+        assert_eq!(svg.matches("data-chord-arrowhead=\"true\"").count(), 4);
+        assert!(svg.contains("stroke-width=\"0.797\""));
     }
 
     #[test]
@@ -2027,6 +2842,70 @@ mod tests {
         let error =
             render_svg(r"\draw[opacity=0.5] (0,0) -- (1,1);").unwrap_err();
         assert!(error.contains("path option"));
+    }
+
+    #[test]
+    fn rejects_unknown_picture_options_instead_of_drifting_from_tex() {
+        let error = render_svg(
+            r"\begin{tikzpicture}[transform shape]
+                \draw (0,0) -- (1,1);
+              \end{tikzpicture}",
+        )
+        .unwrap_err();
+        assert!(error.contains("picture option"));
+    }
+
+    #[test]
+    fn rejects_invalid_node_shifts_instead_of_ignoring_them() {
+        let error = render_svg(r"\node[xshift=far] at (0,0) {text};").unwrap_err();
+        assert!(error.contains("Invalid TikZ"));
+    }
+
+    #[test]
+    fn rejects_plot_options_and_sample_counts_outside_the_contract() {
+        let option_error = render_svg(
+            r"\draw plot[domain=0:1,variable=\t] ({\t},{\t});",
+        )
+        .unwrap_err();
+        assert!(option_error.contains("plot option"));
+
+        let sample_error = render_svg(
+            r"\draw plot[domain=0:1,samples=300] ({\x},{\x});",
+        )
+        .unwrap_err();
+        assert!(sample_error.contains("between 2 and 256"));
+    }
+
+    #[test]
+    fn accepts_tex_style_spacing_around_supported_assignments() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[scale = 1.0, x = 1cm, >= stealth]
+                \node[draw, minimum width = 2cm, xshift = 3pt] at (0,0) {text};
+                \draw[draw = red, shorten >= 1pt] (0,0)--(2,0);
+              \end{tikzpicture}",
+        )
+        .unwrap();
+        assert!(svg.contains("<rect"));
+        assert!(svg.contains("stroke=\"red\""));
+    }
+
+    #[test]
+    fn applies_picture_level_line_weights_and_rejects_unknown_arrow_tips() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[very thick]
+                \draw (0,0)--(1,0);
+              \end{tikzpicture}",
+        )
+        .unwrap();
+        assert!(svg.contains("stroke-width=\"1.196\""));
+
+        let error = render_svg(
+            r"\begin{tikzpicture}[>=latex]
+                \draw[->] (0,0)--(1,0);
+              \end{tikzpicture}",
+        )
+        .unwrap_err();
+        assert!(error.contains("picture option"));
     }
 
     #[test]
@@ -2062,7 +2941,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(svg.matches(" A ").count(), 8);
-        assert!(svg.contains("marker-end=\"url(#chord-arrow)\""));
+        assert_eq!(svg.matches("data-chord-arrowhead=\"true\"").count(), 8);
     }
 
     #[test]
@@ -2092,7 +2971,7 @@ mod tests {
         .unwrap();
         assert!(svg.contains("<ellipse"));
         assert_eq!(svg.matches(" C ").count(), 6);
-        assert!(svg.contains("font-size=\"19.128\""));
+        assert!(svg.contains("font-size=\"14.346\""));
         assert!(svg.contains("data-chord-font-weight=\"700\""));
     }
 
@@ -2106,8 +2985,8 @@ mod tests {
             \end{tikzpicture}",
         )
         .unwrap();
-        assert!(svg.contains("stroke-width=\"1.594\""));
-        assert!(svg.contains("marker-end=\"url(#chord-arrow)\""));
+        assert!(svg.contains("stroke-width=\"1.196\""));
+        assert!(svg.contains("data-chord-arrowhead=\"true\""));
         assert!(!svg.contains("points=\"0.000,-0.000 151.181,-0.000\""));
     }
 
@@ -2121,8 +3000,8 @@ mod tests {
             \end{tikzpicture}",
         )
         .unwrap();
-        assert_eq!(svg.matches("marker-start=").count(), 2);
-        assert_eq!(svg.matches("marker-end=").count(), 2);
-        assert!(svg.contains("fill=\"currentColor\" style=\"fill:context-stroke\""));
+        assert_eq!(svg.matches("data-chord-arrowhead=\"true\"").count(), 4);
+        assert!(!svg.contains("<marker"));
+        assert!(svg.contains("fill=\"currentColor\" fill-opacity=\"1.000\""));
     }
 }

@@ -14,6 +14,21 @@ export interface TikzOverlayRect {
   height: number;
 }
 
+export function fitTikzNodeBox(
+  center: { x: number; y: number },
+  minimum: { width: number; height: number },
+  content: { width: number; height: number },
+): { x: number; y: number; width: number; height: number } {
+  const width = Math.max(1, minimum.width, content.width);
+  const height = Math.max(1, minimum.height, content.height);
+  return {
+    x: center.x - width / 2,
+    y: center.y - height / 2,
+    width,
+    height,
+  };
+}
+
 export type TikzOverlayPlacement =
   | "above"
   | "below"
@@ -23,6 +38,31 @@ export type TikzOverlayPlacement =
   | "above-right"
   | "below-left"
   | "below-right";
+
+export type TikzNodeAnchor =
+  | "center"
+  | "north"
+  | "south"
+  | "east"
+  | "west"
+  | "north-east"
+  | "north-west"
+  | "south-east"
+  | "south-west";
+
+export function placeTikzAnchoredNode(
+  reference: { left: number; top: number },
+  anchor: TikzNodeAnchor,
+  width: number,
+  height: number,
+): { left: number; top: number } {
+  let { left, top } = reference;
+  if (anchor.includes("west")) left += width / 2;
+  if (anchor.includes("east")) left -= width / 2;
+  if (anchor.includes("north")) top += height / 2;
+  if (anchor.includes("south")) top -= height / 2;
+  return { left, top };
+}
 
 export function mapTikzOverlayPoint(
   matrix: TikzOverlayMatrix,
@@ -34,16 +74,6 @@ export function mapTikzOverlayPoint(
   return {
     left: matrix.a * x + matrix.c * y + matrix.e - containerLeft,
     top: matrix.b * x + matrix.d * y + matrix.f - containerTop,
-  };
-}
-
-export function centerTikzMathInk(
-  outer: TikzOverlayRect,
-  ink: TikzOverlayRect,
-): { x: number; y: number } {
-  return {
-    x: outer.left + outer.width / 2 - (ink.left + ink.width / 2),
-    y: outer.top + outer.height / 2 - (ink.top + ink.height / 2),
   };
 }
 

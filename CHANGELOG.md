@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.6] - 2026-07-28
+
+### Changed
+
+- Raised the minimum supported Obsidian version for new installations to 1.7.2 while preserving earlier release mappings for existing users.
+
+### Fixed
+
+- Added bounded English TeX-pattern hyphenation to fixed-width WASM text nodes, matching local TeX line breaks and preventing long timeline boxes from drifting into adjacent content.
+- Batched TikZ label measurement before SVG mutation, coalesced concurrent MathJax completion work, and cached targeted TeX font loads per document instead of waiting on every theme font for every diagram.
+- Matched supported WASM node geometry more closely to local TeX for publication-style diagrams, including named node styles, cardinal anchors, text widths, independent padding, font formatting, rounded corners, fills, outer separation, and picture-level line weight.
+- Reapplied TikZ node anchors and resized node backgrounds from the completed browser/MathJax layout, then embedded that result in the SVG so Markdown, Better Export PDF, and direct preview exports share one geometry.
+- Matched WASM centimeters, TeX points, fonts, strokes, and node dimensions to the PDF-point coordinate system used by local TeX instead of applying an extra CSS-pixel enlargement.
+- Used declared TikZ minimum dimensions rather than estimated fallback text boxes when fitting measured browser labels, preserved explicit left alignment against theme styles, and cropped the completed SVG to its real content.
+- Reused Obsidian's loaded MathJax TeX text faces for default Latin WASM labels, including matching bold and italic faces, so browser line wrapping and node heights track local Computer Modern output instead of Times New Roman metrics.
+- Replaced print-fragile SVG arrow markers with portable path geometry and kept MathJax label overlays transparent, preserving arrowheads and underlying diagram fills in Markdown and PDF output.
+- Added publication-compatible rotated node labels, aligned positioned formulas by their complete TeX node boxes, and stopped post-overlay SVG bound feedback from progressively shrinking tall diagrams.
+- Forced fixed-width publication nodes to wrap and hyphenate inside their declared TikZ text width, and measured TeX arrow commands as glyphs instead of command text so event and summary boxes use realistic heights.
+- Added bounded `plot[smooth] coordinates` support using PGF's default smooth-plot tension and endpoint controls, without treating coordinate-based field lines as unsupported parametric plots.
+- Tightened the WASM capability contract across picture, path, plot, node-alignment, shift, line-weight, arrow-tip, and spaced-assignment options so unsupported syntax falls back to local TeX instead of rendering with silently ignored or substituted styles.
+
 ## [0.5.5] - 2026-07-28
 
 ### Changed

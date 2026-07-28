@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT 许可证" /></a>
-  <img src="https://img.shields.io/badge/Obsidian-1.5.0%2B-7C3AED?logo=obsidian&logoColor=white" alt="Obsidian 1.5.0 或更高版本" />
+  <img src="https://img.shields.io/badge/Obsidian-1.7.2%2B-7C3AED?logo=obsidian&logoColor=white" alt="Obsidian 1.7.2 或更高版本" />
   <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
   <a href="https://github.com/ichenh/obsidian-math-chords/releases/latest"><img src="https://img.shields.io/github/v/release/ichenh/obsidian-math-chords?display_name=tag&sort=semver" alt="最新版本" /></a>
   <a href="https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml"><img src="https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg" alt="CI 状态" /></a>
@@ -31,9 +31,9 @@
 
 内置默认快捷键参考了 [LyX](https://www.lyx.org/) 数学模式的绑定。
 
-**当前版本：v0.5.5。** 见 [CHANGELOG](CHANGELOG.md)。
+**当前版本：v0.5.6。** 见 [CHANGELOG](CHANGELOG.md)。
 
-**需要 Obsidian 1.5.0+。** 以键盘操作为主，建议在桌面端使用。
+**需要 Obsidian 1.7.2+。** 以键盘操作为主，建议在桌面端使用。
 
 ![Math Chords 演示：leader 快捷键插入 LaTeX 并实时预览](docs/demo.gif)
 

@@ -3,11 +3,7 @@ import {
   getDesktopFileSystem,
   getDesktopSaveDialog,
 } from "./desktopNode";
-import {
-  tikzExportOverlayScale,
-  unionTikzExportBounds,
-  type TikzExportBounds,
-} from "./exportGeometry";
+import type { TikzExportBounds } from "./exportGeometry";
 
 export type TikzExportFormat = "svg" | "png" | "jpg" | "pdf";
 
@@ -28,9 +24,10 @@ interface ExportTarget {
 }
 
 const EMBEDDED_OVERLAY_CSS = [
-  ".obsidian-math-chords-tikz-math-overlay{box-sizing:content-box;margin:0;pointer-events:none;white-space:nowrap}",
+  ".obsidian-math-chords-tikz-math-overlay{box-sizing:content-box;margin:0;pointer-events:none;white-space:nowrap;background:transparent!important}",
   ".obsidian-math-chords-tikz-math-overlay.is-math-only{display:inline-flex;align-items:center;justify-content:center;line-height:1}",
   ".obsidian-math-chords-tikz-math-overlay.is-mixed-label{display:inline-block;line-height:1.15}",
+  ".obsidian-math-chords-tikz-math-overlay.has-text-width{display:block;min-width:0;white-space:normal!important;overflow-wrap:break-word;word-break:normal;hyphens:auto}",
   ".obsidian-math-chords-tikz-math-overlay.is-mixed-label>.math{margin:0;line-height:1;vertical-align:baseline}",
 ].join("");
 
@@ -162,63 +159,6 @@ function createSvgSnapshot(outputEl: HTMLElement): {
     }
   }
 
-  if (renderedSvg) for (const overlay of Array.from(
-    outputEl.querySelectorAll<HTMLElement>(
-      ".obsidian-math-chords-tikz-math-overlay",
-    ),
-  ).filter((element) => element.closest("foreignObject") === null)) {
-    const bounds = overlayBoundsInSvg(overlay, renderedSvg);
-    if (!bounds) continue;
-    exportBounds = unionTikzExportBounds(exportBounds, bounds);
-    const foreignObject = ownerDocument.createElementNS(
-      svgNamespace,
-      "foreignObject",
-    );
-    foreignObject.setAttribute("x", String(bounds.x));
-    foreignObject.setAttribute("y", String(bounds.y));
-    foreignObject.setAttribute("width", String(bounds.width));
-    foreignObject.setAttribute("height", String(bounds.height));
-    const wrapper = ownerDocument.createElementNS(xhtmlNamespace, "div");
-    wrapper.setCssProps({
-      position: "relative",
-      width: "100%",
-      height: "100%",
-      overflow: "visible",
-    });
-    const clone = overlay.cloneNode(true) as HTMLElement;
-    const computed = ownerDocument.defaultView?.getComputedStyle(overlay);
-    const exportedStyles = [
-      "position:absolute",
-      "left:50%",
-      "top:50%",
-      `transform:translate(-50%,-50%) scale(${bounds.contentScale})`,
-      "transform-origin:center",
-      "margin:0",
-    ];
-    if (computed) {
-      exportedStyles.push(
-        `display:${computed.display}`,
-        `box-sizing:${computed.boxSizing}`,
-        `color:${computed.color}`,
-        `background-color:${computed.backgroundColor}`,
-        `font-family:${computed.fontFamily}`,
-        `font-size:${computed.fontSize}`,
-        `font-style:${computed.fontStyle}`,
-        `font-weight:${computed.fontWeight}`,
-        `line-height:${computed.lineHeight}`,
-        `white-space:${computed.whiteSpace}`,
-        `text-align:${computed.textAlign}`,
-        `vertical-align:${computed.verticalAlign}`,
-      );
-    }
-    clone.setAttribute(
-      "style",
-      `${clone.getAttribute("style") ?? ""};${exportedStyles.join(";")}`,
-    );
-    wrapper.appendChild(clone);
-    foreignObject.appendChild(wrapper);
-    root.appendChild(foreignObject);
-  }
   root.setAttribute(
     "viewBox",
     `${exportBounds.x} ${exportBounds.y} ${exportBounds.width} ${exportBounds.height}`,
@@ -280,7 +220,6 @@ function inlineSvgSnapshotPresentation(
         "display",
         "box-sizing",
         "color",
-        "background-color",
         "font-family",
         "font-size",
         "font-style",
@@ -295,6 +234,7 @@ function inlineSvgSnapshotPresentation(
           computed.getPropertyValue(property),
         );
       }
+      cloneElement.setCssProps({ backgroundColor: "transparent" });
     }
   }
 }
@@ -471,36 +411,6 @@ async function writeLocalFile(
 ): Promise<void> {
   const fs = getDesktopFileSystem(hostWindow);
   await fs.writeFile(path, bytes);
-}
-
-function overlayBoundsInSvg(
-  overlay: HTMLElement,
-  svg: SVGSVGElement,
-): (TikzExportBounds & { contentScale: number }) | null {
-  const matrix = svg.getScreenCTM();
-  if (!matrix) return null;
-  let inverse: DOMMatrix;
-  try {
-    inverse = matrix.inverse();
-  } catch {
-    return null;
-  }
-  const rect = overlay.getBoundingClientRect();
-  const topLeft = svg.createSVGPoint();
-  topLeft.x = rect.left;
-  topLeft.y = rect.top;
-  const bottomRight = svg.createSVGPoint();
-  bottomRight.x = rect.right;
-  bottomRight.y = rect.bottom;
-  const first = topLeft.matrixTransform(inverse);
-  const second = bottomRight.matrixTransform(inverse);
-  return {
-    x: Math.min(first.x, second.x),
-    y: Math.min(first.y, second.y),
-    width: Math.max(1, Math.abs(second.x - first.x)),
-    height: Math.max(1, Math.abs(second.y - first.y)),
-    contentScale: tikzExportOverlayScale(matrix),
-  };
 }
 
 export function createSingleImagePdf(

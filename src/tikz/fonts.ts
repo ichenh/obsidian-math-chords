@@ -27,6 +27,7 @@ export const EMPTY_TIKZ_FONT_PREFERENCES: TikzFontPreferences = {
 
 const DEFAULT_FONT_CANDIDATES: Record<TikzTextProfile, readonly string[]> = {
   latin: [
+    "MJXTEX",
     "Latin Modern Roman",
     "CMU Serif",
     "STIX Two Text",

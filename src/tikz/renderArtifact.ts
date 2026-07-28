@@ -1,16 +1,21 @@
 import { finishRenderMath, loadMathJax, loadPdfJs, renderMath } from "obsidian";
 import type { TikzRenderArtifact } from "./types";
 import {
-  centerTikzMathInk,
+  fitTikzNodeBox,
+  placeTikzAnchoredNode,
   placeTikzOverlay,
   tikzEmbeddedOverlayBounds,
+  type TikzNodeAnchor,
   type TikzOverlayPlacement,
 } from "./overlayPosition";
 import {
+  detectTikzTextProfile,
   EMPTY_TIKZ_FONT_PREFERENCES,
+  normalizeTikzFontName,
   tikzCssFontFamily,
   type TikzFontPreferences,
 } from "./fonts";
+import { hyphenateEnglishTikzText } from "./hyphenation";
 import {
   TIKZ_DISPLAY_SCALE,
   tikzPdfPixelRatio,
@@ -21,6 +26,11 @@ import { unionTikzSvgBounds } from "./svgGeometry";
 import { namespaceTikzSvgIds } from "./svgInstances";
 
 let svgInstanceId = 0;
+let pendingTikzMathFinish: Promise<void> | null = null;
+const tikzTexFontLoads = new WeakMap<
+  Document,
+  Map<string, Promise<void>>
+>();
 const SAFE_SVG_ELEMENTS = new Set([
   "svg",
   "g",
@@ -144,6 +154,22 @@ interface PdfLoadingTask {
   promise: Promise<PdfDocument>;
 }
 
+interface TikzMeasuredOverlay {
+  element: HTMLElement;
+  x: number;
+  y: number;
+  rotate: number;
+  placement: TikzOverlayPlacement | null;
+  nodeAnchor: TikzNodeAnchor | null;
+  referenceX: number;
+  referenceY: number;
+  anchorX: number;
+  anchorY: number;
+  gap: number;
+  textAlign: "left" | "center";
+  anchor: SVGTextElement;
+}
+
 interface PdfJs {
   getDocument(options: { data: Uint8Array }): PdfLoadingTask;
 }
@@ -170,8 +196,7 @@ export async function renderTikzArtifact(
     containerEl.replaceChildren(svg);
     normalizeSvgBounds(svg);
     await renderSvgMathOverlays(svg, containerEl, fonts, locale);
-    normalizeSvgBounds(svg);
-    scheduleConnectedSvgBounds(svg, containerEl.ownerDocument);
+    normalizeSvgBounds(svg, true);
     return;
   }
   if (accessibleName) {
@@ -244,7 +269,10 @@ function ensureSvgContentGroup(root: Element): void {
   root.appendChild(group);
 }
 
-function normalizeSvgBounds(svg: SVGSVGElement): boolean {
+function normalizeSvgBounds(
+  svg: SVGSVGElement,
+  fitMeasuredContent = false,
+): boolean {
   try {
     const content = svg.querySelector<SVGGElement>(
       'g[data-chord-tikz-content="true"]',
@@ -267,16 +295,23 @@ function normalizeSvgBounds(svg: SVGSVGElement): boolean {
       currentViewBox.width,
       svg.hasAttribute("data-chord-display-scale"),
     );
-    const visualBounds = unionTikzSvgBounds(
-      {
-        x: currentViewBox.x,
-        y: currentViewBox.y,
-        width: currentViewBox.width,
-        height: currentViewBox.height,
-      },
-      bounds,
-      1,
-    );
+    const visualBounds = fitMeasuredContent
+      ? {
+          x: bounds.x - 1,
+          y: bounds.y - 1,
+          width: bounds.width + 2,
+          height: bounds.height + 2,
+        }
+      : unionTikzSvgBounds(
+          {
+            x: currentViewBox.x,
+            y: currentViewBox.y,
+            width: currentViewBox.width,
+            height: currentViewBox.height,
+          },
+          bounds,
+          1,
+        );
     const { x, y, width, height } = visualBounds;
     svg.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
     svg.setAttribute("width", `${width * displayScale}px`);
@@ -285,22 +320,6 @@ function normalizeSvgBounds(svg: SVGSVGElement): boolean {
   } catch {
     return false;
   }
-}
-
-function scheduleConnectedSvgBounds(
-  svg: SVGSVGElement,
-  ownerDocument: Document,
-): void {
-  const requestFrame = ownerDocument.defaultView?.requestAnimationFrame;
-  if (!requestFrame) return;
-  let attempts = 0;
-  const update = (): void => {
-    if (normalizeSvgBounds(svg)) return;
-    if (attempts++ < 60) {
-      requestFrame.call(ownerDocument.defaultView, update);
-    }
-  };
-  requestFrame.call(ownerDocument.defaultView, update);
 }
 
 async function renderSvgMathOverlays(
@@ -332,18 +351,7 @@ async function renderSvgMathOverlays(
     visibility: "hidden",
     pointerEvents: "none",
   });
-  const overlays: Array<{
-    element: HTMLElement;
-    x: number;
-    y: number;
-    alignMathInk: boolean;
-    placement: TikzOverlayPlacement | null;
-    anchorX: number;
-    anchorY: number;
-    gap: number;
-    backgroundPadding: number | null;
-    anchor: SVGTextElement;
-  }> = [];
+  const overlays: TikzMeasuredOverlay[] = [];
   for (const anchor of anchors) {
     const mathSource = anchor.dataset.chordMath;
     const textSource = anchor.dataset.chordText;
@@ -352,26 +360,43 @@ async function renderSvgMathOverlays(
     const width = Number(anchor.dataset.chordWidth);
     const rawX = Number(anchor.dataset.chordX);
     const rawY = Number(anchor.dataset.chordY);
+    const rawRotate = Number(anchor.dataset.chordRotate);
+    const rotate = Number.isFinite(rawRotate) ? rawRotate : 0;
     const placement = parseTikzOverlayPlacement(
       anchor.dataset.chordPlacement,
     );
+    const nodeAnchor = parseTikzNodeAnchor(anchor.dataset.chordNodeAnchor);
+    const referenceX = Number(anchor.dataset.chordReferenceX);
+    const referenceY = Number(anchor.dataset.chordReferenceY);
     const anchorX = Number(anchor.dataset.chordAnchorX);
     const anchorY = Number(anchor.dataset.chordAnchorY);
     const gap = Number(anchor.dataset.chordGap);
-    const backgroundPadding =
-      anchor.dataset.chordBackground === "true"
-        ? Number(anchor.dataset.chordPadding)
-        : null;
+    const paddingX = Number(anchor.dataset.chordPaddingX);
+    const paddingY = Number(anchor.dataset.chordPaddingY);
+    const rawTextWidth = Number(anchor.dataset.chordTextWidth);
+    const textWidth = Number.isFinite(rawTextWidth) ? rawTextWidth : null;
+    const textAlign =
+      anchor.dataset.chordAlign === "left" ? "left" : "center";
     const x = Number.isFinite(rawX) ? rawX : width / 2;
     const y = Number.isFinite(rawY) ? rawY : -2;
     if (!source || !Number.isFinite(fontSize) || !Number.isFinite(width)) {
       continue;
     }
     try {
+      const textProfile =
+        textSource === undefined
+          ? null
+          : detectTikzTextProfile(textSource, locale);
+      const useEnglishHyphenation =
+        textWidth !== null && textProfile === "latin";
       const element =
         mathSource !== undefined
           ? renderMathLabel(source, containerEl.ownerDocument)
-          : renderMixedLabel(source, containerEl.ownerDocument);
+          : renderMixedLabel(
+              source,
+              containerEl.ownerDocument,
+              useEnglishHyphenation,
+            );
       element.addClass("obsidian-math-chords-tikz-math-overlay");
       if (textSource !== undefined) {
         element.style.fontFamily = tikzCssFontFamily(
@@ -379,12 +404,24 @@ async function renderSvgMathOverlays(
           fonts,
           locale,
         );
+        if (
+          textProfile === "latin" &&
+          normalizeTikzFontName(fonts.latin) === ""
+        ) {
+          element.addClass("uses-tex-font");
+        }
       }
       if (anchor.dataset.chordFontWeight) {
         element.style.fontWeight = anchor.dataset.chordFontWeight;
       }
-      if (backgroundPadding !== null) {
-        element.addClass("has-node-background");
+      if (textWidth !== null) {
+        element.addClass("has-text-width");
+        element.setAttribute(
+          "lang",
+          useEnglishHyphenation && isAsciiText(textSource ?? "")
+            ? "en-US"
+            : locale || containerEl.ownerDocument.documentElement.lang,
+        );
       }
       element.setCssProps({
         position: "static",
@@ -393,9 +430,16 @@ async function renderSvgMathOverlays(
         transform: "none",
         margin: "0",
         color: "var(--text-normal)",
+        backgroundColor: "transparent",
         pointerEvents: "none",
-        whiteSpace: "nowrap",
+        whiteSpace: textWidth === null ? "nowrap" : "normal",
+        textAlign,
+        minWidth: "0",
+        overflowWrap: textWidth === null ? "normal" : "break-word",
+        wordBreak: "normal",
+        hyphens: textWidth === null ? "manual" : "auto",
       });
+      element.style.setProperty("text-align", textAlign, "important");
       if (mathSource !== undefined) {
         element.setCssProps({
           display: "inline-flex",
@@ -410,23 +454,26 @@ async function renderSvgMathOverlays(
         });
       }
       element.style.fontSize = `${fontSize}px`;
-      if (
-        backgroundPadding !== null &&
-        Number.isFinite(backgroundPadding)
-      ) {
-        element.style.padding = `${backgroundPadding}px`;
+      if (Number.isFinite(paddingX) && Number.isFinite(paddingY)) {
+        element.style.padding = `${paddingY}px ${paddingX}px`;
+      }
+      if (textWidth !== null) {
+        element.style.width = `${textWidth}px`;
       }
       measurementEl.appendChild(element);
       overlays.push({
         element,
         x,
         y,
-        alignMathInk: mathSource !== undefined,
+        rotate,
         placement,
+        nodeAnchor,
+        referenceX,
+        referenceY,
         anchorX,
         anchorY,
         gap,
-        backgroundPadding,
+        textAlign,
         anchor,
       });
     } catch {
@@ -439,33 +486,54 @@ async function renderSvgMathOverlays(
   }
 
   try {
-    await finishRenderMath();
+    await finishTikzMathBatch();
+    await ensureTikzTexFonts(containerEl.ownerDocument, overlays);
     const content = svg.querySelector<SVGGElement>(
       'g[data-chord-tikz-content="true"]',
     );
     if (!content) return;
     const svgNamespace = "http://www.w3.org/2000/svg";
     const xhtmlNamespace = "http://www.w3.org/1999/xhtml";
+    const measuredOverlays = overlays.map((overlay) => ({
+      ...overlay,
+      elementRect: overlay.element.getBoundingClientRect(),
+    }));
     for (const {
       element,
       x,
       y,
-      alignMathInk,
+      rotate,
       placement,
+      nodeAnchor,
+      referenceX,
+      referenceY,
       anchorX,
       anchorY,
       gap,
-      backgroundPadding,
+      textAlign,
       anchor,
-    } of overlays) {
-      const ink = alignMathInk
-        ? element.querySelector<HTMLElement>(
-            "mjx-math, mjx-container > svg",
-          )
-        : null;
-      const elementRect = element.getBoundingClientRect();
-      const visibleRect = ink?.getBoundingClientRect() ?? elementRect;
+      elementRect,
+    } of measuredOverlays) {
       let point = { left: x, top: y };
+      if (
+        nodeAnchor &&
+        Number.isFinite(referenceX) &&
+        Number.isFinite(referenceY)
+      ) {
+        const radians = rotate * Math.PI / 180;
+        const visualWidth =
+          elementRect.width * Math.abs(Math.cos(radians)) +
+          elementRect.height * Math.abs(Math.sin(radians));
+        const visualHeight =
+          elementRect.width * Math.abs(Math.sin(radians)) +
+          elementRect.height * Math.abs(Math.cos(radians));
+        point = placeTikzAnchoredNode(
+          { left: referenceX, top: referenceY },
+          nodeAnchor,
+          visualWidth,
+          visualHeight,
+        );
+      }
       if (
         placement &&
         Number.isFinite(anchorX) &&
@@ -475,23 +543,24 @@ async function renderSvgMathOverlays(
         point = placeTikzOverlay(
           { left: anchorX, top: anchorY },
           placement,
-          visibleRect.width,
-          visibleRect.height,
-          backgroundPadding === null ? gap : 0,
-          backgroundPadding === null ? gap : 0,
+          elementRect.width,
+          elementRect.height,
+          gap,
+          gap,
         );
       }
-      const correction = ink
-        ? centerTikzMathInk(
-            elementRect,
-            ink.getBoundingClientRect(),
-          )
-        : { x: 0, y: 0 };
       const width = Math.max(1, elementRect.width);
       const height = Math.max(1, elementRect.height);
+      fitNodeBackgroundToOverlay(
+        anchor,
+        point.left,
+        point.top,
+        width,
+        height,
+      );
       const bounds = tikzEmbeddedOverlayBounds(
         point,
-        correction,
+        { x: 0, y: 0 },
         width,
         height,
       );
@@ -503,6 +572,12 @@ async function renderSvgMathOverlays(
       foreignObject.setAttribute("y", String(bounds.y));
       foreignObject.setAttribute("width", String(bounds.width));
       foreignObject.setAttribute("height", String(bounds.height));
+      if (rotate !== 0) {
+        foreignObject.setAttribute(
+          "transform",
+          `rotate(${-rotate} ${point.left} ${point.top})`,
+        );
+      }
       const wrapper = containerEl.ownerDocument.createElementNS(
         xhtmlNamespace,
         "div",
@@ -510,26 +585,115 @@ async function renderSvgMathOverlays(
       wrapper.setCssProps({
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: textAlign === "left" ? "flex-start" : "center",
         width: "100%",
         height: "100%",
         overflow: "visible",
+        backgroundColor: "transparent",
       });
       wrapper.appendChild(element);
       foreignObject.appendChild(wrapper);
       content.appendChild(foreignObject);
-      anchor.setAttribute("visibility", "hidden");
-      if (backgroundPadding !== null) {
-        const background = anchor.previousElementSibling;
-        if (background?.matches('[data-chord-node-background="true"]')) {
-          background.setAttribute("visibility", "hidden");
-        }
-      }
+      anchor.remove();
     }
-    normalizeSvgBounds(svg);
   } finally {
     measurementEl.remove();
   }
+}
+
+function finishTikzMathBatch(): Promise<void> {
+  if (pendingTikzMathFinish) return pendingTikzMathFinish;
+  const task = Promise.resolve()
+    .then(() => finishRenderMath())
+    .finally(() => {
+      if (pendingTikzMathFinish === task) pendingTikzMathFinish = null;
+    });
+  pendingTikzMathFinish = task;
+  return task;
+}
+
+async function ensureTikzTexFonts(
+  ownerDocument: Document,
+  overlays: readonly TikzMeasuredOverlay[],
+): Promise<void> {
+  const faces = new Set<string>();
+  for (const { element } of overlays) {
+    if (!element.hasClass("uses-tex-font")) continue;
+    faces.add("MJXTEX");
+    if (element.querySelector("strong")) faces.add("MJXTEX-B");
+    if (element.querySelector("em")) faces.add("MJXTEX-I");
+    if (element.querySelector("strong em, em strong")) faces.add("MJXTEX-BI");
+  }
+  if (faces.size === 0) return;
+
+  let loads = tikzTexFontLoads.get(ownerDocument);
+  if (!loads) {
+    loads = new Map();
+    tikzTexFontLoads.set(ownerDocument, loads);
+  }
+  const pending: Promise<void>[] = [];
+  for (const face of faces) {
+    let load = loads.get(face);
+    if (!load) {
+      load = ownerDocument.fonts
+        .load(`10px "${face}"`, "Math Chords")
+        .then(() => undefined, () => undefined);
+      loads.set(face, load);
+    }
+    pending.push(load);
+  }
+  await Promise.all(pending);
+}
+
+function fitNodeBackgroundToOverlay(
+  anchor: SVGTextElement,
+  centerX: number,
+  centerY: number,
+  contentWidth: number,
+  contentHeight: number,
+): void {
+  const background = anchor.previousElementSibling;
+  if (
+    background?.localName.toLowerCase() !== "rect" ||
+    background.getAttribute("data-chord-node-background") !== "true"
+  ) {
+    return;
+  }
+  const minimumWidth = Number(anchor.dataset.chordMinWidth);
+  const minimumHeight = Number(anchor.dataset.chordMinHeight);
+  if (!Number.isFinite(minimumWidth) || !Number.isFinite(minimumHeight)) return;
+  const box = fitTikzNodeBox(
+    { x: centerX, y: centerY },
+    { width: minimumWidth, height: minimumHeight },
+    { width: contentWidth, height: contentHeight },
+  );
+  background.setAttribute("x", String(box.x));
+  background.setAttribute("y", String(box.y));
+  background.setAttribute("width", String(box.width));
+  background.setAttribute("height", String(box.height));
+}
+
+function parseTikzNodeAnchor(value: string | undefined): TikzNodeAnchor | null {
+  switch (value) {
+    case "center":
+    case "north":
+    case "south":
+    case "east":
+    case "west":
+    case "north-east":
+    case "north-west":
+    case "south-east":
+    case "south-west":
+      return value;
+    default:
+      return null;
+  }
+}
+
+function isAsciiText(source: string): boolean {
+  return Array.from(source).every(
+    (character) => (character.codePointAt(0) ?? 0) <= 0x7f,
+  );
 }
 
 function parseTikzOverlayPlacement(
@@ -558,22 +722,15 @@ function renderMathLabel(source: string, ownerDocument: Document): HTMLElement {
   return element;
 }
 
-function renderMixedLabel(source: string, ownerDocument: Document): HTMLElement {
+function renderMixedLabel(
+  source: string,
+  ownerDocument: Document,
+  hyphenateEnglish: boolean,
+): HTMLElement {
   const element = ownerDocument.body.createSpan();
   element.detach();
   element.addClass("is-mixed-label");
-  let cursor = 0;
-  for (const match of source.matchAll(/\$([^$]+)\$/g)) {
-    const index = match.index;
-    if (index > cursor) {
-      appendMixedText(element, source.slice(cursor, index), ownerDocument);
-    }
-    element.appendChild(renderMath(match[1], false));
-    cursor = index + match[0].length;
-  }
-  if (cursor < source.length) {
-    appendMixedText(element, source.slice(cursor), ownerDocument);
-  }
+  appendMixedText(element, source, ownerDocument, hyphenateEnglish);
   return element;
 }
 
@@ -581,12 +738,108 @@ function appendMixedText(
   element: HTMLElement,
   source: string,
   ownerDocument: Document,
+  hyphenateEnglish: boolean,
 ): void {
-  const lines = source.split(String.raw`\\`);
-  lines.forEach((line, index) => {
-    if (index > 0) element.createEl("br");
-    if (line) element.appendChild(ownerDocument.createTextNode(line));
-  });
+  appendTikzMixedFragment(
+    element,
+    source,
+    ownerDocument,
+    hyphenateEnglish,
+  );
+}
+
+function appendTikzMixedFragment(
+  parent: HTMLElement,
+  source: string,
+  ownerDocument: Document,
+  hyphenateEnglish: boolean,
+): void {
+  let cursor = 0;
+  let plainStart = 0;
+  const flush = (end: number): void => {
+    if (end <= plainStart) return;
+    const plainText = source
+      .slice(plainStart, end)
+      .replace(/--/g, "\u2013");
+    parent.appendChild(
+      ownerDocument.createTextNode(
+        hyphenateEnglish
+          ? hyphenateEnglishTikzText(plainText)
+          : plainText,
+      ),
+    );
+  };
+  while (cursor < source.length) {
+    if (source[cursor] === "$") {
+      const close = source.indexOf("$", cursor + 1);
+      if (close < 0) {
+        cursor += 1;
+        continue;
+      }
+      flush(cursor);
+      parent.appendChild(
+        renderMath(source.slice(cursor + 1, close), false),
+      );
+      cursor = close + 1;
+      plainStart = cursor;
+      continue;
+    }
+    if (source.startsWith(String.raw`\\`, cursor)) {
+      flush(cursor);
+      cursor += 2;
+      const spacing = source.slice(cursor).match(/^\[[^\]]*\]/)?.[0];
+      if (spacing) cursor += spacing.length;
+      parent.createEl("br");
+      plainStart = cursor;
+      continue;
+    }
+    const formatting = source
+      .slice(cursor)
+      .match(/^\\(textbf|textit)\s*\{/);
+    if (formatting) {
+      flush(cursor);
+      const open = cursor + formatting[0].length - 1;
+      const close = matchingTextBrace(source, open);
+      if (close < 0) {
+        parent.appendChild(
+          ownerDocument.createTextNode(source.slice(cursor)),
+        );
+        return;
+      }
+      const child = parent.createEl(
+        formatting[1] === "textbf" ? "strong" : "em",
+      );
+      appendTikzMixedFragment(
+        child,
+        source.slice(open + 1, close),
+        ownerDocument,
+        hyphenateEnglish,
+      );
+      cursor = close + 1;
+      plainStart = cursor;
+      continue;
+    }
+    if (source.startsWith(String.raw`\ `, cursor)) {
+      flush(cursor);
+      parent.appendChild(ownerDocument.createTextNode(" "));
+      cursor += 2;
+      plainStart = cursor;
+      continue;
+    }
+    cursor += 1;
+  }
+  flush(source.length);
+}
+
+function matchingTextBrace(source: string, start: number): number {
+  let depth = 0;
+  for (let index = start; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    if (source[index] !== "}") continue;
+    depth -= 1;
+    if (depth === 0) return index;
+  }
+  return -1;
 }
 
 async function renderPdf(

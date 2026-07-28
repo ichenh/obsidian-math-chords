@@ -24,6 +24,14 @@ describe("TikZ font selection", () => {
       .toContain('"Source Han Serif K", "Noto Serif CJK KR", "Batang"');
   });
 
+  it("uses Obsidian's loaded TeX font for default Latin TikZ text", () => {
+    expect(tikzCssFontFamily(
+      "electromagnetic field",
+      EMPTY_TIKZ_FONT_PREFERENCES,
+      "en",
+    )).toContain('"MJXTEX", "Latin Modern Roman"');
+  });
+
   it("applies saved font overrides only when customization is enabled", () => {
     const source = {
       tikzCustomFontsEnabled: false,

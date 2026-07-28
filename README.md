@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
-  <img src="https://img.shields.io/badge/Obsidian-1.5.0%2B-7C3AED?logo=obsidian&logoColor=white" alt="Obsidian 1.5.0 or later" />
+  <img src="https://img.shields.io/badge/Obsidian-1.7.2%2B-7C3AED?logo=obsidian&logoColor=white" alt="Obsidian 1.7.2 or later" />
   <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
   <a href="https://github.com/ichenh/obsidian-math-chords/releases/latest"><img src="https://img.shields.io/github/v/release/ichenh/obsidian-math-chords?display_name=tag&sort=semver" alt="Latest release" /></a>
   <a href="https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml"><img src="https://github.com/ichenh/obsidian-math-chords/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -31,9 +31,9 @@ Math remains the primary workflow, but templates are deliberately not limited to
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.5.5.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.5.6.** See [CHANGELOG](CHANGELOG.md).
 
-**Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
+**Requires Obsidian 1.7.2+.** Keyboard-heavy; desktop recommended.
 
 ![Math Chords demo: leader shortcuts insert LaTeX with live preview](docs/demo.gif)
 

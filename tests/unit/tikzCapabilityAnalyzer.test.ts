@@ -29,12 +29,53 @@ describe("TikZ capability analyzer", () => {
     expect(result).toEqual({ tier: "vector", features: [] });
   });
 
-  it("routes unsupported node anchors to the compatibility tier", () => {
+  it("keeps cardinal node anchors on the vector tier", () => {
     expect(
       analyzeTikzCapabilities(
         String.raw`\node[anchor=north] at (0,0) {advanced};`,
       ),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
+  it("routes unknown node anchors to the compatibility tier", () => {
+    expect(
+      analyzeTikzCapabilities(
+        String.raw`\node[anchor=base east] at (0,0) {advanced};`,
+      ),
     ).toEqual({ tier: "compatibility", features: ["advanced-node"] });
+  });
+
+  it("does not claim unsupported alignments or malformed shifts are vector-safe", () => {
+    expect(
+      analyzeTikzCapabilities(
+        String.raw`\node[align=north, xshift=far] at (0,0) {text};`,
+      ).features,
+    ).toContain("advanced-node");
+  });
+
+  it("keeps rotated plate labels and cubic fringing fields on the vector tier", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \begin{tikzpicture}[
+          scale=1.0,
+          >=stealth,
+          line cap=round,
+          line join=round,
+          every node/.style={font=\small}
+        ]
+          \draw[thick, fill=gray!8]
+            (-2.15,-2.05) rectangle (-1.90,2.05);
+          \foreach \y in {-1.65,-1.10,-0.55,0,0.55,1.10,1.65}{
+            \node at (-1.72,\y) {$+$};
+          }
+          \draw[->, thick]
+            (-1.78,1.48)
+            .. controls (-0.95,1.82) and (0.95,1.82) ..
+            (1.78,1.48);
+          \node[rotate=90] at (-2.55,0) {positive plate};
+        \end{tikzpicture}
+      `),
+    ).toEqual({ tier: "vector", features: [] });
   });
 
   it("keeps bounded ellipses and parametric plots on the vector tier", () => {
@@ -45,6 +86,28 @@ describe("TikZ capability analyzer", () => {
         \draw (0,0) ellipse [x radius=\a, y radius=\b];
         \fill (0,0) -- plot[domain=140:200, samples=50]
           ({\a*cos(\x)},{\b*sin(\x)}) -- cycle;
+      `),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
+  it("routes parametric plot options outside the implemented contract", () => {
+    expect(
+      analyzeTikzCapabilities(
+        String.raw`\draw plot[domain=0:1, samples=20, variable=\t] ({\t},{\t});`,
+      ).features,
+    ).toContain("parametric-plot");
+  });
+
+  it("keeps bounded smooth coordinate plots on the vector tier", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \begin{tikzpicture}[x=1cm,y=1cm,scale=1.0]
+          \draw[thick]
+          plot[smooth] coordinates {
+            (-2.10,0.58) (-2.90,0.78) (-2.70,1.95) (0,2.55)
+            (2.70,1.95) (2.90,0.78) (2.10,0.58)
+          };
+        \end{tikzpicture}
       `),
     ).toEqual({ tier: "vector", features: [] });
   });
@@ -175,7 +238,15 @@ describe("TikZ capability analyzer", () => {
     ).toEqual({ tier: "vector", features: [] });
   });
 
-  it("routes full TeX text boxes to the local compatibility renderer", () => {
+  it("routes arrow-tip families that are not geometrically implemented", () => {
+    expect(
+      analyzeTikzCapabilities(
+        String.raw`\begin{tikzpicture}[>=latex]\draw[->] (0,0)--(1,0);\end{tikzpicture}`,
+      ).features,
+    ).toContain("unsupported-option");
+  });
+
+  it("keeps publication-style text boxes on the vector tier", () => {
     const result = analyzeTikzCapabilities(String.raw`
       \begin{tikzpicture}[
         x=1cm,
@@ -201,8 +272,7 @@ describe("TikZ capability analyzer", () => {
       \end{tikzpicture}
     `);
 
-    expect(result.tier).toBe("compatibility");
-    expect(result.features).toContain("advanced-node");
+    expect(result).toEqual({ tier: "vector", features: [] });
   });
 
   it("keeps mixed-math flowcharts and foreach ranges on the vector tier", () => {

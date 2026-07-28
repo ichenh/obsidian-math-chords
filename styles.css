@@ -1505,7 +1505,9 @@ body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
   transform-origin: center;
   white-space: nowrap;
   color: var(--text-normal);
+  background: transparent;
   font-family:
+    "MJXTEX",
     "Latin Modern Roman",
     "CMU Serif",
     "STIX Two Text",
@@ -1527,12 +1529,38 @@ body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
 
 .obsidian-math-chords-tikz-math-overlay.has-node-background {
   box-sizing: content-box;
-  background: var(--background-primary);
+  background: transparent;
 }
 
 .obsidian-math-chords-tikz-math-overlay.is-mixed-label {
   display: inline-block;
   line-height: 1.15;
+}
+
+.obsidian-math-chords-tikz-math-overlay.uses-tex-font strong {
+  font-family: "MJXTEX-B", "MJXTEX", serif;
+  font-weight: 400;
+}
+
+.obsidian-math-chords-tikz-math-overlay.uses-tex-font em {
+  font-family: "MJXTEX-I", "MJXTEX", serif;
+  font-style: normal;
+}
+
+.obsidian-math-chords-tikz-math-overlay.uses-tex-font strong em,
+.obsidian-math-chords-tikz-math-overlay.uses-tex-font em strong {
+  font-family: "MJXTEX-BI", "MJXTEX-I", "MJXTEX", serif;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.obsidian-math-chords-tikz-math-overlay.has-text-width {
+  display: block;
+  min-width: 0;
+  white-space: normal !important;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
 }
 
 .obsidian-math-chords-tikz-math-overlay.is-mixed-label > .math {
@@ -1552,6 +1580,20 @@ body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
 .obsidian-math-chords-tikz-preview-output svg {
   width: auto;
   object-fit: contain;
+  overflow: visible;
+}
+
+.print .obsidian-math-chords-tikz-preview,
+.print .obsidian-math-chords-tikz-preview-output {
+  overflow: visible !important;
+  break-inside: avoid;
+}
+
+.print .obsidian-math-chords-tikz-preview-output svg,
+.print .obsidian-math-chords-tikz-preview-output canvas {
+  width: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 .obsidian-math-chords-tikz-preview-error {
