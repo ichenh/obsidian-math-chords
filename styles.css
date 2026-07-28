@@ -1557,7 +1557,7 @@ body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
 .obsidian-math-chords-tikz-math-overlay.has-text-width {
   display: block;
   min-width: 0;
-  white-space: normal !important;
+  white-space: normal;
   overflow-wrap: break-word;
   word-break: normal;
   hyphens: auto;
@@ -1585,8 +1585,8 @@ body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
 
 .print .obsidian-math-chords-tikz-preview,
 .print .obsidian-math-chords-tikz-preview-output {
-  overflow: visible !important;
-  break-inside: avoid;
+  overflow: visible;
+  page-break-inside: avoid;
 }
 
 .print .obsidian-math-chords-tikz-preview-output svg,

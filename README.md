@@ -31,7 +31,7 @@ Math remains the primary workflow, but templates are deliberately not limited to
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.5.6.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.5.7.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.7.2+.** Keyboard-heavy; desktop recommended.
 

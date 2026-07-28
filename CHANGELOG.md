@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.7] - 2026-07-28
+
+### Fixed
+
+- Removed redundant TikZ print `!important` declarations and replaced the partially supported multicolumn break property with its print-specific compatibility form.
+
 ## [0.5.6] - 2026-07-28
 
 ### Changed
