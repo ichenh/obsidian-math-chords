@@ -3,6 +3,7 @@ import {
   centerTikzMathInk,
   mapTikzOverlayPoint,
   placeTikzOverlay,
+  tikzEmbeddedOverlayBounds,
 } from "../../src/tikz/overlayPosition";
 
 describe("TikZ MathJax overlay positioning", () => {
@@ -63,5 +64,16 @@ describe("TikZ MathJax overlay positioning", () => {
         4,
       ),
     ).toEqual({ left: 83, top: 67 });
+  });
+
+  it("bakes the corrected label box into SVG user coordinates", () => {
+    expect(
+      tikzEmbeddedOverlayBounds(
+        { left: 120, top: 80 },
+        { x: -2, y: 3 },
+        40,
+        18,
+      ),
+    ).toEqual({ x: 98, y: 74, width: 40, height: 18 });
   });
 });

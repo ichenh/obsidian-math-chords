@@ -221,6 +221,11 @@ async function discoverNativeTikzEngines(
     );
     if (executablePath) discovered.push({ kind, executablePath });
   }
+  if (dvisvgmPath) {
+    for (const engine of discovered) {
+      engine.dvisvgmPath ??= dvisvgmPath;
+    }
+  }
 
   if (!discovered.some((engine) => engine.kind === "latex-dvi")) {
     const latexPath = await findExecutable(

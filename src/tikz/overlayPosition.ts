@@ -68,3 +68,19 @@ export function placeTikzOverlay(
   }
   return { left, top };
 }
+
+export function tikzEmbeddedOverlayBounds(
+  center: { left: number; top: number },
+  correction: { x: number; y: number },
+  width: number,
+  height: number,
+): { x: number; y: number; width: number; height: number } {
+  const safeWidth = Math.max(1, width);
+  const safeHeight = Math.max(1, height);
+  return {
+    x: center.left + correction.x - safeWidth / 2,
+    y: center.top + correction.y - safeHeight / 2,
+    width: safeWidth,
+    height: safeHeight,
+  };
+}

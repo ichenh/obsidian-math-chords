@@ -1,4 +1,5 @@
 import { MATH_CHORDS_TIKZ_PROTOCOL_VERSION } from "../tikzEngineManifest";
+import { analyzeTikzCapabilities } from "../capabilityAnalyzer";
 import type { TikzRenderArtifact, TikzRenderBackend } from "../types";
 import {
   CHORD_TIKZ_ENGINE_VERSION,
@@ -61,6 +62,12 @@ export class ChordTikzWasmBackend implements TikzRenderBackend {
     signal?: AbortSignal,
   ): Promise<TikzRenderArtifact> {
     if (signal?.aborted) throw abortError();
+    const capability = analyzeTikzCapabilities(source);
+    if (capability.tier === "compatibility") {
+      throw new Error(
+        `Publication-accurate rendering for this TikZ source requires Automatic or local TeX mode: ${capability.features.join(", ")}.`,
+      );
+    }
     await this.initialize();
     const worker = this.worker;
     if (!worker) throw new Error("The Chord TikZ worker did not initialize.");

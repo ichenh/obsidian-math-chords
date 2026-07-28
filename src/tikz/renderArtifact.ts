@@ -2,8 +2,8 @@ import { finishRenderMath, loadMathJax, loadPdfJs, renderMath } from "obsidian";
 import type { TikzRenderArtifact } from "./types";
 import {
   centerTikzMathInk,
-  mapTikzOverlayPoint,
   placeTikzOverlay,
+  tikzEmbeddedOverlayBounds,
   type TikzOverlayPlacement,
 } from "./overlayPosition";
 import {
@@ -13,11 +13,14 @@ import {
 } from "./fonts";
 import {
   TIKZ_DISPLAY_SCALE,
+  tikzPdfPixelRatio,
   tikzSvgCssScale,
 } from "./displayMetrics";
 import { isSafeSvgAttributeValue } from "./svgSecurity";
+import { unionTikzSvgBounds } from "./svgGeometry";
+import { namespaceTikzSvgIds } from "./svgInstances";
 
-const overlayObservers = new WeakMap<HTMLElement, ResizeObserver>();
+let svgInstanceId = 0;
 const SAFE_SVG_ELEMENTS = new Set([
   "svg",
   "g",
@@ -81,6 +84,7 @@ const SAFE_SVG_ATTRIBUTES = new Set([
   "stroke-linejoin",
   "stroke-miterlimit",
   "opacity",
+  "color",
   "clip-path",
   "clip-rule",
   "mask",
@@ -151,9 +155,6 @@ export async function renderTikzArtifact(
   locale = "",
   accessibleName = "",
 ): Promise<void> {
-  overlayObservers.get(containerEl)?.disconnect();
-  overlayObservers.delete(containerEl);
-  containerEl.removeClass("has-math-overlays");
   containerEl.removeAttribute("role");
   containerEl.removeAttribute("aria-label");
   if (artifact.mediaType === "image/svg+xml") {
@@ -224,6 +225,7 @@ function parseSafeSvg(bytes: Uint8Array, ownerDocument: Document): SVGSVGElement
     }
   }
 
+  namespaceTikzSvgIds(root, `chord-tikz-${++svgInstanceId}-`);
   ensureSvgContentGroup(root);
   return ownerDocument.importNode(root, true) as unknown as SVGSVGElement;
 }
@@ -265,11 +267,17 @@ function normalizeSvgBounds(svg: SVGSVGElement): boolean {
       currentViewBox.width,
       svg.hasAttribute("data-chord-display-scale"),
     );
-    const padding = 1;
-    const x = bounds.x - padding;
-    const y = bounds.y - padding;
-    const width = bounds.width + padding * 2;
-    const height = bounds.height + padding * 2;
+    const visualBounds = unionTikzSvgBounds(
+      {
+        x: currentViewBox.x,
+        y: currentViewBox.y,
+        width: currentViewBox.width,
+        height: currentViewBox.height,
+      },
+      bounds,
+      1,
+    );
+    const { x, y, width, height } = visualBounds;
     svg.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
     svg.setAttribute("width", `${width * displayScale}px`);
     svg.setAttribute("height", `${height * displayScale}px`);
@@ -314,10 +322,18 @@ async function renderSvgMathOverlays(
     return;
   }
 
+  const measurementEl = containerEl.ownerDocument.body.createDiv({
+    cls: "obsidian-math-chords-tikz-overlay-measurement",
+  });
+  measurementEl.setCssProps({
+    position: "fixed",
+    top: "0",
+    left: "-100000px",
+    visibility: "hidden",
+    pointerEvents: "none",
+  });
   const overlays: Array<{
     element: HTMLElement;
-    fontSize: number;
-    width: number;
     x: number;
     y: number;
     alignMathInk: boolean;
@@ -370,11 +386,39 @@ async function renderSvgMathOverlays(
       if (backgroundPadding !== null) {
         element.addClass("has-node-background");
       }
-      containerEl.appendChild(element);
+      element.setCssProps({
+        position: "static",
+        left: "auto",
+        top: "auto",
+        transform: "none",
+        margin: "0",
+        color: "var(--text-normal)",
+        pointerEvents: "none",
+        whiteSpace: "nowrap",
+      });
+      if (mathSource !== undefined) {
+        element.setCssProps({
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          lineHeight: "1",
+        });
+      } else {
+        element.setCssProps({
+          display: "inline-block",
+          lineHeight: "1.15",
+        });
+      }
+      element.style.fontSize = `${fontSize}px`;
+      if (
+        backgroundPadding !== null &&
+        Number.isFinite(backgroundPadding)
+      ) {
+        element.style.padding = `${backgroundPadding}px`;
+      }
+      measurementEl.appendChild(element);
       overlays.push({
         element,
-        fontSize,
-        width,
         x,
         y,
         alignMathInk: mathSource !== undefined,
@@ -389,31 +433,21 @@ async function renderSvgMathOverlays(
       // Keep the WASM text fallback visible when MathJax rejects a formula.
     }
   }
-  if (overlays.length === 0) return;
-
-  await finishRenderMath();
-  normalizeSvgBounds(svg);
-  for (const { anchor, backgroundPadding } of overlays) {
-    anchor.setAttribute("visibility", "hidden");
-    if (backgroundPadding !== null) {
-      const background = anchor.previousElementSibling;
-      if (background?.matches('[data-chord-node-background="true"]')) {
-        background.setAttribute("visibility", "hidden");
-      }
-    }
+  if (overlays.length === 0) {
+    measurementEl.remove();
+    return;
   }
-  containerEl.addClass("has-math-overlays");
 
-  const position = (): void => {
-    if (!containerEl.isConnected) {
-      overlayObservers.get(containerEl)?.disconnect();
-      overlayObservers.delete(containerEl);
-      return;
-    }
-    const containerRect = containerEl.getBoundingClientRect();
+  try {
+    await finishRenderMath();
+    const content = svg.querySelector<SVGGElement>(
+      'g[data-chord-tikz-content="true"]',
+    );
+    if (!content) return;
+    const svgNamespace = "http://www.w3.org/2000/svg";
+    const xhtmlNamespace = "http://www.w3.org/1999/xhtml";
     for (const {
       element,
-      fontSize,
       x,
       y,
       alignMathInk,
@@ -424,70 +458,77 @@ async function renderSvgMathOverlays(
       backgroundPadding,
       anchor,
     } of overlays) {
-      const matrix = anchor.getScreenCTM();
-      if (!matrix) continue;
-      let point = mapTikzOverlayPoint(
-        matrix,
-        x,
-        y,
-        containerRect.left,
-        containerRect.top,
-      );
-      element.style.fontSize = `${fontSize * Math.hypot(matrix.a, matrix.b)}px`;
-      if (
-        backgroundPadding !== null &&
-        Number.isFinite(backgroundPadding)
-      ) {
-        element.style.padding =
-          `${backgroundPadding * Math.hypot(matrix.a, matrix.b)}px`;
-      }
       const ink = alignMathInk
         ? element.querySelector<HTMLElement>(
             "mjx-math, mjx-container > svg",
           )
         : null;
-      const visibleRect = ink?.getBoundingClientRect()
-        ?? element.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      const visibleRect = ink?.getBoundingClientRect() ?? elementRect;
+      let point = { left: x, top: y };
       if (
         placement &&
         Number.isFinite(anchorX) &&
         Number.isFinite(anchorY) &&
         Number.isFinite(gap)
       ) {
-        const anchorPoint = mapTikzOverlayPoint(
-          matrix,
-          anchorX,
-          anchorY,
-          containerRect.left,
-          containerRect.top,
-        );
         point = placeTikzOverlay(
-          anchorPoint,
+          { left: anchorX, top: anchorY },
           placement,
           visibleRect.width,
           visibleRect.height,
-          gap * Math.hypot(matrix.a, matrix.b),
-          gap * Math.hypot(matrix.c, matrix.d),
+          backgroundPadding === null ? gap : 0,
+          backgroundPadding === null ? gap : 0,
         );
       }
       const correction = ink
         ? centerTikzMathInk(
-            element.getBoundingClientRect(),
+            elementRect,
             ink.getBoundingClientRect(),
           )
         : { x: 0, y: 0 };
-      element.style.left = `${point.left + correction.x}px`;
-      element.style.top = `${point.top + correction.y}px`;
+      const width = Math.max(1, elementRect.width);
+      const height = Math.max(1, elementRect.height);
+      const bounds = tikzEmbeddedOverlayBounds(
+        point,
+        correction,
+        width,
+        height,
+      );
+      const foreignObject = containerEl.ownerDocument.createElementNS(
+        svgNamespace,
+        "foreignObject",
+      );
+      foreignObject.setAttribute("x", String(bounds.x));
+      foreignObject.setAttribute("y", String(bounds.y));
+      foreignObject.setAttribute("width", String(bounds.width));
+      foreignObject.setAttribute("height", String(bounds.height));
+      const wrapper = containerEl.ownerDocument.createElementNS(
+        xhtmlNamespace,
+        "div",
+      );
+      wrapper.setCssProps({
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
+        overflow: "visible",
+      });
+      wrapper.appendChild(element);
+      foreignObject.appendChild(wrapper);
+      content.appendChild(foreignObject);
+      anchor.setAttribute("visibility", "hidden");
+      if (backgroundPadding !== null) {
+        const background = anchor.previousElementSibling;
+        if (background?.matches('[data-chord-node-background="true"]')) {
+          background.setAttribute("visibility", "hidden");
+        }
+      }
     }
-  };
-
-  position();
-  const ResizeObserverCtor = containerEl.ownerDocument.defaultView?.ResizeObserver;
-  if (ResizeObserverCtor) {
-    const observer = new ResizeObserverCtor(position);
-    observer.observe(svg);
-    observer.observe(containerEl);
-    overlayObservers.set(containerEl, observer);
+    normalizeSvgBounds(svg);
+  } finally {
+    measurementEl.remove();
   }
 }
 
@@ -564,9 +605,12 @@ async function renderPdf(
         TIKZ_DISPLAY_SCALE,
         availableWidth / baseViewport.width,
       );
-      const pixelRatio = Math.min(
+      const pixelRatio = tikzPdfPixelRatio(
+        baseViewport.width,
+        baseViewport.height,
+        cssScale,
         containerEl.ownerDocument.defaultView?.devicePixelRatio ?? 1,
-        2,
+        containerEl.closest(".print") !== null,
       );
       const viewport = page.getViewport({ scale: cssScale * pixelRatio });
       const canvas = containerEl.createEl("canvas");

@@ -31,7 +31,7 @@ Math remains the primary workflow, but templates are deliberately not limited to
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.5.4.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.5.5.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.5.0+.** Keyboard-heavy; desktop recommended.
 
@@ -358,16 +358,19 @@ opt-in editor preview never replaces or inserts content into CodeMirror layout:
 clicking a TikZ block opens an independent draggable and resizable live-render
 window, while clicking elsewhere closes it. Source remains visible until the first
 diagram is ready, and the previous successful frame remains in place during edits.
-The diagram fits the window without scrollbars. On desktop, the export button opens
-the system save dialog directly; the chosen
+The floating diagram fits its window without scrollbars, while Reading-view diagrams
+follow their SVG content height without creating an internal scrolling region. On
+desktop, the export button opens the system save dialog directly; the chosen
 `.svg`, `.png`, `.jpg`/`.jpeg`, or `.pdf` filename extension selects the output
 format.
 
 Reading view starts work only for diagrams near the viewport. Completed artifacts are
 kept in a bounded in-memory cache (up to 24 entries / 16 MiB) and a bounded persistent
 cache (up to 96 entries / 32 MiB), so revisiting unchanged diagrams usually avoids a
-new compile. The settings page can copy a compact diagnostic report, clear these
-caches, or restart the render engines without adding a status-bar item.
+new compile. Print-oriented Markdown exporters trigger and wait for every TikZ block,
+including blocks that were never scrolled into view. The settings page can copy a
+compact diagnostic report, clear these caches, or restart the render engines without
+adding a status-bar item.
 
 ```tikz
 \begin{tikzpicture}
@@ -381,13 +384,15 @@ remains ordinary Markdown, and changing the backend does not rewrite the note. M
 inside built-in-renderer nodes is typeset by Obsidian's MathJax, so formulas match
 ordinary Markdown math.
 
-- **Built-in WASM (default and recommended):** uses Math Chords' original Rust vector core, starts quickly, requires no TeX installation or runtime download, and renders away from the main editing thread. It is the primary renderer and is expanded directly as more TikZ syntax is supported.
-- **Local TeX (advanced compatibility):** slower and desktop-only because it launches an installed TeX toolchain. Keep it for packages such as `pgfplots` or `circuitikz`, document-specific macros and styles, specialized OpenType/CJK font work, and cases where output must match a formal TeX build. Math Chords detects TeX Live, MiKTeX, MacTeX, TinyTeX, Tectonic, and compatible executables through PATH or an override path.
+- **Built-in WASM (default and recommended):** uses Math Chords' original Rust vector core, starts quickly, requires no TeX installation or runtime download, and renders away from the main editing thread. Its output remains vector SVG in Markdown and print exports. It is the primary renderer and is expanded directly as more TikZ syntax is supported.
+- **Local TeX (advanced compatibility):** slower and desktop-only because it launches an installed TeX toolchain. Keep it for packages such as `pgfplots` or `circuitikz`, document-specific macros and styles, full TeX text boxes, specialized OpenType/CJK font work, and cases where output must match a formal TeX build. Ordinary diagrams prefer the DVI-to-SVG path for crisp Markdown and print output. PDF-producing engines also convert to path-based SVG when the installed `dvisvgm` has PDF support, while retaining the original vector PDF for direct export. Math Chords detects TeX Live, MiKTeX, MacTeX, TinyTeX, Tectonic, and compatible executables through PATH or an override path.
 - **Automatic:** uses the same built-in WASM instance and cache for supported diagrams, then selects local TeX for syntax the capability check cannot reproduce faithfully or when WASM fails. This preserves the fast path without returning a plausible but incorrect diagram.
 
 This division keeps the common path fast and installation-free without removing the
 full TeX ecosystem as an explicit escape hatch. Math Chords does not download an
-engine or silently install TeX.
+engine or silently install TeX. Changing the backend immediately refreshes TikZ in
+every open Markdown view and the selected editor preview; source blocks do not need
+to be reopened individually.
 
 Only render TikZ source you trust. Although the native backend disables shell escape and restricts TeX file access, TeX is a complex interpreter. The WASM backend stays inside Obsidian's renderer process and does not invoke local executables.
 

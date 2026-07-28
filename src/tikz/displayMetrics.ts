@@ -1,6 +1,8 @@
 export const TIKZ_DISPLAY_SCALE = 1.5;
 
 const CSS_PIXELS_PER_INCH = 96;
+const MAX_PDF_RASTER_PIXELS = 16_000_000;
+const MAX_PDF_RASTER_DIMENSION = 8_192;
 
 export function svgLengthToCssPixels(value: string): number | null {
   const match =
@@ -41,4 +43,28 @@ export function tikzSvgCssScale(
   return displayScaleApplied
     ? intrinsicScale
     : intrinsicScale * TIKZ_DISPLAY_SCALE;
+}
+
+export function tikzPdfPixelRatio(
+  width: number,
+  height: number,
+  cssScale: number,
+  devicePixelRatio: number,
+  printRender: boolean,
+): number {
+  const safeWidth = Math.max(1, width * cssScale);
+  const safeHeight = Math.max(1, height * cssScale);
+  const target = Math.max(
+    Number.isFinite(devicePixelRatio) ? devicePixelRatio : 1,
+    printRender ? 4 : 2,
+  );
+  const dimensionLimit =
+    MAX_PDF_RASTER_DIMENSION / Math.max(safeWidth, safeHeight);
+  const pixelLimit = Math.sqrt(
+    MAX_PDF_RASTER_PIXELS / (safeWidth * safeHeight),
+  ) * (1 - 1e-12);
+  return Math.max(
+    Number.EPSILON,
+    Math.min(target, dimensionLimit, pixelLimit),
+  );
 }

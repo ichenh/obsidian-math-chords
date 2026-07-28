@@ -9,6 +9,7 @@ export interface TikzRenderRequest {
 
 export interface TikzRenderArtifact {
   bytes: Uint8Array;
+  exportPdfBytes?: Uint8Array;
   mediaType: "application/pdf" | "image/svg+xml";
   backend: Exclude<TikzBackendMode, "auto">;
   durationMs: number;

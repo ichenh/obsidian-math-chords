@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   svgLengthToCssPixels,
+  tikzPdfPixelRatio,
   tikzSvgCssScale,
 } from "../../src/tikz/displayMetrics";
 
@@ -27,5 +28,17 @@ describe("TikZ cross-backend display metrics", () => {
     const texCentimeter =
       tikzSvgCssScale("42.675pt", 28.45, true) * 28.45;
     expect(wasmCentimeter).toBeCloseTo(texCentimeter, 0);
+  });
+
+  it("uses publication-density PDF fallbacks for print documents", () => {
+    expect(tikzPdfPixelRatio(400, 300, 1.5, 1, true)).toBe(4);
+    expect(tikzPdfPixelRatio(400, 300, 1.5, 1, false)).toBe(2);
+  });
+
+  it("bounds PDF fallback memory and dimensions", () => {
+    const ratio = tikzPdfPixelRatio(4_000, 3_000, 1.5, 1, true);
+    expect(4_000 * 1.5 * ratio).toBeLessThanOrEqual(8_192);
+    expect(4_000 * 3_000 * 1.5 ** 2 * ratio ** 2)
+      .toBeLessThanOrEqual(16_000_000);
   });
 });

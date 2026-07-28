@@ -1483,7 +1483,7 @@ body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
 
 .obsidian-math-chords-tikz-preview-output {
   display: block;
-  overflow: auto;
+  overflow: visible;
 }
 
 .obsidian-math-chords-tikz-preview-output.is-staging {
@@ -1494,10 +1494,6 @@ body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
   height: var(--obsidian-math-chords-tikz-staging-height);
   visibility: hidden;
   pointer-events: none;
-}
-
-.obsidian-math-chords-tikz-preview-output.has-math-overlays {
-  position: relative;
 }
 
 .obsidian-math-chords-tikz-math-overlay {

@@ -22,9 +22,9 @@ describe("native TikZ engine capabilities", () => {
     ]);
   });
 
-  it("prefers the lowest-latency engine for ordinary TikZ", () => {
+  it("prefers the vector DVI path for ordinary TikZ", () => {
     expect(nativeEnginePreference(String.raw`\draw (0,0) circle (1);`)[0]).toBe(
-      "pdflatex",
+      "latex-dvi",
     );
     expect(
       nativeEnginePreference(String.raw`\usepackage{fontspec}`)[0],

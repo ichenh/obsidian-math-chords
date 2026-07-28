@@ -128,6 +128,83 @@ describe("TikZ capability analyzer", () => {
     ).toEqual({ tier: "vector", features: [] });
   });
 
+  it("keeps standard ellipses, chained curves, and local font sizes fast", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \begin{tikzpicture}[
+          scale=1.0,
+          >=stealth,
+          line cap=round,
+          line join=round,
+          every node/.style={font=\small}
+        ]
+          \draw[very thick] (0,0) ellipse (0.62 and 1.80);
+          \node[font=\bfseries\Large] at (0,1.80) {$\odot$};
+          \draw[thick]
+            (-2.70,0.32)
+            .. controls (-1.50,0.20) and (1.50,0.20) ..
+            (2.70,0.32)
+            .. controls (2.55,1.65) and (1.50,2.25) ..
+            (0,2.35);
+        \end{tikzpicture}
+      `),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
+  it("keeps bounded foreach arcs on the vector tier", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \begin{tikzpicture}[every node/.style={font=\small}]
+          \foreach \r in {0.55,0.95,1.45,2.10}{
+            \draw[->, thick]
+              ({-3+\r*cos(-25)},{\r*sin(-25)})
+              arc[start angle=-25,end angle=25,radius=\r];
+          }
+        \end{tikzpicture}
+      `),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
+  it("keeps all basic stealth arrow directions on the vector tier", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \draw[->] (0,0)--(1,0);
+        \draw[<-] (0,1)--(1,1);
+        \draw[<->] (0,2)--(1,2);
+      `),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
+  it("routes full TeX text boxes to the local compatibility renderer", () => {
+    const result = analyzeTikzCapabilities(String.raw`
+      \begin{tikzpicture}[
+        x=1cm,
+        y=1cm,
+        event/.style={
+          draw,
+          rounded corners=4pt,
+          align=left,
+          text width=5.75cm,
+          inner xsep=8pt,
+          inner ysep=6pt
+        },
+        timeline/.style={
+          very thick,
+          ->,
+          shorten >=1pt,
+          shorten <=1pt
+        }
+      ]
+        \node[event, anchor=east] at (-2.05,-0.55)
+          {\textbf{Early observation}\\A long paragraph.};
+        \draw[timeline] (0,0)--(0,-3);
+      \end{tikzpicture}
+    `);
+
+    expect(result.tier).toBe("compatibility");
+    expect(result.features).toContain("advanced-node");
+  });
+
   it("keeps mixed-math flowcharts and foreach ranges on the vector tier", () => {
     expect(
       analyzeTikzCapabilities(String.raw`

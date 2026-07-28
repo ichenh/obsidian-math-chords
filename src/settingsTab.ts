@@ -547,7 +547,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
               () => this.plugin.saveSettings(),
               t("noticeCouldNotSaveSettings"),
             );
-            this.plugin.refreshTikzPreviews();
+            this.plugin.syncTikzRenderingState();
             this.refreshSettingsView();
           }),
       );

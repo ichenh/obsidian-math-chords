@@ -2,11 +2,12 @@ import type { TikzRenderArtifact } from "./types";
 
 const STORE_NAME = "artifacts";
 const META_STORE_NAME = "artifact-metadata";
-const DATABASE_VERSION = 2;
+const DATABASE_VERSION = 3;
 
 interface PersistentCacheRecord {
   key: string;
   bytes: ArrayBuffer;
+  exportPdfBytes?: ArrayBuffer;
   mediaType: TikzRenderArtifact["mediaType"];
   backend: TikzRenderArtifact["backend"];
   durationMs: number;
@@ -36,7 +37,7 @@ export class IndexedDbTikzCache implements TikzPersistentCache {
     private readonly maxEntries = 96,
     private readonly maxBytes = 32 * 1024 * 1024,
   ) {
-    this.databaseName = `math-chords-tikz-${namespace}-v2`;
+    this.databaseName = `math-chords-tikz-${namespace}-v3`;
   }
 
   private readonly databaseName: string;
@@ -60,7 +61,13 @@ export class IndexedDbTikzCache implements TikzPersistentCache {
         if (!record) return;
         if (
           !(record.bytes instanceof ArrayBuffer) ||
-          record.bytes.byteLength !== record.size ||
+          (
+            record.exportPdfBytes !== undefined &&
+            !(record.exportPdfBytes instanceof ArrayBuffer)
+          ) ||
+          record.bytes.byteLength +
+              (record.exportPdfBytes?.byteLength ?? 0) !==
+            record.size ||
           record.size <= 0 ||
           record.size > this.maxBytes
         ) {
@@ -77,6 +84,9 @@ export class IndexedDbTikzCache implements TikzPersistentCache {
         } satisfies PersistentCacheMetadata);
         artifact = {
           bytes: new Uint8Array(record.bytes),
+          exportPdfBytes: record.exportPdfBytes
+            ? new Uint8Array(record.exportPdfBytes)
+            : undefined,
           mediaType: record.mediaType,
           backend: record.backend,
           durationMs: record.durationMs,
@@ -90,7 +100,10 @@ export class IndexedDbTikzCache implements TikzPersistentCache {
   }
 
   async set(key: string, artifact: TikzRenderArtifact): Promise<void> {
-    if (artifact.bytes.byteLength > this.maxBytes) return;
+    const size =
+      artifact.bytes.byteLength +
+      (artifact.exportPdfBytes?.byteLength ?? 0);
+    if (size > this.maxBytes) return;
     const database = await this.open();
     if (!database) return;
 
@@ -98,11 +111,12 @@ export class IndexedDbTikzCache implements TikzPersistentCache {
     const record: PersistentCacheRecord = {
       key,
       bytes: artifact.bytes.slice().buffer,
+      exportPdfBytes: artifact.exportPdfBytes?.slice().buffer,
       mediaType: artifact.mediaType,
       backend: artifact.backend,
       durationMs: artifact.durationMs,
       log: artifact.log,
-      size: artifact.bytes.byteLength,
+      size,
       accessedAt,
     };
     await this.writeRecord(database, record, {

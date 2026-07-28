@@ -16,12 +16,20 @@ export interface TikzCapabilityAnalysis {
 }
 
 const UNSUPPORTED_COMMAND_RE =
-  /\\(?:arc|clip|coordinate|graph|matrix|path|pattern|pic|scope|shade|shadedraw|useasboundingbox)\b/;
+  /\\(?:clip|coordinate|graph|matrix|path|pattern|pic|scope|shade|shadedraw|useasboundingbox)\b/;
+
+const SUPPORTED_NODE_FONT_RE =
+  /^font\s*=\s*(?:\\(?:bfseries|mdseries|itshape|upshape|tiny|scriptsize|small|normalsize|large|Large)\s*)+$/;
 
 export function analyzeTikzCapabilities(source: string): TikzCapabilityAnalysis {
   const content = stripTikzComments(source);
   const features = new Set<TikzCompatibilityFeature>();
   const supportedNodeStyles = supportedBasicNodeStyles(content);
+  const supportedPathStyles = supportedBasicPathStyles(content);
+  const supportedStyles = new Set([
+    ...supportedNodeStyles,
+    ...supportedPathStyles,
+  ]);
 
   if (hasUnsupportedMacroDefinitions(content)) {
     features.add("macro-definition");
@@ -34,12 +42,12 @@ export function analyzeTikzCapabilities(source: string): TikzCapabilityAnalysis 
   if (hasUnsupportedCoordinateExpressions(content)) {
     features.add("coordinate-expression");
   }
-  if (hasUnsupportedCustomStyles(content, supportedNodeStyles)) {
+  if (hasUnsupportedCustomStyles(content, supportedStyles)) {
     features.add("custom-style");
   }
   if (
-    hasUnsupportedPictureOptions(content, supportedNodeStyles) ||
-    hasUnsupportedPathOptions(content)
+    hasUnsupportedPictureOptions(content, supportedStyles) ||
+    hasUnsupportedPathOptions(content, supportedPathStyles)
   ) {
     features.add("unsupported-option");
   }
@@ -68,7 +76,7 @@ export function analyzeTikzCapabilities(source: string): TikzCapabilityAnalysis 
           !option.startsWith("inner sep=") &&
           !option.startsWith("xshift=") &&
           !option.startsWith("yshift=") &&
-          option !== String.raw`font=\bfseries` &&
+          !SUPPORTED_NODE_FONT_RE.test(option) &&
           !supportedNodeStyles.has(option) &&
           ![
             "above",
@@ -121,7 +129,7 @@ function hasUnsupportedPictureOptions(
         ) ||
         /^scale\s*=\s*(?:\d+(?:\.\d*)?|\.\d+)$/.test(option) ||
         /^>=\s*(?:stealth|latex)$/.test(option) ||
-        /^every\s+node\s*\/\.style\s*=\s*\{\s*font\s*=\s*\\(?:tiny|scriptsize|small|normalsize)\s*\}$/.test(
+        /^every\s+node\s*\/\.style\s*=\s*\{\s*font\s*=\s*\\(?:tiny|scriptsize|small|normalsize|large|Large)\s*\}$/.test(
           option,
         ) ||
         [...supportedStyles].some((name) =>
@@ -136,7 +144,10 @@ function hasUnsupportedPictureOptions(
   }
 }
 
-function hasUnsupportedPathOptions(source: string): boolean {
+function hasUnsupportedPathOptions(
+  source: string,
+  supportedStyles: ReadonlySet<string>,
+): boolean {
   for (const match of source.matchAll(
     /\\(?:draw|fill|filldraw)\s*\[([^\]]*)\]/g,
   )) {
@@ -144,9 +155,13 @@ function hasUnsupportedPathOptions(source: string): boolean {
       const option = raw.trim();
       if (
         !option ||
-        /^(?:->|<->|thin|thick|very thick|dashed)$/.test(option) ||
-        /^(?:draw|fill)\s*=\s*/.test(option) &&
-          isSupportedVectorColor(option.replace(/^[^=]+=/, "")) ||
+        supportedStyles.has(option) ||
+        /^(?:->|<-|<->|thin|thick|very thick|dashed)$/.test(option) ||
+        /^shorten\s+(?:>=|<=)\s*[0-9.+-]+(?:cm|mm|pt|in)?$/.test(option) ||
+        (
+          /^(?:draw|fill)\s*=\s*/.test(option) &&
+          isSupportedVectorColor(option.replace(/^[^=]+=/, ""))
+        ) ||
         isSupportedVectorColor(option)
       ) {
         continue;
@@ -168,7 +183,7 @@ function hasUnsupportedCustomStyles(
   supportedStyles: ReadonlySet<string>,
 ): boolean {
   let remaining = source.replace(
-    /every\s+node\s*\/\.style\s*=\s*\{\s*font\s*=\s*\\(?:tiny|scriptsize|small|normalsize)\s*\}/g,
+    /every\s+node\s*\/\.style\s*=\s*\{\s*font\s*=\s*\\(?:tiny|scriptsize|small|normalsize|large|Large)\s*\}/g,
     "",
   );
   for (const name of supportedStyles) {
@@ -207,6 +222,45 @@ function supportedBasicNodeStyles(source: string): Set<string> {
   return result;
 }
 
+function supportedBasicPathStyles(source: string): Set<string> {
+  const definitions = new Map<string, string[]>();
+  for (const match of source.matchAll(
+    /([A-Za-z][A-Za-z0-9_-]*)\s*\/\.style\s*=\s*\{([^{}]*)\}/g,
+  )) {
+    definitions.set(
+      match[1],
+      splitTopLevel(match[2], ",")
+        .map((option) => option.trim())
+        .filter(Boolean),
+    );
+  }
+  const supported = new Set<string>();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const [name, options] of definitions) {
+      if (
+        !supported.has(name) &&
+        options.length > 0 &&
+        options.every((option) =>
+          supported.has(option) ||
+          /^(?:->|<-|<->|thin|thick|very thick|dashed)$/.test(option) ||
+          /^shorten\s+(?:>=|<=)\s*[0-9.+-]+(?:cm|mm|pt|in)?$/.test(option) ||
+          (
+            /^(?:draw|fill)\s*=\s*/.test(option) &&
+            isSupportedVectorColor(option.replace(/^[^=]+=/, ""))
+          ) ||
+          isSupportedVectorColor(option)
+        )
+      ) {
+        supported.add(name);
+        changed = true;
+      }
+    }
+  }
+  return supported;
+}
+
 function hasUnsupportedCycles(source: string): boolean {
   for (const match of source.matchAll(/--\s*cycle/g)) {
     const commandStart = source.lastIndexOf(";", match.index) + 1;
@@ -217,9 +271,9 @@ function hasUnsupportedCycles(source: string): boolean {
 }
 
 function hasUnsupportedEllipses(source: string): boolean {
-  const ellipses = source.matchAll(/\bellipse\s*\[([^\]]*)\]/g);
+  const bracketEllipses = source.matchAll(/\bellipse\s*\[([^\]]*)\]/g);
   let supported = 0;
-  for (const match of ellipses) {
+  for (const match of bracketEllipses) {
     supported++;
     const options = optionMap(match[1]);
     if (
@@ -230,6 +284,16 @@ function hasUnsupportedEllipses(source: string): boolean {
     ) {
       return true;
     }
+  }
+  for (const match of source.matchAll(/\bellipse\s*\(([^()]*)\)/g)) {
+    const radii = match[1].split(/\s+and\s+/);
+    if (
+      radii.length !== 2 ||
+      !radii.every((radius) => isSimpleNumericExpression(radius))
+    ) {
+      return true;
+    }
+    supported++;
   }
   return countMatches(source, /\bellipse\b/g) !== supported;
 }

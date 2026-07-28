@@ -125,6 +125,8 @@ struct Style {
     dashed: bool,
     round_cap: bool,
     round_join: bool,
+    shorten_start: f64,
+    shorten_end: f64,
 }
 
 struct PictureStyle {
@@ -156,6 +158,7 @@ fn render_svg(source: &str) -> Result<String, String> {
     let expanded = preprocess(&cleaned)?;
     let picture_style = parse_picture_style(tikz_picture_options(&expanded));
     let node_styles = parse_named_node_styles(tikz_picture_options(&expanded));
+    let path_styles = parse_named_path_styles(tikz_picture_options(&expanded));
     let body = tikz_body(&expanded);
     let commands = split_commands(body);
     let mut elements = String::new();
@@ -184,8 +187,8 @@ fn render_svg(source: &str) -> Result<String, String> {
                 ("draw", command.strip_prefix("\\draw").unwrap_or(""))
             };
             let (options, path) = take_options(rest.trim())?;
-            let style = parse_style(options, kind, &picture_style)?;
-            uses_arrow |= style.arrow_end;
+            let style = parse_style(options, kind, &picture_style, &path_styles)?;
+            uses_arrow |= style.arrow_start || style.arrow_end;
             render_path(
                 path.trim(),
                 &style,
@@ -233,7 +236,7 @@ fn render_svg(source: &str) -> Result<String, String> {
     .map_err(|_| "Could not create SVG output.".to_owned())?;
     if uses_arrow {
         svg.push_str(
-            "<defs><marker id=\"chord-arrow\" viewBox=\"0 -5 10 10\" refX=\"9.4\" refY=\"0\" markerWidth=\"5.8\" markerHeight=\"5.8\" orient=\"auto-start-reverse\"><path d=\"M 10 0 L 0 4.2 L 2.6 0 L 0 -4.2 Z\" fill=\"context-stroke\" stroke=\"none\"/></marker></defs>",
+            "<defs><marker id=\"chord-arrow\" viewBox=\"0 -5 10 10\" refX=\"9.4\" refY=\"0\" markerWidth=\"5.8\" markerHeight=\"5.8\" orient=\"auto-start-reverse\"><path d=\"M 10 0 L 0 4.2 L 2.6 0 L 0 -4.2 Z\" fill=\"currentColor\" style=\"fill:context-stroke\" stroke=\"none\"/></marker></defs>",
         );
     }
     svg.push_str("<g data-chord-tikz-content=\"true\">");
@@ -294,15 +297,7 @@ fn render_path(
     }
     if let Some(ellipse_index) = path.find("ellipse") {
         let options = path[ellipse_index + "ellipse".len()..].trim();
-        let (options, _) = take_options(options)?;
-        let x_radius = option_value(options, "x radius")
-            .ok_or_else(|| "An ellipse needs an x radius.".to_owned())
-            .and_then(parse_length)?
-            * coordinate_scale;
-        let y_radius = option_value(options, "y radius")
-            .ok_or_else(|| "An ellipse needs a y radius.".to_owned())
-            .and_then(parse_length)?
-            * coordinate_scale;
+        let (x_radius, y_radius) = parse_ellipse_radii(options, coordinate_scale)?;
         bounds.include(Point {
             x: first.x - x_radius,
             y: -first.y - y_radius,
@@ -322,6 +317,16 @@ fn render_path(
         )
         .map_err(|_| "Could not create SVG ellipse.".to_owned())?;
         return Ok(());
+    }
+    if let Some(arc_index) = path.find("arc[") {
+        return render_arc(
+            first,
+            &path[arc_index + "arc".len()..],
+            style,
+            coordinate_scale,
+            output,
+            bounds,
+        );
     }
     if path.contains("rectangle") {
         let second = points
@@ -349,10 +354,9 @@ fn render_path(
         return Ok(());
     }
     if path.contains(".. controls") {
-        if points.len() != 4 {
+        if points.len() < 4 || (points.len() - 1) % 3 != 0 {
             return Err(
-                "A cubic TikZ curve needs a start point, two controls, and an end point."
-                    .to_owned(),
+                "A cubic TikZ curve needs one start point and groups of two controls plus one end point.".to_owned(),
             );
         }
         for point in &points {
@@ -361,17 +365,26 @@ fn render_path(
                 y: -point.y,
             });
         }
+        let mut data = format!("M {:.3},{:.3}", points[0].x, -points[0].y);
+        for curve in points[1..].chunks_exact(3) {
+            write!(
+                data,
+                " C {:.3},{:.3} {:.3},{:.3} {:.3},{:.3}",
+                curve[0].x,
+                -curve[0].y,
+                curve[1].x,
+                -curve[1].y,
+                curve[2].x,
+                -curve[2].y,
+            )
+            .map_err(|_| "Could not create SVG cubic curve data.".to_owned())?;
+        }
+        if path.contains("cycle") {
+            data.push_str(" Z");
+        }
         write!(
             output,
-            "<path d=\"M {:.3},{:.3} C {:.3},{:.3} {:.3},{:.3} {:.3},{:.3}\" {}/>",
-            points[0].x,
-            -points[0].y,
-            points[1].x,
-            -points[1].y,
-            points[2].x,
-            -points[2].y,
-            points[3].x,
-            -points[3].y,
+            "<path d=\"{data}\" {}/>",
             style_attributes(style),
         )
         .map_err(|_| "Could not create SVG cubic curve.".to_owned())?;
@@ -380,6 +393,7 @@ fn render_path(
     if points.len() < 2 {
         return Err("A line path needs at least two coordinates.".to_owned());
     }
+    shorten_polyline(&mut points, style.shorten_start, style.shorten_end);
     for point in &points {
         bounds.include(Point {
             x: point.x,
@@ -539,7 +553,7 @@ fn render_node(
     let is_math = math_source.is_some();
     let text = latex_text_to_unicode(text);
     let text_lines = text.split('\n').collect::<Vec<_>>();
-    let font_size = picture_style.node_font_size;
+    let font_size = node_font_size(options, picture_style.node_font_size);
     let estimated_width = (text_lines
         .iter()
         .map(|line| visible_character_count(line))
@@ -626,9 +640,7 @@ fn render_node(
         "{label_attribute} data-chord-x=\"{:.3}\" data-chord-y=\"{:.3}\" data-chord-font-size=\"{font_size:.3}\" data-chord-width=\"{width:.3}\"{}{placement_attribute}{background_attribute}",
         point.x,
         -point.y,
-        if options
-            .split(',')
-            .any(|option| option.trim() == "font=\\bfseries")
+        if options.contains("\\bfseries")
         {
             " data-chord-font-weight=\"700\""
         } else {
@@ -933,6 +945,37 @@ fn parse_parenthesized_scalar(input: &str) -> Result<f64, String> {
     parse_length(&input[start + 1..end])
 }
 
+fn parse_ellipse_radii(
+    input: &str,
+    coordinate_scale: f64,
+) -> Result<(f64, f64), String> {
+    if input.starts_with('[') {
+        let (options, _) = take_options(input)?;
+        let x_radius = option_value(options, "x radius")
+            .ok_or_else(|| "An ellipse needs an x radius.".to_owned())
+            .and_then(parse_length)?;
+        let y_radius = option_value(options, "y radius")
+            .ok_or_else(|| "An ellipse needs a y radius.".to_owned())
+            .and_then(parse_length)?;
+        return Ok((
+            x_radius * coordinate_scale,
+            y_radius * coordinate_scale,
+        ));
+    }
+    let start = input
+        .find('(')
+        .ok_or_else(|| "An ellipse needs parenthesized radii.".to_owned())?;
+    let end = matching_parenthesis(input, start)?;
+    let radii = &input[start + 1..end];
+    let (x_radius, y_radius) = radii
+        .split_once(" and ")
+        .ok_or_else(|| "An ellipse needs radii in the form '(x and y)'.".to_owned())?;
+    Ok((
+        parse_length(x_radius)? * coordinate_scale,
+        parse_length(y_radius)? * coordinate_scale,
+    ))
+}
+
 fn parse_length(raw: &str) -> Result<f64, String> {
     let value = raw
         .trim()
@@ -955,6 +998,132 @@ fn parse_length(raw: &str) -> Result<f64, String> {
         .or_else(|_| evaluate_numeric_expression(value))
         .map(|number| number * UNIT)
         .map_err(|_| format!("Invalid TikZ number or expression: {value}"))
+}
+
+fn render_arc(
+    start: Point,
+    input: &str,
+    style: &Style,
+    coordinate_scale: f64,
+    output: &mut String,
+    bounds: &mut Bounds,
+) -> Result<(), String> {
+    let (options, _) = take_options(input)?;
+    let start_angle = option_value(options, "start angle")
+        .ok_or_else(|| "A TikZ arc needs a start angle.".to_owned())
+        .and_then(evaluate_numeric_expression)?;
+    let end_angle = option_value(options, "end angle")
+        .ok_or_else(|| "A TikZ arc needs an end angle.".to_owned())
+        .and_then(evaluate_numeric_expression)?;
+    let radius = option_value(options, "radius")
+        .ok_or_else(|| "A TikZ arc needs a radius.".to_owned())
+        .and_then(parse_length)?
+        * coordinate_scale;
+    if radius <= 0.0 || !radius.is_finite() {
+        return Err("A TikZ arc needs a positive finite radius.".to_owned());
+    }
+    let start_radians = start_angle.to_radians();
+    let center = Point {
+        x: start.x - radius * start_radians.cos(),
+        y: start.y - radius * start_radians.sin(),
+    };
+    let end_radians = end_angle.to_radians();
+    let end = Point {
+        x: center.x + radius * end_radians.cos(),
+        y: center.y + radius * end_radians.sin(),
+    };
+    let delta = normalized_arc_delta(start_angle, end_angle);
+    let large_arc = usize::from(delta.abs() > 180.0);
+    let sweep = usize::from(delta < 0.0);
+
+    include_arc_bounds(bounds, center, radius, start_angle, delta, start, end);
+    write!(
+        output,
+        "<path d=\"M {:.3},{:.3} A {radius:.3},{radius:.3} 0 {large_arc} {sweep} {:.3},{:.3}\" {}/>",
+        start.x,
+        -start.y,
+        end.x,
+        -end.y,
+        style_attributes(style),
+    )
+    .map_err(|_| "Could not create SVG arc.".to_owned())
+}
+
+fn normalized_arc_delta(start_angle: f64, end_angle: f64) -> f64 {
+    let raw = end_angle - start_angle;
+    if raw == 0.0 {
+        return 0.0;
+    }
+    let mut delta = raw % 360.0;
+    if delta == 0.0 {
+        delta = 360.0 * raw.signum();
+    }
+    delta
+}
+
+fn include_arc_bounds(
+    bounds: &mut Bounds,
+    center: Point,
+    radius: f64,
+    start_angle: f64,
+    delta: f64,
+    start: Point,
+    end: Point,
+) {
+    bounds.include(Point {
+        x: start.x,
+        y: -start.y,
+    });
+    bounds.include(Point {
+        x: end.x,
+        y: -end.y,
+    });
+    for angle in [0.0, 90.0, 180.0, 270.0] {
+        if angle_is_on_arc(angle, start_angle, delta) {
+            let radians = angle.to_radians();
+            bounds.include(Point {
+                x: center.x + radius * radians.cos(),
+                y: -(center.y + radius * radians.sin()),
+            });
+        }
+    }
+}
+
+fn angle_is_on_arc(angle: f64, start_angle: f64, delta: f64) -> bool {
+    if delta >= 0.0 {
+        (angle - start_angle).rem_euclid(360.0) <= delta + 1e-9
+    } else {
+        (start_angle - angle).rem_euclid(360.0) <= -delta + 1e-9
+    }
+}
+
+fn shorten_polyline(points: &mut [Point], shorten_start: f64, shorten_end: f64) {
+    if points.len() < 2 {
+        return;
+    }
+    if shorten_start > 0.0 {
+        let shortened = point_towards(points[0], points[1], shorten_start);
+        points[0] = shortened;
+    }
+    if shorten_end > 0.0 {
+        let last = points.len() - 1;
+        let shortened = point_towards(points[last], points[last - 1], shorten_end);
+        points[last] = shortened;
+    }
+}
+
+fn point_towards(from: Point, to: Point, distance: f64) -> Point {
+    let dx = to.x - from.x;
+    let dy = to.y - from.y;
+    let length = dx.hypot(dy);
+    if length <= f64::EPSILON {
+        return from;
+    }
+    let fraction = (distance / length).clamp(0.0, 1.0);
+    Point {
+        x: from.x + dx * fraction,
+        y: from.y + dy * fraction,
+    }
 }
 
 fn matching_parenthesis(input: &str, start: usize) -> Result<usize, String> {
@@ -1006,6 +1175,7 @@ fn parse_style(
     options: &str,
     kind: &str,
     picture_style: &PictureStyle,
+    named_styles: &BTreeMap<String, String>,
 ) -> Result<Style, String> {
     let mut style = Style {
         stroke: if kind == "fill" { "none" } else { "currentColor" }.to_owned(),
@@ -1018,11 +1188,31 @@ fn parse_style(
         dashed: false,
         round_cap: picture_style.round_cap,
         round_join: picture_style.round_join,
+        shorten_start: 0.0,
+        shorten_end: 0.0,
     };
-    for raw in options.split(',') {
+    apply_path_style_options(&mut style, options, kind, named_styles, 0)?;
+    Ok(style)
+}
+
+fn apply_path_style_options(
+    style: &mut Style,
+    options: &str,
+    kind: &str,
+    named_styles: &BTreeMap<String, String>,
+    depth: usize,
+) -> Result<(), String> {
+    if depth > 8 {
+        return Err("TikZ path-style expansion exceeded the safety depth.".to_owned());
+    }
+    for raw in split_top_level_commas(options) {
         let option = raw.trim();
-        if option == "->" {
+        if let Some(definition) = named_styles.get(option) {
+            apply_path_style_options(style, definition, kind, named_styles, depth + 1)?;
+        } else if option == "->" {
             style.arrow_end = true;
+        } else if option == "<-" {
+            style.arrow_start = true;
         } else if option == "<->" {
             style.arrow_start = true;
             style.arrow_end = true;
@@ -1034,6 +1224,10 @@ fn parse_style(
             style.stroke_width = 1.2 * TEX_POINT;
         } else if option == "dashed" {
             style.dashed = true;
+        } else if let Some(value) = option.strip_prefix("shorten >=") {
+            style.shorten_end = parse_length(value)?.max(0.0);
+        } else if let Some(value) = option.strip_prefix("shorten <=") {
+            style.shorten_start = parse_length(value)?.max(0.0);
         } else if let Some(color) = option.strip_prefix("draw=") {
             let (color, opacity) = svg_color_with_opacity(color);
             style.stroke = color;
@@ -1058,7 +1252,7 @@ fn parse_style(
             ));
         }
     }
-    Ok(style)
+    Ok(())
 }
 
 fn style_attributes(style: &Style) -> String {
@@ -1169,14 +1363,24 @@ fn tikz_node_font_size(options: &str) -> f64 {
     if !options.contains("every node/.style") {
         return 10.0 * TEX_POINT;
     }
-    if options.contains("font=\\tiny") {
+    node_font_size(options, 10.0 * TEX_POINT)
+}
+
+fn node_font_size(options: &str, fallback: f64) -> f64 {
+    if options.contains("\\tiny") {
         5.0 * TEX_POINT
-    } else if options.contains("font=\\scriptsize") {
+    } else if options.contains("\\scriptsize") {
         7.0 * TEX_POINT
-    } else if options.contains("font=\\small") {
+    } else if options.contains("\\small") {
         9.0 * TEX_POINT
-    } else {
+    } else if options.contains("\\normalsize") {
         10.0 * TEX_POINT
+    } else if options.contains("\\Large") {
+        14.4 * TEX_POINT
+    } else if options.contains("\\large") {
+        12.0 * TEX_POINT
+    } else {
+        fallback
     }
 }
 
@@ -1193,6 +1397,22 @@ fn parse_named_node_styles(options: &str) -> BTreeMap<String, NodeBoxStyle> {
             .unwrap_or(definition.trim());
         let style = parse_node_box_style(definition, &BTreeMap::new());
         styles.insert(name.trim().to_owned(), style);
+    }
+    styles
+}
+
+fn parse_named_path_styles(options: &str) -> BTreeMap<String, String> {
+    let mut styles = BTreeMap::new();
+    for option in split_top_level_commas(options) {
+        let Some((name, definition)) = option.split_once("/.style=") else {
+            continue;
+        };
+        let definition = definition
+            .trim()
+            .strip_prefix('{')
+            .and_then(|value| value.strip_suffix('}'))
+            .unwrap_or(definition.trim());
+        styles.insert(name.trim().to_owned(), definition.to_owned());
     }
     styles
 }
@@ -1807,5 +2027,102 @@ mod tests {
         let error =
             render_svg(r"\draw[opacity=0.5] (0,0) -- (1,1);").unwrap_err();
         assert!(error.contains("path option"));
+    }
+
+    #[test]
+    fn renders_foreach_magnetic_field_arcs() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[
+                scale=1.0,
+                >=stealth,
+                line cap=round,
+                line join=round,
+                every node/.style={font=\small}
+              ]
+              \node at (-3,2.8) {current out of the page};
+              \draw[thick] (-3,0) circle (0.20);
+              \fill (-3,0) circle (0.055);
+              \foreach \r in {0.55,0.95,1.45,2.10}{
+                \draw[thick] (-3,0) circle (\r);
+                \draw[->, thick]
+                  ({-3+\r*cos(-25)},{\r*sin(-25)})
+                  arc[start angle=-25,end angle=25,radius=\r];
+              }
+              \node at (3,2.8) {current into the page};
+              \draw[thick] (3,0) circle (0.20);
+              \draw[thick] (2.91,-0.09)--(3.09,0.09);
+              \draw[thick] (2.91,0.09)--(3.09,-0.09);
+              \foreach \r in {0.55,0.95,1.45,2.10}{
+                \draw[thick] (3,0) circle (\r);
+                \draw[->, thick]
+                  ({3+\r*cos(25)},{\r*sin(25)})
+                  arc[start angle=25,end angle=-25,radius=\r];
+              }
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert_eq!(svg.matches(" A ").count(), 8);
+        assert!(svg.contains("marker-end=\"url(#chord-arrow)\""));
+    }
+
+    #[test]
+    fn renders_parenthesized_ellipse_and_chained_cubic_curves() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[scale=1.0, >=stealth]
+              \draw[very thick] (0,0) ellipse (0.62 and 1.80);
+              \node[font=\bfseries\Large] at (0,1.80) {$\odot$};
+              \draw[thick]
+                (-2.70,0.32)
+                .. controls (-1.50,0.20) and (1.50,0.20) ..
+                (2.70,0.32)
+                .. controls (2.55,1.65) and (1.50,2.25) ..
+                (0,2.35)
+                .. controls (-1.50,2.25) and (-2.55,1.65) ..
+                (-2.70,0.32);
+              \draw[thick]
+                (-2.70,-0.32)
+                .. controls (-1.50,-0.20) and (1.50,-0.20) ..
+                (2.70,-0.32)
+                .. controls (2.55,-1.65) and (1.50,-2.25) ..
+                (0,-2.35)
+                .. controls (-1.50,-2.25) and (-2.55,-1.65) ..
+                (-2.70,-0.32);
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert!(svg.contains("<ellipse"));
+        assert_eq!(svg.matches(" C ").count(), 6);
+        assert!(svg.contains("font-size=\"19.128\""));
+        assert!(svg.contains("data-chord-font-weight=\"700\""));
+    }
+
+    #[test]
+    fn expands_supported_named_path_styles_and_shortens_lines() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[
+                timeline/.style={very thick, ->, shorten >=1pt, shorten <=1pt}
+              ]
+              \draw[timeline] (0,0)--(4,0);
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert!(svg.contains("stroke-width=\"1.594\""));
+        assert!(svg.contains("marker-end=\"url(#chord-arrow)\""));
+        assert!(!svg.contains("points=\"0.000,-0.000 151.181,-0.000\""));
+    }
+
+    #[test]
+    fn renders_all_basic_arrow_directions_with_a_visible_fallback() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[>=stealth]
+              \draw[->] (0,0)--(2,0);
+              \draw[<-] (0,-1)--(2,-1);
+              \draw[<->] (0,-2)--(2,-2);
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert_eq!(svg.matches("marker-start=").count(), 2);
+        assert_eq!(svg.matches("marker-end=").count(), 2);
+        assert!(svg.contains("fill=\"currentColor\" style=\"fill:context-stroke\""));
     }
 }

@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.5] - 2026-07-28
+
+### Changed
+
+- Raised both renderer paths to publication-oriented vector output: supported WASM diagrams stay SVG, ordinary local TeX diagrams prefer the DVI-to-SVG path, and PDF-producing engines convert to path-based SVG when the installed `dvisvgm` has PDF support while retaining the original vector PDF for direct export.
+
+### Fixed
+
+- Added WASM support for bounded TikZ arcs, parenthesized ellipse radii, chained cubic Bézier segments, local node font sizes, named path styles, and line shortening.
+- Routed advanced TeX text boxes and other unsupported constructs to local TeX before the WASM worker starts, avoiding misleading partial Markdown renders.
+- Increased the bounded PDF fallback resolution for print rendering while preserving memory and dimension limits.
+- Refreshed every open Markdown view and active editor preview immediately after changing the TikZ backend, without requiring users to reopen individual source blocks.
+- Embedded calibrated MathJax labels inside each WASM SVG before display or export, preventing labels from escaping their diagram, overlapping nearby content, or shifting during PDF pagination.
+- Let Reading-view TikZ containers follow the rendered SVG's natural height without internal scrollbars, while retaining contained scaling in the floating preview.
+- Preserved renderer margins for strokes and markers, added visible arrow-paint fallbacks and reverse arrows, and isolated every SVG definition ID so arrows, clips, masks, gradients, and glyph references remain correct across multiple diagrams and rerenders.
+- Made SVG snapshots self-contained with resolved presentation styles, and kept print waiting on the public asynchronous Markdown processor contract without relying on private Obsidian fields.
+- Recorded PDF-to-SVG converter failures in native-render diagnostics and stopped retrying a converter that already failed until the backend is restarted.
+
 ## [0.5.4] - 2026-07-28
 
 ### Fixed

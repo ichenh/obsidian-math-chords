@@ -71,6 +71,12 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
   if (!outputs[5].includes("M 10 0 L 0 4.2 L 2.6 0 L 0 -4.2 Z")) {
     throw new Error("Stealth arrow smoke test used the wrong marker geometry.");
   }
+  if (
+    !outputs[5].includes('fill="currentColor"') ||
+    !outputs[5].includes("fill:context-stroke")
+  ) {
+    throw new Error("Stealth arrow smoke test omitted its visible paint fallback.");
+  }
   if ((outputs[6].match(/<polyline/g) ?? []).length !== 8) {
     throw new Error("Foreach range smoke test produced the wrong ray count.");
   }

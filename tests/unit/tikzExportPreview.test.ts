@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createSingleImagePdf,
+  createExportFile,
   exportFormatFromFilename,
 } from "../../src/tikz/exportPreview";
 
@@ -27,5 +28,26 @@ describe("TikZ export", () => {
     expect(() => exportFormatFromFilename("diagram.txt")).toThrow(
       /\.svg, \.png, \.jpg/,
     );
+  });
+
+  it("preserves the original vector PDF when the preview uses SVG", async () => {
+    const pdf = new TextEncoder().encode("%PDF-vector");
+    const file = await createExportFile(
+      {
+        artifact: {
+          bytes: new TextEncoder().encode("<svg/>"),
+          exportPdfBytes: pdf,
+          mediaType: "image/svg+xml",
+          backend: "native",
+          durationMs: 1,
+        },
+        outputEl: {} as HTMLElement,
+      },
+      "pdf",
+    );
+
+    expect(file.mimeType).toBe("application/pdf");
+    expect(file.bytes).toEqual(pdf);
+    expect(file.bytes).not.toBe(pdf);
   });
 });

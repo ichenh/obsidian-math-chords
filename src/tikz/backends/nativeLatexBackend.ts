@@ -13,6 +13,7 @@ import {
 } from "../nativeEngine";
 import type { TikzRenderArtifact, TikzRenderBackend } from "../types";
 import type { TikzFontPreferences } from "../fonts";
+import { pdfToSvgArguments } from "../nativeVector";
 
 export interface NativeLatexBackendOptions {
   engine: NativeTikzEngine;
@@ -32,6 +33,8 @@ const MAX_NATIVE_ARTIFACT_BYTES = 16 * 1024 * 1024;
 export class NativeLatexBackend implements TikzRenderBackend {
   readonly id = "native";
   private readonly timeoutMs: number;
+  private pdfToSvgAvailable = true;
+  private pdfToSvgFailure: string | undefined;
 
   constructor(private readonly options: NativeLatexBackendOptions) {
     this.timeoutMs = options.timeoutMs ?? 15_000;
@@ -110,11 +113,24 @@ export class NativeLatexBackend implements TikzRenderBackend {
           signal,
           cacheDir,
         );
-        return await readPdfArtifact(
+        return await readBestPdfArtifact(
           fs,
           path.join(workDir, "main.pdf"),
+          path.join(workDir, "main.svg"),
+          this.pdfToSvgAvailable
+            ? this.options.engine.dvisvgmPath
+            : undefined,
+          workDir,
+          this.timeoutMs,
+          signal,
+          cacheDir,
           startedAt,
           result,
+          this.pdfToSvgFailure,
+          (reason) => {
+            this.pdfToSvgAvailable = false;
+            this.pdfToSvgFailure = reason;
+          },
         );
       }
 
@@ -128,11 +144,24 @@ export class NativeLatexBackend implements TikzRenderBackend {
       );
 
       if (this.options.engine.kind !== "latex-dvi") {
-        return await readPdfArtifact(
+        return await readBestPdfArtifact(
           fs,
           path.join(workDir, "main.pdf"),
+          path.join(workDir, "main.svg"),
+          this.pdfToSvgAvailable
+            ? this.options.engine.dvisvgmPath
+            : undefined,
+          workDir,
+          this.timeoutMs,
+          signal,
+          cacheDir,
           startedAt,
           latexResult,
+          this.pdfToSvgFailure,
+          (reason) => {
+            this.pdfToSvgAvailable = false;
+            this.pdfToSvgFailure = reason;
+          },
         );
       }
 
@@ -196,6 +225,7 @@ async function readPdfArtifact(
   pdfPath: string,
   startedAt: number,
   result: ProcessResult,
+  vectorFallbackReason?: string,
 ): Promise<TikzRenderArtifact> {
   const pdf = await readBoundedFile(fs, pdfPath);
   return {
@@ -203,8 +233,74 @@ async function readPdfArtifact(
     mediaType: "application/pdf",
     backend: "native",
     durationMs: performance.now() - startedAt,
-    log: compactLog(result),
+    log: appendLog(
+      compactLog(result),
+      vectorFallbackReason
+        ? `dvisvgm PDF-to-SVG conversion was disabled after a failure; using the bounded PDF fallback. ${vectorFallbackReason}`
+        : undefined,
+    ),
   };
+}
+
+async function readBestPdfArtifact(
+  fs: DesktopFileSystem,
+  pdfPath: string,
+  svgPath: string,
+  dvisvgmPath: string | undefined,
+  workDir: string,
+  timeoutMs: number,
+  signal: AbortSignal | undefined,
+  cacheDir: string,
+  startedAt: number,
+  latexResult: ProcessResult,
+  vectorFallbackReason: string | undefined,
+  onVectorFailure: (reason: string) => void,
+): Promise<TikzRenderArtifact> {
+  if (dvisvgmPath) {
+    try {
+      const svgResult = await runProcess(
+        dvisvgmPath,
+        pdfToSvgArguments(pdfPath, svgPath),
+        workDir,
+        timeoutMs,
+        signal,
+        cacheDir,
+      );
+      const svg = await readBoundedFile(fs, svgPath);
+      const pdf = await readBoundedFile(fs, pdfPath);
+      return {
+        bytes: new Uint8Array(svg),
+        exportPdfBytes: new Uint8Array(pdf),
+        mediaType: "image/svg+xml",
+        backend: "native",
+        durationMs: performance.now() - startedAt,
+        log: compactLog(latexResult, svgResult),
+      };
+    } catch (error) {
+      if (
+        signal?.aborted ||
+        (error instanceof Error && error.name === "AbortError")
+      ) {
+        throw error;
+      }
+      const reason = compactFailure(error);
+      onVectorFailure(reason);
+      return readPdfArtifact(
+        fs,
+        pdfPath,
+        startedAt,
+        latexResult,
+        reason,
+      );
+    }
+  }
+  return readPdfArtifact(
+    fs,
+    pdfPath,
+    startedAt,
+    latexResult,
+    vectorFallbackReason,
+  );
 }
 
 async function readBoundedFile(
@@ -284,4 +380,17 @@ function compactLog(...results: ProcessResult[]): string | undefined {
     .filter(Boolean)
     .join("\n");
   return text ? text.slice(-8_000) : undefined;
+}
+
+function compactFailure(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.replace(/\s+/g, " ").trim().slice(0, 1_000);
+}
+
+function appendLog(
+  first: string | undefined,
+  second: string | undefined,
+): string | undefined {
+  const text = [first, second].filter(Boolean).join("\n");
+  return text || undefined;
 }

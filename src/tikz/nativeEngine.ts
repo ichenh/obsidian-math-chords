@@ -25,7 +25,7 @@ export function nativeEnginePreference(
 ): readonly NativeTikzEngineKind[] {
   return containsCjkText(source) || UNICODE_ENGINE_COMMAND_RE.test(source)
     ? ["lualatex", "xelatex", "tectonic", "pdflatex", "latex-dvi"]
-    : ["pdflatex", "latex-dvi", "lualatex", "xelatex", "tectonic"];
+    : ["latex-dvi", "pdflatex", "lualatex", "xelatex", "tectonic"];
 }
 
 export function nativeEngineSupportsUnicode(

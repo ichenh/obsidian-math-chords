@@ -6,10 +6,7 @@ import type { TikzBackendMode } from "../settings";
 import type { TikzRenderCoordinator } from "./coordinator";
 import { TikzPreviewSurface } from "./previewSurface";
 import type { TikzFontPreferences } from "./fonts";
-import {
-  isTikzPrintContainer,
-  trackTikzPostProcessorPromise,
-} from "./markdownExport";
+import { isTikzPrintContainer } from "./markdownExport";
 
 export interface TikzMarkdownProcessorOptions {
   coordinator: TikzRenderCoordinator;
@@ -36,9 +33,7 @@ export function processTikzCodeBlock(
   ctx.addChild(child);
   if (!renderImmediately) return;
 
-  const completion = child.whenRendered();
-  trackTikzPostProcessorPromise(ctx, completion);
-  return completion;
+  return child.whenRendered();
 }
 
 class TikzMarkdownRenderChild extends MarkdownRenderChild {

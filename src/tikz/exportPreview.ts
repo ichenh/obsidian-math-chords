@@ -3,6 +3,11 @@ import {
   getDesktopFileSystem,
   getDesktopSaveDialog,
 } from "./desktopNode";
+import {
+  tikzExportOverlayScale,
+  unionTikzExportBounds,
+  type TikzExportBounds,
+} from "./exportGeometry";
 
 export type TikzExportFormat = "svg" | "png" | "jpg" | "pdf";
 
@@ -22,6 +27,13 @@ interface ExportTarget {
   write(file: ExportFile): Promise<void>;
 }
 
+const EMBEDDED_OVERLAY_CSS = [
+  ".obsidian-math-chords-tikz-math-overlay{box-sizing:content-box;margin:0;pointer-events:none;white-space:nowrap}",
+  ".obsidian-math-chords-tikz-math-overlay.is-math-only{display:inline-flex;align-items:center;justify-content:center;line-height:1}",
+  ".obsidian-math-chords-tikz-math-overlay.is-mixed-label{display:inline-block;line-height:1.15}",
+  ".obsidian-math-chords-tikz-math-overlay.is-mixed-label>.math{margin:0;line-height:1;vertical-align:baseline}",
+].join("");
+
 export async function exportTikzPreview(
   request: TikzExportRequest,
 ): Promise<void> {
@@ -31,10 +43,17 @@ export async function exportTikzPreview(
   await target.write(file);
 }
 
-async function createExportFile(
+export async function createExportFile(
   request: TikzExportRequest,
   format: TikzExportFormat,
 ): Promise<ExportFile> {
+  if (format === "pdf" && request.artifact.exportPdfBytes) {
+    return {
+      bytes: request.artifact.exportPdfBytes.slice(),
+      mimeType: "application/pdf",
+      extension: "pdf",
+    };
+  }
   if (
     format === "pdf" &&
     request.artifact.mediaType === "application/pdf"
@@ -93,11 +112,18 @@ function createSvgSnapshot(outputEl: HTMLElement): {
   let root: SVGSVGElement;
   let width: number;
   let height: number;
+  let exportBounds: TikzExportBounds;
   if (renderedSvg) {
     root = renderedSvg.cloneNode(true) as SVGSVGElement;
     const viewBox = renderedSvg.viewBox.baseVal;
     width = Math.max(1, viewBox.width || renderedSvg.clientWidth);
     height = Math.max(1, viewBox.height || renderedSvg.clientHeight);
+    exportBounds = {
+      x: viewBox.x,
+      y: viewBox.y,
+      width,
+      height,
+    };
     root.setAttribute("width", String(width));
     root.setAttribute("height", String(height));
     if (!root.hasAttribute("viewBox")) {
@@ -106,6 +132,7 @@ function createSvgSnapshot(outputEl: HTMLElement): {
   } else if (renderedCanvas) {
     width = Math.max(1, renderedCanvas.width);
     height = Math.max(1, renderedCanvas.height);
+    exportBounds = { x: 0, y: 0, width, height };
     root = ownerDocument.createElementNS(svgNamespace, "svg");
     root.setAttribute("width", String(width));
     root.setAttribute("height", String(height));
@@ -120,14 +147,29 @@ function createSvgSnapshot(outputEl: HTMLElement): {
   }
   root.setAttribute("xmlns", svgNamespace);
   root.setAttribute("xmlns:xhtml", xhtmlNamespace);
+  if (renderedSvg) {
+    inlineSvgSnapshotPresentation(renderedSvg, root, ownerDocument);
+    const mathJaxCss = ownerDocument.getElementById(
+      "MJX-CHTML-styles",
+    )?.textContent;
+    if (mathJaxCss || EMBEDDED_OVERLAY_CSS) {
+      const styleEl = ownerDocument.createElementNS(
+        svgNamespace,
+        "style",
+      );
+      styleEl.setText(`${mathJaxCss ?? ""}\n${EMBEDDED_OVERLAY_CSS}`);
+      root.prepend(styleEl);
+    }
+  }
 
   if (renderedSvg) for (const overlay of Array.from(
     outputEl.querySelectorAll<HTMLElement>(
       ".obsidian-math-chords-tikz-math-overlay",
     ),
-  )) {
+  ).filter((element) => element.closest("foreignObject") === null)) {
     const bounds = overlayBoundsInSvg(overlay, renderedSvg);
     if (!bounds) continue;
+    exportBounds = unionTikzExportBounds(exportBounds, bounds);
     const foreignObject = ownerDocument.createElementNS(
       svgNamespace,
       "foreignObject",
@@ -137,19 +179,36 @@ function createSvgSnapshot(outputEl: HTMLElement): {
     foreignObject.setAttribute("width", String(bounds.width));
     foreignObject.setAttribute("height", String(bounds.height));
     const wrapper = ownerDocument.createElementNS(xhtmlNamespace, "div");
+    wrapper.setCssProps({
+      position: "relative",
+      width: "100%",
+      height: "100%",
+      overflow: "visible",
+    });
     const clone = overlay.cloneNode(true) as HTMLElement;
     const computed = ownerDocument.defaultView?.getComputedStyle(overlay);
     const exportedStyles = [
-      "position:static",
-      "transform:none",
+      "position:absolute",
+      "left:50%",
+      "top:50%",
+      `transform:translate(-50%,-50%) scale(${bounds.contentScale})`,
+      "transform-origin:center",
       "margin:0",
     ];
     if (computed) {
       exportedStyles.push(
+        `display:${computed.display}`,
+        `box-sizing:${computed.boxSizing}`,
         `color:${computed.color}`,
+        `background-color:${computed.backgroundColor}`,
         `font-family:${computed.fontFamily}`,
         `font-size:${computed.fontSize}`,
+        `font-style:${computed.fontStyle}`,
+        `font-weight:${computed.fontWeight}`,
         `line-height:${computed.lineHeight}`,
+        `white-space:${computed.whiteSpace}`,
+        `text-align:${computed.textAlign}`,
+        `vertical-align:${computed.verticalAlign}`,
       );
     }
     clone.setAttribute(
@@ -160,6 +219,14 @@ function createSvgSnapshot(outputEl: HTMLElement): {
     foreignObject.appendChild(wrapper);
     root.appendChild(foreignObject);
   }
+  root.setAttribute(
+    "viewBox",
+    `${exportBounds.x} ${exportBounds.y} ${exportBounds.width} ${exportBounds.height}`,
+  );
+  width = exportBounds.width;
+  height = exportBounds.height;
+  root.setAttribute("width", String(width));
+  root.setAttribute("height", String(height));
 
   return {
     source: new (
@@ -168,6 +235,68 @@ function createSvgSnapshot(outputEl: HTMLElement): {
     width,
     height,
   };
+}
+
+function inlineSvgSnapshotPresentation(
+  source: SVGSVGElement,
+  clone: SVGSVGElement,
+  ownerDocument: Document,
+): void {
+  const win = ownerDocument.defaultView;
+  if (!win) return;
+  const sourceElements = [source, ...Array.from(source.querySelectorAll("*"))];
+  const cloneElements = [clone, ...Array.from(clone.querySelectorAll("*"))];
+  const rootColor = win.getComputedStyle(source).color || "#000000";
+  clone.setAttribute("color", rootColor);
+  for (let index = 0; index < sourceElements.length; index++) {
+    const sourceElement = sourceElements[index];
+    const cloneElement = cloneElements[index];
+    if (!cloneElement) break;
+    const computed = win.getComputedStyle(sourceElement);
+    for (const property of ["fill", "stroke", "color"] as const) {
+      const declared = cloneElement.getAttribute(property);
+      if (
+        declared?.includes("var(") ||
+        declared === "currentColor"
+      ) {
+        const resolved = computed.getPropertyValue(property).trim();
+        cloneElement.setAttribute(
+          property,
+          resolved &&
+            !resolved.includes("var(") &&
+            resolved !== "currentcolor" &&
+            resolved !== "context-stroke"
+            ? resolved
+            : rootColor,
+        );
+      }
+    }
+    if (
+      cloneElement instanceof win.HTMLElement &&
+      sourceElement instanceof win.HTMLElement &&
+      sourceElement.matches(".obsidian-math-chords-tikz-math-overlay")
+    ) {
+      for (const property of [
+        "display",
+        "box-sizing",
+        "color",
+        "background-color",
+        "font-family",
+        "font-size",
+        "font-style",
+        "font-weight",
+        "line-height",
+        "white-space",
+        "text-align",
+        "vertical-align",
+      ]) {
+        cloneElement.style.setProperty(
+          property,
+          computed.getPropertyValue(property),
+        );
+      }
+    }
+  }
 }
 
 async function rasterizeSvg(
@@ -347,10 +476,15 @@ async function writeLocalFile(
 function overlayBoundsInSvg(
   overlay: HTMLElement,
   svg: SVGSVGElement,
-): { x: number; y: number; width: number; height: number } | null {
+): (TikzExportBounds & { contentScale: number }) | null {
   const matrix = svg.getScreenCTM();
   if (!matrix) return null;
-  const inverse = matrix.inverse();
+  let inverse: DOMMatrix;
+  try {
+    inverse = matrix.inverse();
+  } catch {
+    return null;
+  }
   const rect = overlay.getBoundingClientRect();
   const topLeft = svg.createSVGPoint();
   topLeft.x = rect.left;
@@ -365,6 +499,7 @@ function overlayBoundsInSvg(
     y: Math.min(first.y, second.y),
     width: Math.max(1, Math.abs(second.x - first.x)),
     height: Math.max(1, Math.abs(second.y - first.y)),
+    contentScale: tikzExportOverlayScale(matrix),
   };
 }
 
