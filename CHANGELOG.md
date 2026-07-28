@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-07-28
+
+### Fixed
+
+- Ensured TikZ diagrams render before print-oriented Markdown processors finish, so PDF exporters capture the completed diagram instead of its source code.
+
 ## [0.5.3] - 2026-07-28
 
 ### Fixed

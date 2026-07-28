@@ -6,6 +6,10 @@ import type { TikzBackendMode } from "../settings";
 import type { TikzRenderCoordinator } from "./coordinator";
 import { TikzPreviewSurface } from "./previewSurface";
 import type { TikzFontPreferences } from "./fonts";
+import {
+  isTikzPrintContainer,
+  trackTikzPostProcessorPromise,
+} from "./markdownExport";
 
 export interface TikzMarkdownProcessorOptions {
   coordinator: TikzRenderCoordinator;
@@ -21,21 +25,43 @@ export function processTikzCodeBlock(
   el: HTMLElement,
   ctx: MarkdownPostProcessorContext,
   options: TikzMarkdownProcessorOptions,
-): void {
-  ctx.addChild(new TikzMarkdownRenderChild(el, source, options));
+): Promise<void> | void {
+  const renderImmediately = isTikzPrintContainer(el);
+  const child = new TikzMarkdownRenderChild(
+    el,
+    source,
+    options,
+    renderImmediately,
+  );
+  ctx.addChild(child);
+  if (!renderImmediately) return;
+
+  const completion = child.whenRendered();
+  trackTikzPostProcessorPromise(ctx, completion);
+  return completion;
 }
 
 class TikzMarkdownRenderChild extends MarkdownRenderChild {
   private surface: TikzPreviewSurface | null = null;
   private sourceEl: HTMLPreElement | null = null;
   private observer: IntersectionObserver | null = null;
+  private readonly completion: Promise<void>;
+  private settleCompletion: (() => void) | null = null;
 
   constructor(
     containerEl: HTMLElement,
     private readonly source: string,
     private readonly options: TikzMarkdownProcessorOptions,
+    private readonly renderImmediately: boolean,
   ) {
     super(containerEl);
+    this.completion = new Promise((resolve) => {
+      this.settleCompletion = resolve;
+    });
+  }
+
+  whenRendered(): Promise<void> {
+    return this.completion;
   }
 
   onload(): void {
@@ -60,13 +86,19 @@ class TikzMarkdownRenderChild extends MarkdownRenderChild {
         this.sourceEl?.remove();
         this.sourceEl = null;
         this.surface.containerEl.hidden = false;
+        this.finish();
       },
       onError: () => {
         if (this.surface) this.surface.containerEl.hidden = false;
+        this.finish();
       },
     });
     this.surface.containerEl.hidden = true;
     this.containerEl.replaceChildren(this.sourceEl, this.surface.containerEl);
+    if (this.renderImmediately) {
+      this.surface.render(this.source, true);
+      return;
+    }
     const Observer =
       this.containerEl.ownerDocument.defaultView?.IntersectionObserver;
     if (!Observer) {
@@ -91,5 +123,11 @@ class TikzMarkdownRenderChild extends MarkdownRenderChild {
     this.surface?.destroy();
     this.surface = null;
     this.sourceEl = null;
+    this.finish();
+  }
+
+  private finish(): void {
+    this.settleCompletion?.();
+    this.settleCompletion = null;
   }
 }

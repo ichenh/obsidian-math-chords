@@ -269,7 +269,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
           );
           return;
         }
-        processTikzCodeBlock(source, el, ctx, {
+        return processTikzCodeBlock(source, el, ctx, {
           coordinator: this.tikzCoordinator,
           getBackend: () => this.settings.tikzBackend,
           getFonts: () => tikzFontPreferencesFromSettings(this.settings),
