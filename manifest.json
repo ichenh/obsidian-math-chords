@@ -1,10 +1,10 @@
 {
   "id": "math-chords",
   "name": "Math Chords",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "minAppVersion": "1.7.2",
   "description": "A math-writing toolkit with leader-key LaTeX input, safe delimiter conversion, previews, navigation, environments, and reusable Markdown templates.",
-  "author": "CHEH Hua",
+  "author": "CHEN Hua",
   "authorUrl": "https://github.com/ichenh",
   "isDesktopOnly": false
 }

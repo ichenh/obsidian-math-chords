@@ -16,7 +16,7 @@ export interface TikzCapabilityAnalysis {
 }
 
 const UNSUPPORTED_COMMAND_RE =
-  /\\(?:clip|graph|matrix|path|pattern|pic|scope|shade|shadedraw|useasboundingbox)\b/;
+  /\\(?:clip|graph|matrix|path|pattern|pic|shade|shadedraw|useasboundingbox)\b/;
 
 const PATH_STYLE_RE =
   /^(?:->|<-|<->|-\{(?:Stealth|stealth|Latex|latex)\}|\{(?:Stealth|stealth|Latex|latex)\}-|ultra thin|very thin|thin|semithick|thick|very thick|ultra thick|dashed|densely dashed|loosely dashed|dotted|densely dotted|loosely dotted|help lines)$/;
@@ -67,6 +67,7 @@ export function analyzeTikzCapabilities(source: string): TikzCapabilityAnalysis 
   if (
     UNSUPPORTED_COMMAND_RE.test(content) ||
     hasUnsupportedEnvironments(content) ||
+    !hasOnlySupportedShiftScopes(content) ||
     hasUnsupportedCoordinateCommands(content) ||
     (content.includes("\\foreach") && !hasOnlySimpleForeachLoops(content))
   ) {
@@ -82,6 +83,13 @@ export function analyzeTikzCapabilities(source: string): TikzCapabilityAnalysis 
       .split(",")
       .map((option) => option.trim())
       .filter(Boolean);
+    if (
+      inline &&
+      options.includes("sloped") &&
+      options.some((option) => /^rotate\s*=/.test(option))
+    ) {
+      features.add("advanced-node");
+    }
     if (
       options.some(
         (option) =>
@@ -444,9 +452,82 @@ function hasUnsupportedEllipses(source: string): boolean {
 }
 
 function hasUnsupportedEnvironments(source: string): boolean {
-  return /\\begin\s*\{\s*(?:scope|axis|semilogxaxis|semilogyaxis|loglogaxis|circuitikz|pgfonlayer|matrix)\s*\}/.test(
+  return /\\begin\s*\{\s*(?:axis|semilogxaxis|semilogyaxis|loglogaxis|circuitikz|pgfonlayer|matrix)\s*\}/.test(
     source,
   );
+}
+
+function hasOnlySupportedShiftScopes(source: string): boolean {
+  const tokenPattern = /\\(begin|end)\s*\{\s*scope\s*\}/g;
+  const shifts = [{ x: 0, y: 0 }];
+  for (const match of source.matchAll(tokenPattern)) {
+    if (match[1] === "end") {
+      if (shifts.length === 1) return false;
+      shifts.pop();
+      continue;
+    }
+    const cursor = skipWhitespace(
+      source,
+      (match.index ?? 0) + match[0].length,
+    );
+    const parent = shifts[shifts.length - 1];
+    if (source[cursor] !== "[") {
+      shifts.push(parent);
+      continue;
+    }
+    const options = takeBalancedDelimited(source, cursor, "[", "]");
+    if (!options) return false;
+    const entries = splitTopLevel(options.content, ",")
+      .map((option) => option.trim())
+      .filter(Boolean);
+    if (entries.length !== 1) {
+      return false;
+    }
+    const local = parseSupportedScopeShift(entries[0]);
+    if (!local) return false;
+    const combined = {
+      x: parent.x + local.x,
+      y: parent.y + local.y,
+    };
+    if (
+      Math.abs(combined.x) > MAX_SUPPORTED_SCOPE_SHIFT_BP ||
+      Math.abs(combined.y) > MAX_SUPPORTED_SCOPE_SHIFT_BP
+    ) {
+      return false;
+    }
+    shifts.push(combined);
+  }
+  return shifts.length === 1;
+}
+
+const BP_PER_CM = 72 / 2.54;
+const MAX_SUPPORTED_SCOPE_SHIFT_BP = 1000 * BP_PER_CM;
+
+function parseSupportedScopeShift(
+  option: string,
+): { x: number; y: number } | null {
+  const match = option.match(
+    /^shift\s*=\s*\{\s*\(\s*([^,{}]+)\s*,\s*([^,{}]+)\s*\)\s*\}$/,
+  );
+  if (!match) return null;
+  const x = parseSupportedScopeShiftLength(match[1]);
+  const y = parseSupportedScopeShiftLength(match[2]);
+  return x === null || y === null ? null : { x, y };
+}
+
+function parseSupportedScopeShiftLength(value: string): number | null {
+  const match = value
+    .trim()
+    .match(/^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(cm|mm|pt|bp|in)?$/);
+  if (!match) return null;
+  const number = Number(match[1]);
+  let scale = BP_PER_CM;
+  if (match[2] === "mm") scale = BP_PER_CM / 10;
+  if (match[2] === "pt") scale = 72 / 72.27;
+  if (match[2] === "bp") scale = 1;
+  if (match[2] === "in") scale = 72;
+  const result = number * scale;
+  return Number.isFinite(result) ? result : null;
 }
 
 function hasUnsupportedParametricPlots(source: string): boolean {
@@ -519,7 +600,7 @@ function isSupportedNodePlacement(option: string): boolean {
 }
 
 function isSupportedPathNodeOption(option: string): boolean {
-  return /^(?:at start|very near start|near start|midway|near end|very near end|at end|pos\s*=\s*(?:0(?:\.\d*)?|1(?:\.0*)?|\.\d+))$/.test(
+  return /^(?:sloped|at start|very near start|near start|midway|near end|very near end|at end|pos\s*=\s*(?:0(?:\.\d*)?|1(?:\.0*)?|\.\d+))$/.test(
     option,
   );
 }

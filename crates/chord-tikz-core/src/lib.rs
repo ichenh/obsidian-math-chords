@@ -14,6 +14,7 @@ const TEX_POINT: f64 = 72.0 / 72.27;
 const DISPLAY_SCALE: f64 = 1.5;
 const MAX_SOURCE_BYTES: usize = 64 * 1024;
 const MAX_OUTPUT_BYTES: usize = 2 * 1024 * 1024;
+const MAX_SCOPE_SHIFT: f64 = 1000.0 * UNIT;
 static RESULT: Mutex<Vec<u8>> = Mutex::new(Vec::new());
 
 #[unsafe(no_mangle)]
@@ -73,6 +74,11 @@ pub extern "C" fn chord_tikz_result_len() -> usize {
 struct Point {
     x: f64,
     y: f64,
+}
+
+struct ScopedCommand<'a> {
+    source: &'a str,
+    shift: Point,
 }
 
 #[derive(Clone, Copy)]
@@ -216,6 +222,7 @@ struct NodeStyle {
     align: NodeAlign,
     anchor: NodeAnchor,
     rotate: f64,
+    sloped: bool,
     shape: NodeShape,
 }
 
@@ -238,6 +245,7 @@ impl Default for NodeStyle {
             align: NodeAlign::Center,
             anchor: NodeAnchor::Center,
             rotate: 0.0,
+            sloped: false,
             shape: NodeShape::Rectangle,
         }
     }
@@ -260,6 +268,7 @@ struct NodeStylePatch {
     align: Option<NodeAlign>,
     anchor: Option<NodeAnchor>,
     rotate: Option<f64>,
+    sloped: bool,
     shape: Option<NodeShape>,
 }
 
@@ -308,6 +317,7 @@ impl NodeStyle {
         if let Some(value) = patch.rotate {
             self.rotate = value;
         }
+        self.sloped |= patch.sloped;
         if let Some(value) = patch.shape {
             self.shape = value;
         }
@@ -324,14 +334,15 @@ fn render_svg(source: &str) -> Result<String, String> {
     let path_styles = parse_named_path_styles(picture_options);
     validate_picture_options(picture_options, &path_styles)?;
     let body = tikz_body(&expanded);
-    let commands = split_commands(body);
+    let commands = split_scoped_commands(body)?;
     let mut elements = String::new();
     let mut bounds = Bounds::empty();
     let mut rendered_commands = 0usize;
     let mut named_nodes = BTreeMap::new();
 
-    for command in commands {
-        let command = command.trim();
+    for scoped_command in commands {
+        let command = scoped_command.source.trim();
+        let scope_shift = scoped_command.shift;
         if command.is_empty()
             || command.starts_with("\\begin{tikzpicture}")
             || command.starts_with("\\end{tikzpicture}")
@@ -356,6 +367,7 @@ fn render_svg(source: &str) -> Result<String, String> {
                 &path,
                 &style,
                 picture_style.coordinate_scale,
+                scope_shift,
                 &named_nodes,
                 &mut elements,
                 &mut bounds,
@@ -363,10 +375,15 @@ fn render_svg(source: &str) -> Result<String, String> {
             let inline_points = if inline_nodes.is_empty() {
                 Vec::new()
             } else {
-                parse_path_coordinates(&path, &named_nodes, picture_style.coordinate_scale)?
+                parse_path_coordinates(
+                    &path,
+                    &named_nodes,
+                    picture_style.coordinate_scale,
+                    scope_shift,
+                )?
             };
             for node in inline_nodes {
-                let (position, options) =
+                let (position, mut options) =
                     inline_node_position_and_options(&node.options, node.implicit)?;
                 let coordinate = inline_node_coordinate(
                     &inline_points,
@@ -374,6 +391,21 @@ fn render_svg(source: &str) -> Result<String, String> {
                     node.implicit,
                     position,
                 )?;
+                if split_top_level_commas(&options)
+                    .iter()
+                    .any(|option| option.trim() == "sloped")
+                {
+                    let angle = inline_node_upright_angle(
+                        &inline_points,
+                        node.coordinate_index,
+                        node.implicit,
+                    )?;
+                    if !options.is_empty() {
+                        options.push(',');
+                    }
+                    write!(options, "rotate={angle:.12}")
+                        .map_err(|_| "Could not create sloped node options.".to_owned())?;
+                }
                 let options = if options.is_empty() {
                     String::new()
                 } else {
@@ -388,6 +420,7 @@ fn render_svg(source: &str) -> Result<String, String> {
                     &picture_style,
                     &base_node_style,
                     &node_styles,
+                    Point { x: 0.0, y: 0.0 },
                     &mut named_nodes,
                     &mut elements,
                     &mut bounds,
@@ -402,6 +435,7 @@ fn render_svg(source: &str) -> Result<String, String> {
                 &picture_style,
                 &base_node_style,
                 &node_styles,
+                scope_shift,
                 &mut named_nodes,
                 &mut elements,
                 &mut bounds,
@@ -413,6 +447,7 @@ fn render_svg(source: &str) -> Result<String, String> {
             render_coordinate(
                 rest.trim(),
                 picture_style.coordinate_scale,
+                scope_shift,
                 &mut named_nodes,
             )?;
             rendered_commands += 1;
@@ -449,6 +484,7 @@ fn render_svg(source: &str) -> Result<String, String> {
 fn render_coordinate(
     rest: &str,
     coordinate_scale: f64,
+    scope_shift: Point,
     named_nodes: &mut BTreeMap<String, NodeGeometry>,
 ) -> Result<(), String> {
     let rest = rest.trim();
@@ -466,6 +502,8 @@ fn render_coordinate(
         .ok_or_else(|| "A \\coordinate command needs 'at (x,y)'.".to_owned())?
         .trim();
     let (mut point, _) = parse_coordinate_at(after_at, 0)?;
+    point.x += scope_shift.x;
+    point.y += scope_shift.y;
     point.x *= coordinate_scale;
     point.y *= coordinate_scale;
     named_nodes.insert(
@@ -583,6 +621,36 @@ fn inline_node_coordinate(
     })
 }
 
+fn inline_node_upright_angle(
+    points: &[Point],
+    coordinate_index: usize,
+    implicit: bool,
+) -> Result<f64, String> {
+    let end_index = if implicit {
+        coordinate_index + 1
+    } else {
+        coordinate_index
+    };
+    if end_index == 0 {
+        return Err("A sloped path node needs a preceding line segment.".to_owned());
+    }
+    let start = points
+        .get(end_index - 1)
+        .copied()
+        .ok_or_else(|| "A sloped path node needs a preceding coordinate.".to_owned())?;
+    let end = points
+        .get(end_index)
+        .copied()
+        .ok_or_else(|| "A sloped path node needs a following coordinate.".to_owned())?;
+    let mut angle = (end.y - start.y).atan2(end.x - start.x).to_degrees();
+    if angle > 90.0 {
+        angle -= 180.0;
+    } else if angle < -90.0 {
+        angle += 180.0;
+    }
+    Ok(angle)
+}
+
 fn find_inline_node(path: &str, start: usize) -> Option<usize> {
     let mut brace_depth = 0usize;
     let mut bracket_depth = 0usize;
@@ -647,6 +715,7 @@ fn render_path(
     path: &str,
     style: &Style,
     coordinate_scale: f64,
+    scope_shift: Point,
     named_nodes: &BTreeMap<String, NodeGeometry>,
     output: &mut String,
     bounds: &mut Bounds,
@@ -656,6 +725,7 @@ fn render_path(
             path,
             style,
             coordinate_scale,
+            scope_shift,
             output,
             bounds,
         );
@@ -668,11 +738,13 @@ fn render_path(
             path[plot_index + "plot coordinates".len()..].trim_start(),
             style,
             coordinate_scale,
+            scope_shift,
             output,
             bounds,
         );
     }
-    let mut points = parse_path_coordinates(path, named_nodes, coordinate_scale)?
+    let mut points =
+        parse_path_coordinates(path, named_nodes, coordinate_scale, scope_shift)?
         .into_iter()
         .map(|point| Point {
             x: point.x * coordinate_scale,
@@ -1003,6 +1075,7 @@ fn render_plot_path(
     path: &str,
     style: &Style,
     coordinate_scale: f64,
+    scope_shift: Point,
     output: &mut String,
     bounds: &mut Bounds,
 ) -> Result<(), String> {
@@ -1023,6 +1096,7 @@ fn render_plot_path(
             coordinates.trim_start(),
             style,
             coordinate_scale,
+            scope_shift,
             output,
             bounds,
         );
@@ -1065,18 +1139,22 @@ fn render_plot_path(
     let mut points = parse_coordinates(prefix)?
         .into_iter()
         .map(|point| Point {
-            x: point.x * coordinate_scale,
-            y: point.y * coordinate_scale,
+            x: (point.x + scope_shift.x) * coordinate_scale,
+            y: (point.y + scope_shift.y) * coordinate_scale,
         })
         .collect::<Vec<_>>();
     for index in 0..samples {
         let fraction = index as f64 / (samples - 1) as f64;
         let variable = domain_start + (domain_end - domain_start) * fraction;
         let variable = format!("{variable:.12}");
-        let x =
-            evaluate_plot_expression(x_expression, &variable)? * UNIT * coordinate_scale;
-        let y =
-            evaluate_plot_expression(y_expression, &variable)? * UNIT * coordinate_scale;
+        let x = (
+            evaluate_plot_expression(x_expression, &variable)? * UNIT +
+            scope_shift.x
+        ) * coordinate_scale;
+        let y = (
+            evaluate_plot_expression(y_expression, &variable)? * UNIT +
+            scope_shift.y
+        ) * coordinate_scale;
         points.push(Point { x, y });
     }
     if points.is_empty() {
@@ -1126,6 +1204,7 @@ fn render_smooth_coordinate_plot(
     source: &str,
     style: &Style,
     coordinate_scale: f64,
+    scope_shift: Point,
     output: &mut String,
     bounds: &mut Bounds,
 ) -> Result<(), String> {
@@ -1141,8 +1220,8 @@ fn render_smooth_coordinate_plot(
     let points = parse_coordinates(coordinates)?
         .into_iter()
         .map(|point| Point {
-            x: point.x * coordinate_scale,
-            y: point.y * coordinate_scale,
+            x: (point.x + scope_shift.x) * coordinate_scale,
+            y: (point.y + scope_shift.y) * coordinate_scale,
         })
         .collect::<Vec<_>>();
     if points.len() < 2 || points.len() > 512 {
@@ -1237,6 +1316,7 @@ fn render_node(
     picture_style: &PictureStyle,
     base_style: &NodeStyle,
     named_styles: &BTreeMap<String, NodeStylePatch>,
+    scope_shift: Point,
     named_nodes: &mut BTreeMap<String, NodeGeometry>,
     output: &mut String,
     bounds: &mut Bounds,
@@ -1260,13 +1340,16 @@ fn render_node(
         let end = matching_parenthesis(after_at, 0)?;
         let coordinate = &after_at[1..end];
         let point = if coordinate.contains(',') || coordinate.contains(':') {
-            parse_coordinate(coordinate)?
+            let mut point = parse_coordinate(coordinate)?;
+            point.x += scope_shift.x;
+            point.y += scope_shift.y;
+            point
         } else {
             resolve_node_reference(coordinate, named_nodes, picture_style.coordinate_scale)?
         };
         (point, &after_at[end + 1..])
     } else {
-        (Point { x: 0.0, y: 0.0 }, rest)
+        (scope_shift, rest)
     };
     point.x *= picture_style.coordinate_scale;
     point.y *= picture_style.coordinate_scale;
@@ -1304,8 +1387,9 @@ fn render_node(
         options,
         placement,
         &mut point,
-        visual_width / 2.0,
-        visual_height / 2.0,
+        if node_style.sloped { box_width / 2.0 } else { visual_width / 2.0 },
+        if node_style.sloped { box_height / 2.0 } else { visual_height / 2.0 },
+        node_style.sloped.then_some(node_style.rotate),
     )?;
     let anchor_reference = point;
     apply_explicit_node_anchor(
@@ -1319,8 +1403,9 @@ fn render_node(
             point,
             placement.name,
             placement.gap,
-            visual_width / 2.0,
-            visual_height / 2.0,
+            if node_style.sloped { box_width / 2.0 } else { visual_width / 2.0 },
+            if node_style.sloped { box_height / 2.0 } else { visual_height / 2.0 },
+            node_style.sloped.then_some(node_style.rotate),
         )
     });
     bounds.include(Point {
@@ -1399,7 +1484,7 @@ fn render_node(
         })
         .unwrap_or_default();
     let layout_attributes = format!(
-        " data-chord-padding-x=\"{:.3}\" data-chord-padding-y=\"{:.3}\" data-chord-min-width=\"{:.3}\" data-chord-min-height=\"{:.3}\" data-chord-align=\"{}\" data-chord-node-anchor=\"{}\" data-chord-reference-x=\"{:.3}\" data-chord-reference-y=\"{:.3}\"{}{}{}",
+        " data-chord-padding-x=\"{:.3}\" data-chord-padding-y=\"{:.3}\" data-chord-min-width=\"{:.3}\" data-chord-min-height=\"{:.3}\" data-chord-align=\"{}\" data-chord-node-anchor=\"{}\" data-chord-reference-x=\"{:.3}\" data-chord-reference-y=\"{:.3}\"{}{}{}{}",
         node_style.inner_xsep,
         node_style.inner_ysep,
         node_style.minimum_width,
@@ -1422,6 +1507,11 @@ fn render_node(
         },
         if node_style.rotate.abs() > f64::EPSILON {
             format!(" data-chord-rotate=\"{:.3}\"", node_style.rotate)
+        } else {
+            String::new()
+        },
+        if node_style.sloped {
+            " data-chord-sloped=\"true\"".to_owned()
         } else {
             String::new()
         },
@@ -1486,6 +1576,7 @@ fn apply_node_position(
     point: &mut Point,
     half_width: f64,
     half_height: f64,
+    sloped_angle: Option<f64>,
 ) -> Result<(), String> {
     let mut x_shift = 0.0;
     let mut y_shift = 0.0;
@@ -1499,15 +1590,25 @@ fn apply_node_position(
     if let Some(placement) = placement {
         let horizontal = half_width + placement.gap;
         let vertical = half_height + placement.gap;
+        let mut local_x = 0.0;
+        let mut local_y = 0.0;
         if placement.name.contains("left") {
-            point.x -= horizontal;
+            local_x -= horizontal;
         } else if placement.name.contains("right") {
-            point.x += horizontal;
+            local_x += horizontal;
         }
         if placement.name.contains("above") {
-            point.y += vertical;
+            local_y += vertical;
         } else if placement.name.contains("below") {
-            point.y -= vertical;
+            local_y -= vertical;
+        }
+        if let Some(angle) = sloped_angle {
+            let radians = angle.to_radians();
+            point.x += local_x * radians.cos() - local_y * radians.sin();
+            point.y += local_x * radians.sin() + local_y * radians.cos();
+        } else {
+            point.x += local_x;
+            point.y += local_y;
         }
     }
     point.x += x_shift;
@@ -1548,19 +1649,36 @@ fn node_anchor_point(
     gap: f64,
     half_width: f64,
     half_height: f64,
+    sloped_angle: Option<f64>,
 ) -> Point {
-    let mut anchor = positioned;
+    let mut local_x = 0.0;
+    let mut local_y = 0.0;
     if placement.contains("left") {
-        anchor.x += half_width + gap;
+        local_x -= half_width + gap;
     } else if placement.contains("right") {
-        anchor.x -= half_width + gap;
+        local_x += half_width + gap;
     }
     if placement.contains("above") {
-        anchor.y -= half_height + gap;
+        local_y += half_height + gap;
     } else if placement.contains("below") {
-        anchor.y += half_height + gap;
+        local_y -= half_height + gap;
     }
-    anchor
+    let offset = if let Some(angle) = sloped_angle {
+        let radians = angle.to_radians();
+        Point {
+            x: local_x * radians.cos() - local_y * radians.sin(),
+            y: local_x * radians.sin() + local_y * radians.cos(),
+        }
+    } else {
+        Point {
+            x: local_x,
+            y: local_y,
+        }
+    };
+    Point {
+        x: positioned.x - offset.x,
+        y: positioned.y - offset.y,
+    }
 }
 
 fn parse_coordinates(input: &str) -> Result<Vec<Point>, String> {
@@ -1582,6 +1700,7 @@ fn parse_path_coordinates(
     input: &str,
     named_nodes: &BTreeMap<String, NodeGeometry>,
     coordinate_scale: f64,
+    scope_shift: Point,
 ) -> Result<Vec<Point>, String> {
     let mut points = Vec::new();
     let mut current: Option<Point> = None;
@@ -1597,7 +1716,8 @@ fn parse_path_coordinates(
         }
         let relative_update = prefix.ends_with("++");
         let relative_once = !relative_update && prefix.ends_with('+');
-        let mut point = if coordinate.contains(',') || coordinate.contains(':') {
+        let numeric_coordinate = coordinate.contains(',') || coordinate.contains(':');
+        let mut point = if numeric_coordinate {
             parse_coordinate(coordinate)?
         } else if coordinate.contains("|-") {
             let (vertical, horizontal) = coordinate
@@ -1637,6 +1757,9 @@ fn parse_path_coordinates(
             })?;
             point.x += base.x;
             point.y += base.y;
+        } else if numeric_coordinate {
+            point.x += scope_shift.x;
+            point.y += scope_shift.y;
         }
         points.push(point);
         if !relative_once {
@@ -2638,6 +2761,8 @@ fn parse_node_style_patch(
             style.draw = true;
         } else if option == "circle" {
             style.shape = Some(NodeShape::Circle);
+        } else if option == "sloped" {
+            style.sloped = true;
         } else if option == "rounded corners" {
             style.rounded_radius = Some(4.0);
         } else if let Some(value) = assignment_value(option, "rounded corners") {
@@ -2733,6 +2858,7 @@ fn is_node_style_patch(style: &NodeStylePatch) -> bool {
         || style.align.is_some()
         || style.anchor.is_some()
         || style.rotate.is_some()
+        || style.sloped
         || style.shape.is_some()
 }
 
@@ -2976,25 +3102,151 @@ fn strip_picture_options(body: &str) -> &str {
     body
 }
 
-fn split_commands(source: &str) -> Vec<&str> {
+fn split_scoped_commands(source: &str) -> Result<Vec<ScopedCommand<'_>>, String> {
     let mut commands = Vec::new();
     let mut start = 0usize;
     let mut brace_depth = 0usize;
-    for (index, character) in source.char_indices() {
+    let mut shifts = vec![Point { x: 0.0, y: 0.0 }];
+    let mut cursor = 0usize;
+    while cursor < source.len() {
+        let rest = &source[cursor..];
+        if brace_depth == 0
+            && let Some(consumed) = scope_boundary_length(rest, "\\begin")
+        {
+            if !source[start..cursor].trim().is_empty() {
+                return Err("A scope must begin between complete TikZ commands.".to_owned());
+            }
+            let after_boundary = &rest[consumed..];
+            let leading = after_boundary.len() - after_boundary.trim_start().len();
+            let options_source = &after_boundary[leading..];
+            let (options, options_consumed) = if options_source.starts_with('[') {
+                let end = options_source
+                    .find(']')
+                    .ok_or_else(|| "TikZ scope options are missing ']'.".to_owned())?;
+                (&options_source[1..end], end + 1)
+            } else {
+                ("", 0)
+            };
+            let local = parse_scope_shift(options)?;
+            let parent = *shifts
+                .last()
+                .ok_or_else(|| "TikZ scope stack is empty.".to_owned())?;
+            let combined = Point {
+                x: parent.x + local.x,
+                y: parent.y + local.y,
+            };
+            validate_scope_shift(combined)?;
+            shifts.push(combined);
+            cursor += consumed + leading + options_consumed;
+            start = cursor;
+            continue;
+        }
+        if brace_depth == 0
+            && let Some(consumed) = scope_boundary_length(rest, "\\end")
+        {
+            if !source[start..cursor].trim().is_empty() {
+                return Err("A scope must end between complete TikZ commands.".to_owned());
+            }
+            if shifts.len() == 1 {
+                return Err("A TikZ scope ended without a matching begin.".to_owned());
+            }
+            shifts.pop();
+            cursor += consumed;
+            start = cursor;
+            continue;
+        }
+        let character = rest
+            .chars()
+            .next()
+            .ok_or_else(|| "Could not split TikZ commands.".to_owned())?;
         match character {
             '{' => brace_depth += 1,
             '}' => brace_depth = brace_depth.saturating_sub(1),
             ';' if brace_depth == 0 => {
-                commands.push(&source[start..index]);
-                start = index + 1;
+                let command = source[start..cursor].trim();
+                if !command.is_empty() {
+                    commands.push(ScopedCommand {
+                        source: command,
+                        shift: *shifts
+                            .last()
+                            .ok_or_else(|| "TikZ scope stack is empty.".to_owned())?,
+                    });
+                }
+                start = cursor + character.len_utf8();
             }
             _ => {}
         }
+        cursor += character.len_utf8();
     }
-    if source[start..].trim().len() > 0 {
-        commands.push(&source[start..]);
+    if shifts.len() != 1 {
+        return Err("A TikZ scope is missing \\end{scope}.".to_owned());
     }
-    commands
+    if !source[start..].trim().is_empty() {
+        commands.push(ScopedCommand {
+            source: source[start..].trim(),
+            shift: shifts[0],
+        });
+    }
+    Ok(commands)
+}
+
+fn scope_boundary_length(source: &str, prefix: &str) -> Option<usize> {
+    if !source.starts_with(prefix) {
+        return None;
+    }
+    let mut cursor = prefix.len();
+    cursor += source[cursor..].len() - source[cursor..].trim_start().len();
+    if source.as_bytes().get(cursor) != Some(&b'{') {
+        return None;
+    }
+    cursor += 1;
+    cursor += source[cursor..].len() - source[cursor..].trim_start().len();
+    if !source[cursor..].starts_with("scope") {
+        return None;
+    }
+    cursor += "scope".len();
+    cursor += source[cursor..].len() - source[cursor..].trim_start().len();
+    (source.as_bytes().get(cursor) == Some(&b'}')).then_some(cursor + 1)
+}
+
+fn parse_scope_shift(options: &str) -> Result<Point, String> {
+    let options = split_top_level_commas(options)
+        .into_iter()
+        .map(str::trim)
+        .filter(|option| !option.is_empty())
+        .collect::<Vec<_>>();
+    if options.is_empty() {
+        return Ok(Point { x: 0.0, y: 0.0 });
+    }
+    if options.len() != 1 {
+        return Err("The fast WASM core only supports shift in scope options.".to_owned());
+    }
+    let value = assignment_value(options[0], "shift")
+        .ok_or_else(|| "The fast WASM core only supports shift in scope options.".to_owned())?
+        .trim();
+    let value = value
+        .strip_prefix('{')
+        .and_then(|value| value.strip_suffix('}'))
+        .unwrap_or(value)
+        .trim();
+    let value = value
+        .strip_prefix('(')
+        .and_then(|value| value.strip_suffix(')'))
+        .ok_or_else(|| "A scope shift needs {(x,y)}.".to_owned())?;
+    let shift = parse_coordinate(value)?;
+    validate_scope_shift(shift)?;
+    Ok(shift)
+}
+
+fn validate_scope_shift(shift: Point) -> Result<(), String> {
+    if !shift.x.is_finite()
+        || !shift.y.is_finite()
+        || shift.x.abs() > MAX_SCOPE_SHIFT
+        || shift.y.abs() > MAX_SCOPE_SHIFT
+    {
+        return Err("A TikZ scope shift must be finite and at most 1000 cm.".to_owned());
+    }
+    Ok(())
 }
 
 fn strip_comments(source: &str) -> String {
@@ -3825,5 +4077,92 @@ mod tests {
         )
         .unwrap();
         assert!(svg.contains("r=\"70.866\""), "{svg}");
+    }
+
+    #[test]
+    fn renders_upright_sloped_labels_on_straight_named_node_connectors() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[
+              >=stealth,
+              thick,
+              every node/.style={font=\small},
+              box/.style={
+                draw,rounded corners,align=center,
+                minimum width=3.25cm,minimum height=1cm
+              }
+            ]
+              \node[box] (field) at (6,-0.4) {electric field};
+              \node[box] (V) at (1.2,-3.4) {electric potential\\$V_{\mathrm e}$};
+              \node[box] (E) at (10.8,-3.4)
+                {electric field strength\\$\boldsymbol{E}$};
+              \draw[->] (field)--node[above,sloped,midway]
+                {scalar description}(V);
+              \draw[->] (field)--node[above,sloped,midway]
+                {vector description}(E);
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert_eq!(svg.matches("data-chord-sloped=\"true\"").count(), 2);
+        assert!(svg.contains("data-chord-rotate=\"32.005\""), "{svg}");
+        assert!(svg.contains("data-chord-rotate=\"-32.005\""), "{svg}");
+    }
+
+    #[test]
+    fn renders_translated_foreach_conductor_scopes() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[>=stealth,thick,every node/.style={font=\small}]
+              \begin{scope}[shift={(0,0)}]
+                \draw[fill=gray!6] (0,0) circle (1.2);
+                \foreach \ang in {0,30,...,330}{
+                  \node at ({1.2*cos(\ang)},{1.2*sin(\ang)}) {$+$};
+                  \draw[->] ({1.2*cos(\ang)},{1.2*sin(\ang)})
+                    -- ({2.45*cos(\ang)},{2.45*sin(\ang)});
+                }
+              \end{scope}
+              \begin{scope}[shift={(6.5,0)}]
+                \draw[fill=gray!6] (0,0) circle (1.2);
+                \foreach \ang in {0,30,...,330}{
+                  \node at ({1.2*cos(\ang)},{1.2*sin(\ang)}) {$-$};
+                  \draw[<-] ({1.2*cos(\ang)},{1.2*sin(\ang)})
+                    -- ({2.45*cos(\ang)},{2.45*sin(\ang)});
+                }
+              \end{scope}
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert_eq!(svg.matches("data-chord-arrowhead=\"true\"").count(), 24);
+        assert!(svg.contains("cx=\"0.000\""), "{svg}");
+        assert!(svg.contains("cx=\"184.252\""), "{svg}");
+    }
+
+    #[test]
+    fn applies_scope_shift_once_to_inline_labels_and_supported_plots() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}
+              \begin{scope}[shift={(2,3)}]
+                \draw (0,0)--node[midway,above] {label}(2,0);
+                \draw plot[domain=0:1,samples=2] ({\x},{\x});
+                \draw[smooth] plot coordinates {(0,0) (1,1) (2,0)};
+              \end{scope}
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert!(svg.contains("data-chord-x=\"85.039\""), "{svg}");
+        assert!(svg.contains("M 56.693,-85.039"), "{svg}");
+    }
+
+    #[test]
+    fn rejects_unbounded_and_accumulated_scope_shifts() {
+        for source in [
+            r"\begin{scope}[shift={(1001,0)}]\draw (0,0)--(1,0);\end{scope}",
+            r"\begin{scope}[shift={(600,0)}]
+                \begin{scope}[shift={(600,0)}]
+                  \draw (0,0)--(1,0);
+                \end{scope}
+              \end{scope}",
+        ] {
+            let error = render_svg(source).unwrap_err();
+            assert!(error.contains("at most 1000 cm"), "{error}");
+        }
     }
 }

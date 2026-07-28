@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.9] - 2026-07-28
+
+### Fixed
+
+- Restored publication WASM support for `sloped` labels on straight paths, including upright line-angle rotation and matching measured-label offsets in Markdown and PDF export.
+- Added bounded WASM support for nested `scope` environments with coordinate `shift`, including nodes, paths, inline labels, bounded plots, stepped `\foreach` conductor diagrams, and both arrow directions.
+- Routed path labels that combine `sloped` with an explicit `rotate` back to local TeX instead of silently overriding the requested rotation.
+- Corrected the author name from `CHEH Hua` to `CHEN Hua` across plugin metadata and project documentation.
+
 ## [0.5.8] - 2026-07-28
 
 ### Added

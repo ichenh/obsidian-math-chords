@@ -4,7 +4,10 @@ import {
   fitTikzNodeBox,
   placeTikzAnchoredNode,
   placeTikzOverlay,
+  placeTikzSlopedOverlay,
+  tikzConnectorArrowTransform,
   tikzEmbeddedOverlayBounds,
+  tikzOverlayRotationTransform,
   type TikzNodeAnchor,
   type TikzOverlayPlacement,
 } from "./overlayPosition";
@@ -159,6 +162,7 @@ interface TikzMeasuredOverlay {
   x: number;
   y: number;
   rotate: number;
+  sloped: boolean;
   placement: TikzOverlayPlacement | null;
   nodeAnchor: TikzNodeAnchor | null;
   referenceX: number;
@@ -362,6 +366,7 @@ async function renderSvgMathOverlays(
     const rawY = Number(anchor.dataset.chordY);
     const rawRotate = Number(anchor.dataset.chordRotate);
     const rotate = Number.isFinite(rawRotate) ? rawRotate : 0;
+    const sloped = anchor.dataset.chordSloped === "true";
     const placement = parseTikzOverlayPlacement(
       anchor.dataset.chordPlacement,
     );
@@ -466,6 +471,7 @@ async function renderSvgMathOverlays(
         x,
         y,
         rotate,
+        sloped,
         placement,
         nodeAnchor,
         referenceX,
@@ -503,6 +509,7 @@ async function renderSvgMathOverlays(
       x,
       y,
       rotate,
+      sloped,
       placement,
       nodeAnchor,
       referenceX,
@@ -540,14 +547,23 @@ async function renderSvgMathOverlays(
         Number.isFinite(anchorY) &&
         Number.isFinite(gap)
       ) {
-        point = placeTikzOverlay(
-          { left: anchorX, top: anchorY },
-          placement,
-          elementRect.width,
-          elementRect.height,
-          gap,
-          gap,
-        );
+        point = sloped
+          ? placeTikzSlopedOverlay(
+              { left: anchorX, top: anchorY },
+              placement,
+              elementRect.width,
+              elementRect.height,
+              gap,
+              rotate,
+            )
+          : placeTikzOverlay(
+              { left: anchorX, top: anchorY },
+              placement,
+              elementRect.width,
+              elementRect.height,
+              gap,
+              gap,
+            );
       }
       const width = Math.max(1, elementRect.width);
       const height = Math.max(1, elementRect.height);
@@ -572,11 +588,9 @@ async function renderSvgMathOverlays(
       foreignObject.setAttribute("y", String(bounds.y));
       foreignObject.setAttribute("width", String(bounds.width));
       foreignObject.setAttribute("height", String(bounds.height));
-      if (rotate !== 0) {
-        foreignObject.setAttribute(
-          "transform",
-          `rotate(${-rotate} ${point.left} ${point.top})`,
-        );
+      const rotationTransform = tikzOverlayRotationTransform(rotate, point);
+      if (rotationTransform) {
+        foreignObject.setAttribute("transform", rotationTransform);
       }
       const wrapper = containerEl.ownerDocument.createElementNS(
         xhtmlNamespace,
@@ -790,12 +804,14 @@ function repositionConnectorArrow(
   newDirection: { x: number; y: number },
 ): void {
   if (!arrow) return;
-  const oldAngle = Math.atan2(oldDirection.y, oldDirection.x);
-  const newAngle = Math.atan2(newDirection.y, newDirection.x);
-  const degrees = (newAngle - oldAngle) * 180 / Math.PI;
   arrow.setAttribute(
     "transform",
-    `translate(${newTip.x} ${newTip.y}) rotate(${degrees}) translate(${-oldTip.x} ${-oldTip.y})`,
+    tikzConnectorArrowTransform(
+      oldTip,
+      newTip,
+      oldDirection,
+      newDirection,
+    ),
   );
 }
 

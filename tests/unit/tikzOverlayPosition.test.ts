@@ -4,7 +4,10 @@ import {
   placeTikzAnchoredNode,
   mapTikzOverlayPoint,
   placeTikzOverlay,
+  placeTikzSlopedOverlay,
+  tikzConnectorArrowTransform,
   tikzEmbeddedOverlayBounds,
+  tikzOverlayRotationTransform,
 } from "../../src/tikz/overlayPosition";
 
 describe("TikZ MathJax overlay positioning", () => {
@@ -84,6 +87,36 @@ describe("TikZ MathJax overlay positioning", () => {
         4,
       ),
     ).toEqual({ left: 83, top: 67 });
+  });
+
+  it("places sloped labels along the displayed line normal", () => {
+    const point = placeTikzSlopedOverlay(
+      { left: 100, top: 80 },
+      "above",
+      40,
+      20,
+      5,
+      30,
+    );
+    expect(point.left).toBeCloseTo(92.5);
+    expect(point.top).toBeCloseTo(67.0096);
+  });
+
+  it("uses the SVG display angle around the measured label center", () => {
+    expect(tikzOverlayRotationTransform(30, { left: 92.5, top: 67.0096 }))
+      .toBe("rotate(-30 92.5 67.0096)");
+    expect(tikzOverlayRotationTransform(0, { left: 0, top: 0 })).toBeNull();
+  });
+
+  it("moves and rotates reconciled connector arrowheads with their tips", () => {
+    expect(
+      tikzConnectorArrowTransform(
+        { x: 10, y: 20 },
+        { x: 14, y: 25 },
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+      ),
+    ).toBe("translate(14 25) rotate(90) translate(-10 -20)");
   });
 
   it("bakes the corrected label box into SVG user coordinates", () => {

@@ -22,7 +22,7 @@ release timing, and the final contents of the repository remain human decisions.
 
 ## Responsibility and verification
 
-The maintainer, [CHEH Hua](https://github.com/ichenh), is responsible for changes
+The maintainer, [CHEN Hua](https://github.com/ichenh), is responsible for changes
 accepted into the project. Changes are reviewed in context and verified in
 proportion to their risk. The repository's standard checks include:
 

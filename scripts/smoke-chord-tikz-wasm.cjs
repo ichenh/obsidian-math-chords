@@ -28,6 +28,8 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
     String.raw`\begin{tikzpicture}[x=1cm,y=1cm,scale=1.0]\draw[thick] plot[smooth] coordinates {(-2.10,0.58) (-2.90,0.78) (-2.70,1.95) (0,2.55) (2.70,1.95) (2.90,0.78) (2.10,0.58)};\draw[->,thick] (-0.30,2.55)--(0.30,2.55);\end{tikzpicture}`,
     String.raw`\begin{tikzpicture}[x=1cm,y=1cm,>=stealth,every node/.style={font=\small},line cap=round]\draw[->,thick] (0,0)--(8.65,0) node[right] {$r/\mathrm{m}$};\foreach \x/\lab in {2/0.10,4/0.20,6/0.30,8/0.40}{\draw (\x,0.08)--(\x,-0.08);\node[below=3pt] at (\x,0) {\lab};\draw[gray!35] (\x,0)--(\x,6.15);}\draw[densely dotted,thick] (2,0)--(2,6.25);\node[above right] at (2,6.05) {$r=R$};\draw[thick,smooth] plot coordinates {(2,6) (2.4,5) (3,4) (4,3) (5,2.4) (6,2) (7,1.714) (8,1.5)};\fill (4,3) circle (0.055);\node[above right=2pt] at (4,3) {P};\end{tikzpicture}`,
     String.raw`\begin{tikzpicture}[>=Latex]\draw[help lines,step=0.5cm] (0,0) grid (3,2);\filldraw[fill=cyan!20,draw=blue] (0,0)--(3,0)--(1.5,2)--cycle;\draw[-{Stealth},semithick] (2,0) arc (0:120:2);\draw[orange,line width=1pt,draw opacity=0.8] (0,0)--(30:3);\draw (0,-1)--node[midway,above] {$v$} ++(4,0);\coordinate (P) at (3,2);\node[above] at (P) {$P$};\node[circle,draw,minimum width=1cm] at (0,-2) {$q$};\end{tikzpicture}`,
+    String.raw`\begin{tikzpicture}[>=stealth,box/.style={draw,rounded corners,minimum width=3cm}]\node[box] (field) at (3,0) {field};\node[box] (V) at (0,-2) {potential};\node[box] (E) at (6,-2) {strength};\draw[->] (field)--node[above,sloped,midway]{scalar}(V);\draw[->] (field)--node[above,sloped,midway]{vector}(E);\end{tikzpicture}`,
+    String.raw`\begin{tikzpicture}[>=stealth]\begin{scope}[shift={(0,0)}]\draw (0,0) circle (1.2);\foreach \a in {0,30,...,330}{\draw[->] ({1.2*cos(\a)},{1.2*sin(\a)})--({2.45*cos(\a)},{2.45*sin(\a)});}\end{scope}\begin{scope}[shift={(6.5,0)}]\draw (0,0) circle (1.2);\foreach \a in {0,30,...,330}{\draw[<-] ({1.2*cos(\a)},{1.2*sin(\a)})--({2.45*cos(\a)},{2.45*sin(\a)});}\end{scope}\end{tikzpicture}`,
   ];
   const startedAt = performance.now();
   const outputs = cases.map(render);
@@ -129,6 +131,19 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
   ) {
     throw new Error("STEM vocabulary smoke test lost vector geometry or labels.");
   }
+  if (
+    (outputs[12].match(/data-chord-sloped="true"/g) ?? []).length !== 2 ||
+    (outputs[12].match(/data-chord-arrowhead="true"/g) ?? []).length !== 2
+  ) {
+    throw new Error("Sloped-label smoke test lost rotation or arrow geometry.");
+  }
+  if (
+    (outputs[13].match(/<circle/g) ?? []).length !== 2 ||
+    (outputs[13].match(/data-chord-arrowhead="true"/g) ?? []).length !== 24 ||
+    !outputs[13].includes('cx="184.252"')
+  ) {
+    throw new Error("Translated-scope smoke test lost conductor geometry.");
+  }
   const expectedDimensions = [
     [109.039, 109.039],
     [112.418, 51.895],
@@ -142,6 +157,8 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
     [287.824, 110.681],
     [424.353, 337.932],
     [236.598, 247.401],
+    [406.677, 136.935],
+    [508.724, 232.346],
   ];
   const dimensionMismatches = [];
   outputs.map(svgMetrics).forEach((metrics, index) => {

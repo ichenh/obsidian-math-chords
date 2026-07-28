@@ -252,6 +252,98 @@ describe("TikZ capability analyzer", () => {
     ).toEqual({ tier: "vector", features: [] });
   });
 
+  it("keeps translated conductor scopes on the vector tier", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \begin{tikzpicture}[
+          scale=1.0,
+          >=stealth,
+          line cap=round,
+          every node/.style={font=\small}
+        ]
+          \begin{scope}[shift={(0,0)}]
+            \draw[thick, fill=gray!6] (0,0) circle (1.20);
+            \foreach \ang in {0,30,...,330}{
+              \node at ({1.20*cos(\ang)},{1.20*sin(\ang)}) {$+$};
+              \draw[->, thick]
+                ({1.20*cos(\ang)},{1.20*sin(\ang)})
+                -- ({2.45*cos(\ang)},{2.45*sin(\ang)});
+            }
+          \end{scope}
+          \begin{scope}[shift={(6.5,0)}]
+            \draw[thick, fill=gray!6] (0,0) circle (1.20);
+            \foreach \ang in {0,30,...,330}{
+              \node at ({1.20*cos(\ang)},{1.20*sin(\ang)}) {$-$};
+              \draw[<-, thick]
+                ({1.20*cos(\ang)},{1.20*sin(\ang)})
+                -- ({2.45*cos(\ang)},{2.45*sin(\ang)});
+            }
+          \end{scope}
+        \end{tikzpicture}
+      `),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
+  it("keeps translated bounded plots on the vector tier", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \begin{tikzpicture}
+          \begin{scope}[shift={(2,3)}]
+            \draw plot[domain=0:1,samples=2] ({\x},{\x});
+            \draw[smooth] plot coordinates {(0,0) (1,1) (2,0)};
+          \end{scope}
+        \end{tikzpicture}
+      `),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
+  it("routes nonnumeric and non-shift scope options to local TeX", () => {
+    for (const options of [
+      "shift={(unsafe value,0)}",
+      "rotate=30",
+      "shift={(1,0)},scale=2",
+    ]) {
+      expect(
+        analyzeTikzCapabilities(
+          String.raw`\begin{tikzpicture}\begin{scope}[${options}]
+            \draw (0,0)--(1,0);
+          \end{scope}\end{tikzpicture}`,
+        ).tier,
+      ).toBe("compatibility");
+    }
+  });
+
+  it("routes malformed scope ordering to local TeX", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \begin{tikzpicture}
+          \end{scope}
+          \begin{scope}[shift={(1,0)}]
+            \draw (0,0)--(1,0);
+        \end{tikzpicture}
+      `).tier,
+    ).toBe("compatibility");
+  });
+
+  it("keeps literal scope shifts bounded across nested scopes", () => {
+    for (const source of [
+      String.raw`\begin{scope}[shift={(1001,0)}]\draw (0,0)--(1,0);\end{scope}`,
+      String.raw`\begin{scope}[shift={(600,0)}]
+        \begin{scope}[shift={(600,0)}]\draw (0,0)--(1,0);\end{scope}
+      \end{scope}`,
+      String.raw`\begin{scope}[shift={(\offset,0)}]\draw (0,0)--(1,0);\end{scope}`,
+    ]) {
+      expect(analyzeTikzCapabilities(source).tier).toBe("compatibility");
+    }
+    expect(
+      analyzeTikzCapabilities(
+        String.raw`\begin{scope}[shift={(10mm,72bp)}]
+          \draw (0,0)--(1,0);
+        \end{scope}`,
+      ),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
   it("keeps all basic stealth arrow directions on the vector tier", () => {
     expect(
       analyzeTikzCapabilities(String.raw`
@@ -365,6 +457,33 @@ describe("TikZ capability analyzer", () => {
         \node[draw,rotate=30] (a) at (0,0) {A};
         \node[draw] (b) at (2,0) {B};
         \draw[->] (a)--(b);
+      `).features,
+    ).toContain("advanced-node");
+  });
+
+  it("keeps straight sloped path labels on the vector tier", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \begin{tikzpicture}[
+          >=stealth,
+          thick,
+          every node/.style={font=\small},
+          box/.style={draw,rounded corners,align=center,minimum width=3.25cm,minimum height=1cm}
+        ]
+          \node[box] (field) at (6,-0.4) {electric field};
+          \node[box] (V) at (1.2,-3.4) {electric potential\\$V_{\mathrm e}$};
+          \node[box] (E) at (10.8,-3.4) {electric field strength\\$\boldsymbol{E}$};
+          \draw[->] (field)--node[above,sloped,midway]{scalar description}(V);
+          \draw[->] (field)--node[above,sloped,midway]{vector description}(E);
+        \end{tikzpicture}
+      `),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
+  it("routes combined sloped and explicit node rotation to local TeX", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \draw (0,0)--node[sloped,rotate=10,midway]{x}(2,1);
       `).features,
     ).toContain("advanced-node");
   });
