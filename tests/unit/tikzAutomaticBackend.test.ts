@@ -44,7 +44,7 @@ describe("automatic TikZ backend", () => {
 
     await expect(
       selectAutomaticTikzBackend(
-        String.raw`\draw[opacity=0.5] (0,0) -- (1,1);`,
+        String.raw`\draw[blur shadow] (0,0) -- (1,1);`,
         { getWasm, getNative },
       ),
     ).resolves.toBe(native);

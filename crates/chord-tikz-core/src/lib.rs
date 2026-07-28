@@ -125,11 +125,15 @@ struct Style {
     fill_opacity: f64,
     arrow_start: bool,
     arrow_end: bool,
-    dashed: bool,
+    arrow_tip: ArrowTip,
+    dash_array: Option<&'static str>,
+    smooth: bool,
     round_cap: bool,
     round_join: bool,
     shorten_start: f64,
     shorten_end: f64,
+    grid_step_x: f64,
+    grid_step_y: f64,
 }
 
 struct PictureStyle {
@@ -137,6 +141,14 @@ struct PictureStyle {
     round_join: bool,
     coordinate_scale: f64,
     stroke_width: f64,
+    arrow_tip: ArrowTip,
+}
+
+#[derive(Clone, Copy, Default)]
+enum ArrowTip {
+    #[default]
+    Stealth,
+    Latex,
 }
 
 #[derive(Clone, Copy)]
@@ -144,6 +156,20 @@ struct NodeGeometry {
     center: Point,
     width: f64,
     height: f64,
+    shape: NodeShape,
+}
+
+#[derive(Clone, Copy)]
+struct NodePlacement {
+    name: &'static str,
+    gap: f64,
+}
+
+struct InlinePathNode {
+    options: String,
+    coordinate_index: usize,
+    implicit: bool,
+    text: String,
 }
 
 #[derive(Clone, Copy, Default, PartialEq)]
@@ -166,6 +192,13 @@ enum NodeAnchor {
     SouthWest,
 }
 
+#[derive(Clone, Copy, Default, PartialEq)]
+enum NodeShape {
+    #[default]
+    Rectangle,
+    Circle,
+}
+
 #[derive(Clone)]
 struct NodeStyle {
     draw: bool,
@@ -183,6 +216,7 @@ struct NodeStyle {
     align: NodeAlign,
     anchor: NodeAnchor,
     rotate: f64,
+    shape: NodeShape,
 }
 
 impl Default for NodeStyle {
@@ -204,6 +238,7 @@ impl Default for NodeStyle {
             align: NodeAlign::Center,
             anchor: NodeAnchor::Center,
             rotate: 0.0,
+            shape: NodeShape::Rectangle,
         }
     }
 }
@@ -225,6 +260,7 @@ struct NodeStylePatch {
     align: Option<NodeAlign>,
     anchor: Option<NodeAnchor>,
     rotate: Option<f64>,
+    shape: Option<NodeShape>,
 }
 
 impl NodeStyle {
@@ -272,6 +308,9 @@ impl NodeStyle {
         if let Some(value) = patch.rotate {
             self.rotate = value;
         }
+        if let Some(value) = patch.shape {
+            self.shape = value;
+        }
     }
 }
 
@@ -312,14 +351,48 @@ fn render_svg(source: &str) -> Result<String, String> {
             };
             let (options, path) = take_options(rest.trim())?;
             let style = parse_style(options, kind, &picture_style, &path_styles)?;
+            let (path, inline_nodes) = extract_inline_path_nodes(path.trim())?;
             render_path(
-                path.trim(),
+                &path,
                 &style,
                 picture_style.coordinate_scale,
                 &named_nodes,
                 &mut elements,
                 &mut bounds,
             )?;
+            let inline_points = if inline_nodes.is_empty() {
+                Vec::new()
+            } else {
+                parse_path_coordinates(&path, &named_nodes, picture_style.coordinate_scale)?
+            };
+            for node in inline_nodes {
+                let (position, options) =
+                    inline_node_position_and_options(&node.options, node.implicit)?;
+                let coordinate = inline_node_coordinate(
+                    &inline_points,
+                    node.coordinate_index,
+                    node.implicit,
+                    position,
+                )?;
+                let options = if options.is_empty() {
+                    String::new()
+                } else {
+                    format!("[{options}] ")
+                };
+                let rest = format!(
+                    "{options}at ({:.12}bp,{:.12}bp) {{{}}}",
+                    coordinate.x, coordinate.y, node.text
+                );
+                render_node(
+                    &rest,
+                    &picture_style,
+                    &base_node_style,
+                    &node_styles,
+                    &mut named_nodes,
+                    &mut elements,
+                    &mut bounds,
+                )?;
+            }
             rendered_commands += 1;
             continue;
         }
@@ -332,6 +405,15 @@ fn render_svg(source: &str) -> Result<String, String> {
                 &mut named_nodes,
                 &mut elements,
                 &mut bounds,
+            )?;
+            rendered_commands += 1;
+            continue;
+        }
+        if let Some(rest) = command.strip_prefix("\\coordinate") {
+            render_coordinate(
+                rest.trim(),
+                picture_style.coordinate_scale,
+                &mut named_nodes,
             )?;
             rendered_commands += 1;
             continue;
@@ -364,6 +446,203 @@ fn render_svg(source: &str) -> Result<String, String> {
     Ok(svg)
 }
 
+fn render_coordinate(
+    rest: &str,
+    coordinate_scale: f64,
+    named_nodes: &mut BTreeMap<String, NodeGeometry>,
+) -> Result<(), String> {
+    let rest = rest.trim();
+    if !rest.starts_with('(') {
+        return Err("A \\coordinate command needs a name.".to_owned());
+    }
+    let name_end = matching_parenthesis(rest, 0)?;
+    let name = rest[1..name_end].trim();
+    if name.is_empty() {
+        return Err("A \\coordinate command needs a name.".to_owned());
+    }
+    let after_name = rest[name_end + 1..].trim();
+    let after_at = after_name
+        .strip_prefix("at")
+        .ok_or_else(|| "A \\coordinate command needs 'at (x,y)'.".to_owned())?
+        .trim();
+    let (mut point, _) = parse_coordinate_at(after_at, 0)?;
+    point.x *= coordinate_scale;
+    point.y *= coordinate_scale;
+    named_nodes.insert(
+        name.to_owned(),
+        NodeGeometry {
+            center: point,
+            width: 0.0,
+            height: 0.0,
+            shape: NodeShape::Rectangle,
+        },
+    );
+    Ok(())
+}
+
+fn extract_inline_path_nodes(path: &str) -> Result<(String, Vec<InlinePathNode>), String> {
+    let mut clean_path = String::with_capacity(path.len());
+    let mut nodes = Vec::new();
+    let mut cursor = 0usize;
+    while let Some(start) = find_inline_node(path, cursor) {
+        clean_path.push_str(&path[cursor..start]);
+        let coordinate_count = coordinate_tokens(&clean_path)?.len();
+        if coordinate_count == 0 {
+            return Err("A path node needs a preceding coordinate.".to_owned());
+        }
+        let implicit = clean_path.trim_end().ends_with("--");
+        let mut end = skip_path_whitespace(path, start + "node".len());
+        let options = if path.as_bytes().get(end) == Some(&b'[') {
+            let close = matching_square_bracket(path, end)?;
+            let options = path[end + 1..close].to_owned();
+            end = skip_path_whitespace(path, close + 1);
+            options
+        } else {
+            String::new()
+        };
+        if path.as_bytes().get(end) == Some(&b'(') {
+            return Err(
+                "This fast WASM core does not support named inline path nodes yet.".to_owned(),
+            );
+        }
+        let (text, consumed) = take_braced(&path[end..])?;
+        nodes.push(InlinePathNode {
+            options,
+            coordinate_index: coordinate_count - 1,
+            implicit,
+            text: text.to_owned(),
+        });
+        cursor = end + consumed;
+    }
+    clean_path.push_str(&path[cursor..]);
+    Ok((clean_path, nodes))
+}
+
+fn inline_node_position_and_options(
+    options: &str,
+    implicit: bool,
+) -> Result<(f64, String), String> {
+    let mut position = implicit.then_some(0.5);
+    let mut remaining = Vec::new();
+    for option in split_top_level_commas(options) {
+        let option = option.trim();
+        let named_position = match option {
+            "at start" => Some(0.0),
+            "very near start" => Some(0.125),
+            "near start" => Some(0.25),
+            "midway" => Some(0.5),
+            "near end" => Some(0.75),
+            "very near end" => Some(0.875),
+            "at end" => Some(1.0),
+            _ => None,
+        };
+        if let Some(value) = named_position {
+            position = Some(value);
+        } else if let Some(value) = assignment_value(option, "pos") {
+            let value = value
+                .parse::<f64>()
+                .map_err(|_| format!("Invalid TikZ node path position: {value}"))?;
+            if !value.is_finite() || !(0.0..=1.0).contains(&value) {
+                return Err(format!(
+                    "TikZ node path position must be between 0 and 1: {value}"
+                ));
+            }
+            position = Some(value);
+        } else {
+            remaining.push(option);
+        }
+    }
+    Ok((position.unwrap_or(1.0), remaining.join(",")))
+}
+
+fn inline_node_coordinate(
+    points: &[Point],
+    coordinate_index: usize,
+    implicit: bool,
+    position: f64,
+) -> Result<Point, String> {
+    let end_index = if implicit {
+        coordinate_index + 1
+    } else {
+        coordinate_index
+    };
+    let end = points
+        .get(end_index)
+        .copied()
+        .ok_or_else(|| "An inline path node needs a following coordinate.".to_owned())?;
+    if position >= 1.0 || end_index == 0 {
+        return Ok(end);
+    }
+    let start = points
+        .get(end_index - 1)
+        .copied()
+        .ok_or_else(|| "An inline path node needs a preceding coordinate.".to_owned())?;
+    Ok(Point {
+        x: start.x + (end.x - start.x) * position,
+        y: start.y + (end.y - start.y) * position,
+    })
+}
+
+fn find_inline_node(path: &str, start: usize) -> Option<usize> {
+    let mut brace_depth = 0usize;
+    let mut bracket_depth = 0usize;
+    let mut cursor = start;
+    while cursor < path.len() {
+        let character = path[cursor..].chars().next()?;
+        if brace_depth == 0 && bracket_depth == 0 && path[cursor..].starts_with("node") {
+            let before = path[..cursor].chars().next_back();
+            let after = path[cursor + "node".len()..].chars().next();
+            if before.is_none_or(|value| {
+                value.is_whitespace() || matches!(value, ')' | '-' | '.')
+            })
+                && after
+                    .is_none_or(|value| value.is_whitespace() || matches!(value, '[' | '{' | '('))
+            {
+                return Some(cursor);
+            }
+        }
+        match character {
+            '{' => brace_depth += 1,
+            '}' => brace_depth = brace_depth.saturating_sub(1),
+            '[' if brace_depth == 0 => bracket_depth += 1,
+            ']' if brace_depth == 0 => bracket_depth = bracket_depth.saturating_sub(1),
+            _ => {}
+        }
+        cursor += character.len_utf8();
+    }
+    None
+}
+
+fn skip_path_whitespace(source: &str, mut cursor: usize) -> usize {
+    while let Some(character) = source[cursor..].chars().next() {
+        if !character.is_whitespace() {
+            break;
+        }
+        cursor += character.len_utf8();
+    }
+    cursor
+}
+
+fn matching_square_bracket(input: &str, start: usize) -> Result<usize, String> {
+    if input.as_bytes().get(start) != Some(&b'[') {
+        return Err("Expected TikZ node options.".to_owned());
+    }
+    let mut depth = 0usize;
+    for (relative, character) in input[start..].char_indices() {
+        match character {
+            '[' => depth += 1,
+            ']' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    return Ok(start + relative);
+                }
+            }
+            _ => {}
+        }
+    }
+    Err("TikZ node options are missing ']'.".to_owned())
+}
+
 fn render_path(
     path: &str,
     style: &Style,
@@ -375,6 +654,18 @@ fn render_path(
     if path.contains("plot[") {
         return render_plot_path(
             path,
+            style,
+            coordinate_scale,
+            output,
+            bounds,
+        );
+    }
+    if style.smooth
+        && let Some(plot_index) = path.find("plot coordinates")
+    {
+        return render_smooth_coordinate_plot(
+            "smooth",
+            path[plot_index + "plot coordinates".len()..].trim_start(),
             style,
             coordinate_scale,
             output,
@@ -395,7 +686,14 @@ fn render_path(
         .ok_or_else(|| "A TikZ path needs at least one coordinate.".to_owned())?;
     if let Some(circle_index) = path.find("circle") {
         let radius_text = path[circle_index + "circle".len()..].trim();
-        let radius = parse_parenthesized_scalar(radius_text)? * coordinate_scale;
+        let radius = if radius_text.starts_with('[') {
+            let (options, _) = take_options(radius_text)?;
+            option_value(options, "radius")
+                .ok_or_else(|| "A circle needs a radius.".to_owned())
+                .and_then(parse_length)?
+        } else {
+            parse_parenthesized_scalar(radius_text)?
+        } * coordinate_scale;
         bounds.include_radius(
             Point {
                 x: first.x,
@@ -447,7 +745,34 @@ fn render_path(
             bounds,
         );
     }
-    if path.contains("rectangle") {
+    if let Some(arc_index) = path
+        .find("arc(")
+        .or_else(|| path.find("arc "))
+    {
+        return render_arc(
+            first,
+            path[arc_index + "arc".len()..].trim_start(),
+            style,
+            coordinate_scale,
+            output,
+            bounds,
+        );
+    }
+    if has_path_operator(path, "grid") {
+        let second = points
+            .get(1)
+            .copied()
+            .ok_or_else(|| "A grid needs two coordinates.".to_owned())?;
+        return render_grid(
+            first,
+            second,
+            style,
+            coordinate_scale,
+            output,
+            bounds,
+        );
+    }
+    if has_path_operator(path, "rectangle") {
         let second = points
             .get(1)
             .copied()
@@ -533,13 +858,32 @@ fn render_path(
         .map(|point| format!("{:.3},{:.3}", point.x, -point.y))
         .collect::<Vec<_>>()
         .join(" ");
-    write!(
-        output,
-        "<polyline points=\"{}\" {}/>",
-        point_list,
-        style_attributes(style)
-    )
-    .map_err(|_| "Could not create SVG path.".to_owned())?;
+    let connector_attributes = if points.len() == 2 && !path.contains("cycle") {
+        connector_data_attributes(path, named_nodes, style)?
+    } else {
+        None
+    };
+    if let Some(attributes) = &connector_attributes {
+        write!(output, "<g {attributes}>")
+            .map_err(|_| "Could not create SVG connector group.".to_owned())?;
+    }
+    if path.contains("cycle") {
+        write!(
+            output,
+            "<polygon points=\"{}\" {}/>",
+            point_list,
+            style_attributes(style)
+        )
+        .map_err(|_| "Could not create closed SVG path.".to_owned())?;
+    } else {
+        write!(
+            output,
+            "<polyline points=\"{}\" {}/>",
+            point_list,
+            style_attributes(style)
+        )
+        .map_err(|_| "Could not create SVG path.".to_owned())?;
+    }
     render_arrowheads(
         points[0],
         points[1],
@@ -549,7 +893,110 @@ fn render_path(
         output,
         bounds,
     )?;
+    if connector_attributes.is_some() {
+        output.push_str("</g>");
+    }
     Ok(())
+}
+
+fn has_path_operator(path: &str, operator: &str) -> bool {
+    path.match_indices(operator).any(|(index, _)| {
+        let before = path[..index].chars().rev().find(|character| !character.is_whitespace());
+        let after = path[index + operator.len()..]
+            .chars()
+            .find(|character| !character.is_whitespace());
+        before == Some(')') && matches!(after, Some('(' | '['))
+    })
+}
+
+fn connector_data_attributes(
+    path: &str,
+    named_nodes: &BTreeMap<String, NodeGeometry>,
+    style: &Style,
+) -> Result<Option<String>, String> {
+    let tokens = coordinate_tokens(path)?;
+    let start = tokens
+        .first()
+        .and_then(|token| named_node_reference(token, named_nodes));
+    let end = tokens
+        .last()
+        .and_then(|token| named_node_reference(token, named_nodes));
+    if start.is_none() || end.is_none() {
+        return Ok(None);
+    }
+    Ok(Some(format!(
+        "data-chord-node-connector=\"true\" data-chord-shorten-start=\"{:.3}\" data-chord-shorten-end=\"{:.3}\"{}{}",
+        style.shorten_start,
+        style.shorten_end,
+        start
+            .map(|value| format!(
+                " data-chord-start-reference=\"{}\"",
+                escape_xml(value)
+            ))
+            .unwrap_or_default(),
+        end.map(|value| format!(
+            " data-chord-end-reference=\"{}\"",
+            escape_xml(value)
+        ))
+        .unwrap_or_default(),
+    )))
+}
+
+fn named_node_reference<'a>(
+    token: &'a str,
+    named_nodes: &BTreeMap<String, NodeGeometry>,
+) -> Option<&'a str> {
+    let token = token.trim();
+    let name = token.split_once('.').map_or(token, |(name, _)| name).trim();
+    named_nodes.contains_key(name).then_some(token)
+}
+
+fn render_grid(
+    first: Point,
+    second: Point,
+    style: &Style,
+    coordinate_scale: f64,
+    output: &mut String,
+    bounds: &mut Bounds,
+) -> Result<(), String> {
+    let min_x = first.x.min(second.x);
+    let max_x = first.x.max(second.x);
+    let min_y = first.y.min(second.y);
+    let max_y = first.y.max(second.y);
+    let step_x = style.grid_step_x * coordinate_scale;
+    let step_y = style.grid_step_y * coordinate_scale;
+    if !step_x.is_finite() || !step_y.is_finite() || step_x <= 0.0 || step_y <= 0.0 {
+        return Err("A TikZ grid needs positive finite steps.".to_owned());
+    }
+    let column_intervals = ((max_x - min_x) / step_x).floor();
+    let row_intervals = ((max_y - min_y) / step_y).floor();
+    if !column_intervals.is_finite()
+        || !row_intervals.is_finite()
+        || column_intervals > 1023.0
+        || row_intervals > 1023.0
+    {
+        return Err("A TikZ grid exceeds the 1024-line safety limit.".to_owned());
+    }
+    let columns = column_intervals as usize + 1;
+    let rows = row_intervals as usize + 1;
+    if !matches!(columns.checked_add(rows), Some(line_count) if line_count <= 1024) {
+        return Err("A TikZ grid exceeds the 1024-line safety limit.".to_owned());
+    }
+    let mut data = String::new();
+    for index in 0..columns {
+        let x = min_x + index as f64 * step_x;
+        write!(data, "M {x:.3},{:.3} L {x:.3},{:.3} ", -min_y, -max_y)
+            .map_err(|_| "Could not create SVG grid data.".to_owned())?;
+    }
+    for index in 0..rows {
+        let y = min_y + index as f64 * step_y;
+        write!(data, "M {min_x:.3},{:.3} L {max_x:.3},{:.3} ", -y, -y)
+            .map_err(|_| "Could not create SVG grid data.".to_owned())?;
+    }
+    bounds.include(Point { x: min_x, y: -min_y });
+    bounds.include(Point { x: max_x, y: -max_y });
+    write!(output, "<path d=\"{}\" {}/>", data.trim(), style_attributes(style))
+        .map_err(|_| "Could not create SVG grid.".to_owned())
 }
 
 fn render_plot_path(
@@ -809,8 +1256,15 @@ fn render_node(
         (None, rest)
     };
     let (mut point, rest) = if let Some(after_at) = rest.strip_prefix("at") {
-        let (point, end) = parse_coordinate_at(after_at.trim(), 0)?;
-        (point, &after_at.trim()[end..])
+        let after_at = after_at.trim();
+        let end = matching_parenthesis(after_at, 0)?;
+        let coordinate = &after_at[1..end];
+        let point = if coordinate.contains(',') || coordinate.contains(':') {
+            parse_coordinate(coordinate)?
+        } else {
+            resolve_node_reference(coordinate, named_nodes, picture_style.coordinate_scale)?
+        };
+        (point, &after_at[end + 1..])
     } else {
         (Point { x: 0.0, y: 0.0 }, rest)
     };
@@ -831,17 +1285,24 @@ fn render_node(
     let font_size = node_style.font_size;
     let (estimated_width, line_count) =
         estimate_node_text(&text, node_style.text_width, font_size, node_style.bold);
-    let box_width = (estimated_width + 2.0 * node_style.inner_xsep)
+    let mut box_width = (estimated_width + 2.0 * node_style.inner_xsep)
         .max(node_style.minimum_width);
-    let box_height = (font_size * 1.2 * line_count as f64 + 2.0 * node_style.inner_ysep)
+    let mut box_height = (font_size * 1.2 * line_count as f64 + 2.0 * node_style.inner_ysep)
         .max(node_style.minimum_height);
+    if node_style.shape == NodeShape::Circle {
+        let diameter = box_width.hypot(box_height);
+        box_width = diameter;
+        box_height = diameter;
+    }
     let radians = node_style.rotate.to_radians();
     let visual_width =
         box_width * radians.cos().abs() + box_height * radians.sin().abs();
     let visual_height =
         box_width * radians.sin().abs() + box_height * radians.cos().abs();
+    let placement = node_placement(options)?;
     apply_node_position(
         options,
+        placement,
         &mut point,
         visual_width / 2.0,
         visual_height / 2.0,
@@ -853,11 +1314,11 @@ fn render_node(
         visual_width,
         visual_height,
     );
-    let placement = node_placement(options);
     let anchor_point = placement.map(|placement| {
         node_anchor_point(
             point,
-            placement,
+            placement.name,
+            placement.gap,
             visual_width / 2.0,
             visual_height / 2.0,
         )
@@ -880,29 +1341,45 @@ fn render_node(
     } else {
         String::new()
     };
-    if node_style.draw || node_style.fill.is_some() {
+    let node_name_attribute = node_name
+        .map(|value| format!(" data-chord-node-name=\"{}\"", escape_xml(value)))
+        .unwrap_or_default();
+    if node_style.draw || node_style.fill.is_some() || node_name.is_some() {
         let (fill, fill_opacity) = node_style
             .fill
             .as_ref()
             .map(|(color, opacity)| (color.as_str(), *opacity))
             .unwrap_or(("none", 1.0));
-        write!(
-            output,
-            "<rect data-chord-node-background=\"true\" x=\"{:.3}\" y=\"{:.3}\" width=\"{box_width:.3}\" height=\"{box_height:.3}\"{}{rotation_attribute} fill=\"{fill}\" fill-opacity=\"{fill_opacity:.3}\" stroke=\"{}\" stroke-width=\"{:.3}\"/>",
-            point.x - box_width / 2.0,
-            -point.y - box_height / 2.0,
-            if node_style.rounded_radius > 0.0 {
-                format!(
-                    " rx=\"{:.3}\" ry=\"{:.3}\"",
-                    node_style.rounded_radius, node_style.rounded_radius
-                )
-            } else {
-                String::new()
-            },
-            if node_style.draw { "currentColor" } else { "none" },
-            picture_style.stroke_width,
-        )
-        .map_err(|_| "Could not create SVG node box.".to_owned())?;
+        if node_style.shape == NodeShape::Circle {
+            write!(
+                output,
+                "<circle data-chord-node-background=\"true\"{node_name_attribute} cx=\"{:.3}\" cy=\"{:.3}\" r=\"{:.3}\"{rotation_attribute} fill=\"{fill}\" fill-opacity=\"{fill_opacity:.3}\" stroke=\"{}\" stroke-width=\"{:.3}\"/>",
+                point.x,
+                -point.y,
+                box_width / 2.0,
+                if node_style.draw { "currentColor" } else { "none" },
+                picture_style.stroke_width,
+            )
+            .map_err(|_| "Could not create SVG circular node.".to_owned())?;
+        } else {
+            write!(
+                output,
+                "<rect data-chord-node-background=\"true\"{node_name_attribute} x=\"{:.3}\" y=\"{:.3}\" width=\"{box_width:.3}\" height=\"{box_height:.3}\"{}{rotation_attribute} fill=\"{fill}\" fill-opacity=\"{fill_opacity:.3}\" stroke=\"{}\" stroke-width=\"{:.3}\"/>",
+                point.x - box_width / 2.0,
+                -point.y - box_height / 2.0,
+                if node_style.rounded_radius > 0.0 {
+                    format!(
+                        " rx=\"{:.3}\" ry=\"{:.3}\"",
+                        node_style.rounded_radius, node_style.rounded_radius
+                    )
+                } else {
+                    String::new()
+                },
+                if node_style.draw { "currentColor" } else { "none" },
+                picture_style.stroke_width,
+            )
+            .map_err(|_| "Could not create SVG node box.".to_owned())?;
+        }
     }
     let label_attribute = if let Some(source) = math_source {
         format!(" data-chord-math=\"{}\"", escape_xml(source))
@@ -912,11 +1389,12 @@ fn render_node(
     let placement_attribute = placement
         .zip(anchor_point)
         .map(|(placement, anchor)| {
+            let gap = node_style.outer_sep + placement.gap;
+            let placement = placement.name;
             format!(
-                " data-chord-placement=\"{placement}\" data-chord-anchor-x=\"{:.3}\" data-chord-anchor-y=\"{:.3}\" data-chord-gap=\"{:.3}\"",
+                " data-chord-placement=\"{placement}\" data-chord-anchor-x=\"{:.3}\" data-chord-anchor-y=\"{:.3}\" data-chord-gap=\"{gap:.3}\"",
                 anchor.x,
                 -anchor.y,
-                node_style.outer_sep,
             )
         })
         .unwrap_or_default();
@@ -995,6 +1473,7 @@ fn render_node(
                 center: point,
                 width: visual_width + 2.0 * node_style.outer_sep,
                 height: visual_height + 2.0 * node_style.outer_sep,
+                shape: node_style.shape,
             },
         );
     }
@@ -1003,6 +1482,7 @@ fn render_node(
 
 fn apply_node_position(
     options: &str,
+    placement: Option<NodePlacement>,
     point: &mut Point,
     half_width: f64,
     half_height: f64,
@@ -1010,34 +1490,24 @@ fn apply_node_position(
     let mut x_shift = 0.0;
     let mut y_shift = 0.0;
     for option in options.split(',').map(str::trim) {
-        match option {
-            "above" => point.y += half_height,
-            "below" => point.y -= half_height,
-            "left" => point.x -= half_width,
-            "right" => point.x += half_width,
-            "above left" | "left above" => {
-                point.x -= half_width;
-                point.y += half_height;
-            }
-            "above right" | "right above" => {
-                point.x += half_width;
-                point.y += half_height;
-            }
-            "below left" | "left below" => {
-                point.x -= half_width;
-                point.y -= half_height;
-            }
-            "below right" | "right below" => {
-                point.x += half_width;
-                point.y -= half_height;
-            }
-            value if assignment_value(value, "xshift").is_some() => {
-                x_shift += parse_length(assignment_value(value, "xshift").unwrap_or_default())?;
-            }
-            value if assignment_value(value, "yshift").is_some() => {
-                y_shift += parse_length(assignment_value(value, "yshift").unwrap_or_default())?;
-            }
-            _ => {}
+        if let Some(value) = assignment_value(option, "xshift") {
+            x_shift += parse_length(value)?;
+        } else if let Some(value) = assignment_value(option, "yshift") {
+            y_shift += parse_length(value)?;
+        }
+    }
+    if let Some(placement) = placement {
+        let horizontal = half_width + placement.gap;
+        let vertical = half_height + placement.gap;
+        if placement.name.contains("left") {
+            point.x -= horizontal;
+        } else if placement.name.contains("right") {
+            point.x += horizontal;
+        }
+        if placement.name.contains("above") {
+            point.y += vertical;
+        } else if placement.name.contains("below") {
+            point.y -= vertical;
         }
     }
     point.x += x_shift;
@@ -1045,36 +1515,50 @@ fn apply_node_position(
     Ok(())
 }
 
-fn node_placement(options: &str) -> Option<&'static str> {
-    options.split(',').map(str::trim).find_map(|option| match option {
-        "above" => Some("above"),
-        "below" => Some("below"),
-        "left" => Some("left"),
-        "right" => Some("right"),
-        "above left" | "left above" => Some("above-left"),
-        "above right" | "right above" => Some("above-right"),
-        "below left" | "left below" => Some("below-left"),
-        "below right" | "right below" => Some("below-right"),
-        _ => None,
-    })
+fn node_placement(options: &str) -> Result<Option<NodePlacement>, String> {
+    for option in options.split(',').map(str::trim) {
+        let (direction, gap) = option
+            .split_once('=')
+            .map(|(direction, gap)| (direction.trim(), Some(gap.trim())))
+            .unwrap_or((option, None));
+        let name = match direction {
+            "above" => Some("above"),
+            "below" => Some("below"),
+            "left" => Some("left"),
+            "right" => Some("right"),
+            "above left" | "left above" => Some("above-left"),
+            "above right" | "right above" => Some("above-right"),
+            "below left" | "left below" => Some("below-left"),
+            "below right" | "right below" => Some("below-right"),
+            _ => None,
+        };
+        if let Some(name) = name {
+            return Ok(Some(NodePlacement {
+                name,
+                gap: gap.map(parse_length).transpose()?.unwrap_or(0.0).max(0.0),
+            }));
+        }
+    }
+    Ok(None)
 }
 
 fn node_anchor_point(
     positioned: Point,
     placement: &str,
+    gap: f64,
     half_width: f64,
     half_height: f64,
 ) -> Point {
     let mut anchor = positioned;
     if placement.contains("left") {
-        anchor.x += half_width;
+        anchor.x += half_width + gap;
     } else if placement.contains("right") {
-        anchor.x -= half_width;
+        anchor.x -= half_width + gap;
     }
     if placement.contains("above") {
-        anchor.y -= half_height;
+        anchor.y -= half_height + gap;
     } else if placement.contains("below") {
-        anchor.y += half_height;
+        anchor.y += half_height + gap;
     }
     anchor
 }
@@ -1100,9 +1584,21 @@ fn parse_path_coordinates(
     coordinate_scale: f64,
 ) -> Result<Vec<Point>, String> {
     let mut points = Vec::new();
-    for coordinate in coordinate_tokens(input)? {
-        if coordinate.contains(',') {
-            points.push(parse_coordinate(coordinate)?);
+    let mut current: Option<Point> = None;
+    let mut cursor = 0usize;
+    while let Some(relative) = input[cursor..].find('(') {
+        let start = cursor + relative;
+        let end = matching_parenthesis(input, start)?;
+        let coordinate = &input[start + 1..end];
+        let prefix = input[..start].trim_end();
+        if prefix.ends_with("arc") {
+            cursor = end + 1;
+            continue;
+        }
+        let relative_update = prefix.ends_with("++");
+        let relative_once = !relative_update && prefix.ends_with('+');
+        let mut point = if coordinate.contains(',') || coordinate.contains(':') {
+            parse_coordinate(coordinate)?
         } else if coordinate.contains("|-") {
             let (vertical, horizontal) = coordinate
                 .split_once("|-")
@@ -1111,15 +1607,42 @@ fn parse_path_coordinates(
                 resolve_node_reference(vertical.trim(), named_nodes, coordinate_scale)?;
             let horizontal =
                 resolve_node_reference(horizontal.trim(), named_nodes, coordinate_scale)?;
-            points.push(Point {
+            Point {
                 x: vertical.x,
                 y: horizontal.y,
-            });
+            }
+        } else if coordinate.contains("-|") {
+            let (horizontal, vertical) = coordinate
+                .split_once("-|")
+                .ok_or_else(|| "Invalid TikZ orthogonal coordinate.".to_owned())?;
+            let horizontal =
+                resolve_node_reference(horizontal.trim(), named_nodes, coordinate_scale)?;
+            let vertical =
+                resolve_node_reference(vertical.trim(), named_nodes, coordinate_scale)?;
+            Point {
+                x: vertical.x,
+                y: horizontal.y,
+            }
         } else if let Ok(point) =
             resolve_node_reference(coordinate.trim(), named_nodes, coordinate_scale)
         {
-            points.push(point);
+            point
+        } else {
+            cursor = end + 1;
+            continue;
+        };
+        if relative_update || relative_once {
+            let base = current.ok_or_else(|| {
+                "A relative TikZ coordinate needs a preceding coordinate.".to_owned()
+            })?;
+            point.x += base.x;
+            point.y += base.y;
         }
+        points.push(point);
+        if !relative_once {
+            current = Some(point);
+        }
+        cursor = end + 1;
     }
     Ok(points)
 }
@@ -1209,6 +1732,14 @@ fn node_border_point(node: NodeGeometry, toward: Point) -> Point {
     if delta_x.abs() < f64::EPSILON && delta_y.abs() < f64::EPSILON {
         return node.center;
     }
+    if node.shape == NodeShape::Circle {
+        let radius = node.width.max(node.height) / 2.0;
+        let length = delta_x.hypot(delta_y);
+        return Point {
+            x: node.center.x + delta_x / length * radius,
+            y: node.center.y + delta_y / length * radius,
+        };
+    }
     let horizontal = if delta_x.abs() < f64::EPSILON {
         f64::INFINITY
     } else {
@@ -1235,6 +1766,24 @@ fn parse_coordinate_at(input: &str, start: usize) -> Result<(Point, usize), Stri
 }
 
 fn parse_coordinate(input: &str) -> Result<Point, String> {
+    if !input.contains(',') {
+        let (angle, radius) = input
+            .split_once(':')
+            .ok_or_else(|| "A TikZ coordinate needs x,y or angle:radius.".to_owned())?;
+        let angle = match angle.trim() {
+            "right" => 0.0,
+            "up" => 90.0,
+            "left" => 180.0,
+            "down" => 270.0,
+            value => evaluate_numeric_expression(value)?,
+        };
+        let radius = parse_length(radius)?;
+        let radians = angle.to_radians();
+        return Ok(Point {
+            x: radius * radians.cos(),
+            y: radius * radians.sin(),
+        });
+    }
     let (x, y) = split_coordinate_values(input)?;
     Ok(Point {
         x: parse_length(x)?,
@@ -1293,6 +1842,7 @@ fn parse_length(raw: &str) -> Result<f64, String> {
         .unwrap_or(raw.trim())
         .trim();
     let units = [
+        ("bp", 1.0),
         ("cm", UNIT),
         ("mm", UNIT / 10.0),
         ("pt", TEX_POINT),
@@ -1322,17 +1872,37 @@ fn render_arc(
     output: &mut String,
     bounds: &mut Bounds,
 ) -> Result<(), String> {
-    let (options, _) = take_options(input)?;
-    let start_angle = option_value(options, "start angle")
-        .ok_or_else(|| "A TikZ arc needs a start angle.".to_owned())
-        .and_then(evaluate_numeric_expression)?;
-    let end_angle = option_value(options, "end angle")
-        .ok_or_else(|| "A TikZ arc needs an end angle.".to_owned())
-        .and_then(evaluate_numeric_expression)?;
-    let radius = option_value(options, "radius")
-        .ok_or_else(|| "A TikZ arc needs a radius.".to_owned())
-        .and_then(parse_length)?
-        * coordinate_scale;
+    let (start_angle, end_angle, radius) = if input.trim_start().starts_with('[') {
+        let (options, _) = take_options(input.trim_start())?;
+        let start_angle = option_value(options, "start angle")
+            .ok_or_else(|| "A TikZ arc needs a start angle.".to_owned())
+            .and_then(evaluate_numeric_expression)?;
+        let end_angle = option_value(options, "end angle")
+            .ok_or_else(|| "A TikZ arc needs an end angle.".to_owned())
+            .and_then(evaluate_numeric_expression)?;
+        let radius = option_value(options, "radius")
+            .ok_or_else(|| "A TikZ arc needs a radius.".to_owned())
+            .and_then(parse_length)?;
+        (start_angle, end_angle, radius)
+    } else {
+        let start = input
+            .find('(')
+            .ok_or_else(|| "A TikZ arc needs '(start:end:radius)'.".to_owned())?;
+        let end = matching_parenthesis(input, start)?;
+        let values = input[start + 1..end]
+            .split(':')
+            .map(str::trim)
+            .collect::<Vec<_>>();
+        if values.len() != 3 {
+            return Err("A TikZ arc needs '(start:end:radius)'.".to_owned());
+        }
+        (
+            evaluate_numeric_expression(values[0])?,
+            evaluate_numeric_expression(values[1])?,
+            parse_length(values[2])?,
+        )
+    };
+    let radius = radius * coordinate_scale;
     if radius <= 0.0 || !radius.is_finite() {
         return Err("A TikZ arc needs a positive finite radius.".to_owned());
     }
@@ -1404,6 +1974,7 @@ fn render_arrowheads(
                 y: start.y - next.y,
             },
             style,
+            "start",
             output,
             bounds,
         )?;
@@ -1416,6 +1987,7 @@ fn render_arrowheads(
                 y: end.y - previous.y,
             },
             style,
+            "end",
             output,
             bounds,
         )?;
@@ -1427,6 +1999,7 @@ fn render_arrowhead(
     tip: Point,
     direction: Point,
     style: &Style,
+    position: &str,
     output: &mut String,
     bounds: &mut Bounds,
 ) -> Result<(), String> {
@@ -1467,17 +2040,19 @@ fn render_arrowhead(
             y: -point.y,
         });
     }
+    let data = match style.arrow_tip {
+        ArrowTip::Stealth => format!(
+            "M {:.3},{:.3} L {:.3},{:.3} L {:.3},{:.3} L {:.3},{:.3} Z",
+            tip.x, -tip.y, left.x, -left.y, notch.x, -notch.y, right.x, -right.y,
+        ),
+        ArrowTip::Latex => format!(
+            "M {:.3},{:.3} L {:.3},{:.3} L {:.3},{:.3} Z",
+            tip.x, -tip.y, left.x, -left.y, right.x, -right.y,
+        ),
+    };
     write!(
         output,
-        "<path data-chord-arrowhead=\"true\" d=\"M {:.3},{:.3} L {:.3},{:.3} L {:.3},{:.3} L {:.3},{:.3} Z\" fill=\"{}\" fill-opacity=\"{:.3}\" stroke=\"none\"/>",
-        tip.x,
-        -tip.y,
-        left.x,
-        -left.y,
-        notch.x,
-        -notch.y,
-        right.x,
-        -right.y,
+        "<path data-chord-arrowhead=\"true\" data-chord-arrow-position=\"{position}\" d=\"{data}\" fill=\"{}\" fill-opacity=\"{:.3}\" stroke=\"none\"/>",
         escape_xml(&style.stroke),
         style.stroke_opacity,
     )
@@ -1625,11 +2200,15 @@ fn parse_style(
         fill_opacity: 1.0,
         arrow_start: false,
         arrow_end: false,
-        dashed: false,
+        arrow_tip: picture_style.arrow_tip,
+        dash_array: None,
+        smooth: false,
         round_cap: picture_style.round_cap,
         round_join: picture_style.round_join,
         shorten_start: 0.0,
         shorten_end: 0.0,
+        grid_step_x: UNIT,
+        grid_step_y: UNIT,
     };
     apply_path_style_options(&mut style, options, kind, named_styles, 0)?;
     Ok(style)
@@ -1658,12 +2237,66 @@ fn apply_path_style_options(
             style.arrow_end = true;
         } else if option == "thin" {
             style.stroke_width = 0.4 * TEX_POINT;
+        } else if option == "ultra thin" {
+            style.stroke_width = 0.1 * TEX_POINT;
+        } else if option == "very thin" {
+            style.stroke_width = 0.2 * TEX_POINT;
+        } else if option == "semithick" {
+            style.stroke_width = 0.6 * TEX_POINT;
         } else if option == "thick" {
             style.stroke_width = 0.8 * TEX_POINT;
         } else if option == "very thick" {
             style.stroke_width = 1.2 * TEX_POINT;
+        } else if option == "ultra thick" {
+            style.stroke_width = 1.6 * TEX_POINT;
         } else if option == "dashed" {
-            style.dashed = true;
+            style.dash_array = Some("5 4");
+        } else if option == "densely dashed" {
+            style.dash_array = Some("5 2");
+        } else if option == "loosely dashed" {
+            style.dash_array = Some("5 6");
+        } else if option == "dotted" {
+            style.dash_array = Some("0.01 2.989");
+        } else if option == "densely dotted" {
+            style.dash_array = Some("0.01 1.993");
+        } else if option == "loosely dotted" {
+            style.dash_array = Some("0.01 3.985");
+        } else if option == "help lines" {
+            style.stroke = "gray".to_owned();
+            style.stroke_opacity = 0.5;
+            style.stroke_width = 0.2 * TEX_POINT;
+        } else if option == "smooth" {
+            style.smooth = true;
+        } else if matches!(option, "-{Stealth}" | "-{stealth}") {
+            style.arrow_end = true;
+            style.arrow_tip = ArrowTip::Stealth;
+        } else if matches!(option, "-{Latex}" | "-{latex}") {
+            style.arrow_end = true;
+            style.arrow_tip = ArrowTip::Latex;
+        } else if matches!(option, "{Stealth}-" | "{stealth}-") {
+            style.arrow_start = true;
+            style.arrow_tip = ArrowTip::Stealth;
+        } else if matches!(option, "{Latex}-" | "{latex}-") {
+            style.arrow_start = true;
+            style.arrow_tip = ArrowTip::Latex;
+        } else if let Some(value) = assignment_value(option, "line width") {
+            style.stroke_width = parse_length(value)?.max(0.0);
+        } else if let Some(value) = assignment_value(option, "opacity") {
+            let opacity = parse_opacity(value)?;
+            style.stroke_opacity *= opacity;
+            style.fill_opacity *= opacity;
+        } else if let Some(value) = assignment_value(option, "draw opacity") {
+            style.stroke_opacity *= parse_opacity(value)?;
+        } else if let Some(value) = assignment_value(option, "fill opacity") {
+            style.fill_opacity *= parse_opacity(value)?;
+        } else if let Some(value) = assignment_value(option, "step") {
+            let step = parse_length(value)?;
+            style.grid_step_x = step;
+            style.grid_step_y = step;
+        } else if let Some(value) = assignment_value(option, "xstep") {
+            style.grid_step_x = parse_length(value)?;
+        } else if let Some(value) = assignment_value(option, "ystep") {
+            style.grid_step_y = parse_length(value)?;
         } else if let Some(value) = assignment_value(option, "shorten >") {
             style.shorten_end = parse_length(value)?.max(0.0);
         } else if let Some(value) = assignment_value(option, "shorten <") {
@@ -1703,11 +2336,10 @@ fn style_attributes(style: &Style) -> String {
         style.stroke_width,
         style.fill_opacity,
         style.stroke_opacity,
-        if style.dashed {
-            " stroke-dasharray=\"5 4\""
-        } else {
-            ""
-        },
+        style
+            .dash_array
+            .map(|value| format!(" stroke-dasharray=\"{value}\""))
+            .unwrap_or_default(),
         if style.round_cap {
             " stroke-linecap=\"round\""
         } else {
@@ -1719,6 +2351,17 @@ fn style_attributes(style: &Style) -> String {
             ""
         },
     )
+}
+
+fn parse_opacity(value: &str) -> Result<f64, String> {
+    let opacity = value
+        .trim()
+        .parse::<f64>()
+        .map_err(|_| format!("Invalid TikZ opacity: {value}"))?;
+    if !opacity.is_finite() || !(0.0..=1.0).contains(&opacity) {
+        return Err(format!("TikZ opacity must be between 0 and 1: {value}"));
+    }
+    Ok(opacity)
 }
 
 fn svg_color(raw: &str) -> String {
@@ -1760,7 +2403,22 @@ fn is_xcolor_mix(value: &str) -> bool {
 fn is_named_color(value: &str) -> bool {
     matches!(
         value,
-        "black" | "white" | "red" | "green" | "blue" | "cyan" | "magenta" | "yellow" | "gray"
+        "black"
+            | "white"
+            | "red"
+            | "green"
+            | "blue"
+            | "cyan"
+            | "magenta"
+            | "yellow"
+            | "gray"
+            | "orange"
+            | "violet"
+            | "purple"
+            | "brown"
+            | "lime"
+            | "teal"
+            | "pink"
     )
 }
 
@@ -1774,9 +2432,13 @@ fn parse_picture_style(options: &str) -> PictureStyle {
     let stroke_width = split_top_level_commas(options).iter().fold(
         0.4 * TEX_POINT,
         |width, option| match option.trim() {
+            "ultra thin" => 0.1 * TEX_POINT,
+            "very thin" => 0.2 * TEX_POINT,
             "thin" => 0.4 * TEX_POINT,
+            "semithick" => 0.6 * TEX_POINT,
             "thick" => 0.8 * TEX_POINT,
             "very thick" => 1.2 * TEX_POINT,
+            "ultra thick" => 1.6 * TEX_POINT,
             _ => width,
         },
     );
@@ -1785,6 +2447,14 @@ fn parse_picture_style(options: &str) -> PictureStyle {
         round_join: options.contains("line join=round"),
         coordinate_scale,
         stroke_width,
+        arrow_tip: split_top_level_commas(options)
+            .iter()
+            .find_map(|option| assignment_value(option.trim(), ">"))
+            .map(|value| match value {
+                "latex" | "Latex" => ArrowTip::Latex,
+                _ => ArrowTip::Stealth,
+            })
+            .unwrap_or_default(),
     }
 }
 
@@ -1798,11 +2468,18 @@ fn validate_picture_options(
             || matches!(
                 option,
                 "thin"
+                    | "ultra thin"
+                    | "very thin"
+                    | "semithick"
                     | "thick"
                     | "very thick"
+                    | "ultra thick"
                     | "line cap=round"
                     | "line join=round"
                     | ">=stealth"
+                    | ">=Stealth"
+                    | ">=latex"
+                    | ">=Latex"
                     | "x=1cm"
                     | "x=1.0cm"
                     | "y=1cm"
@@ -1822,7 +2499,7 @@ fn validate_picture_options(
             return Err(format!("Invalid TikZ picture scale: {value}"));
         }
         if let Some(value) = assignment_value(option, ">") {
-            if value == "stealth" {
+            if matches!(value, "stealth" | "Stealth" | "latex" | "Latex") {
                 continue;
             }
         }
@@ -1959,6 +2636,8 @@ fn parse_node_style_patch(
             continue;
         } else if option == "draw" {
             style.draw = true;
+        } else if option == "circle" {
+            style.shape = Some(NodeShape::Circle);
         } else if option == "rounded corners" {
             style.rounded_radius = Some(4.0);
         } else if let Some(value) = assignment_value(option, "rounded corners") {
@@ -2054,11 +2733,16 @@ fn is_node_style_patch(style: &NodeStylePatch) -> bool {
         || style.align.is_some()
         || style.anchor.is_some()
         || style.rotate.is_some()
+        || style.shape.is_some()
 }
 
 fn is_node_position_option(option: &str) -> bool {
+    let direction = option
+        .split_once('=')
+        .map(|(direction, _)| direction.trim())
+        .unwrap_or(option);
     matches!(
-        option,
+        direction,
         "above"
             | "below"
             | "left"
@@ -2714,6 +3398,8 @@ mod tests {
         assert!(svg.contains("data-chord-font-weight=\"700\""));
         assert!(svg.contains("rx=\"2.989\" ry=\"2.989\""));
         assert!(svg.contains("stroke-width=\"1.196\""));
+        assert!(svg.contains("data-chord-shorten-start=\"0.996\""));
+        assert!(svg.contains("data-chord-shorten-end=\"0.996\""));
         assert!(svg.contains("data-chord-arrowhead=\"true\""));
         assert!(svg.contains("Early electrostatic observation"));
     }
@@ -2839,8 +3525,7 @@ mod tests {
 
     #[test]
     fn rejects_unknown_path_options_instead_of_ignoring_them() {
-        let error =
-            render_svg(r"\draw[opacity=0.5] (0,0) -- (1,1);").unwrap_err();
+        let error = render_svg(r"\draw[double] (0,0) -- (1,1);").unwrap_err();
         assert!(error.contains("path option"));
     }
 
@@ -2890,7 +3575,7 @@ mod tests {
     }
 
     #[test]
-    fn applies_picture_level_line_weights_and_rejects_unknown_arrow_tips() {
+    fn applies_picture_level_line_weights_and_standard_arrow_tips() {
         let svg = render_svg(
             r"\begin{tikzpicture}[very thick]
                 \draw (0,0)--(1,0);
@@ -2899,8 +3584,16 @@ mod tests {
         .unwrap();
         assert!(svg.contains("stroke-width=\"1.196\""));
 
-        let error = render_svg(
+        let latex = render_svg(
             r"\begin{tikzpicture}[>=latex]
+                \draw[->] (0,0)--(1,0);
+              \end{tikzpicture}",
+        )
+        .unwrap();
+        assert!(latex.contains("data-chord-arrowhead=\"true\""));
+
+        let error = render_svg(
+            r"\begin{tikzpicture}[>=Triangle]
                 \draw[->] (0,0)--(1,0);
               \end{tikzpicture}",
         )
@@ -3003,5 +3696,134 @@ mod tests {
         assert_eq!(svg.matches("data-chord-arrowhead=\"true\"").count(), 4);
         assert!(!svg.contains("<marker"));
         assert!(svg.contains("fill=\"currentColor\" fill-opacity=\"1.000\""));
+    }
+
+    #[test]
+    fn renders_coordinate_graph_labels_ticks_and_smooth_curve() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[
+                x=1cm, y=1cm, >=stealth,
+                every node/.style={font=\small},
+                line cap=round
+              ]
+              \draw[->, thick] (0,0)--(8.65,0)
+                node[right] {$r/\mathrm{m}$};
+              \draw[->, thick] (0,0)--(0,6.75)
+                node[above] {$V_{\mathrm e}/\mathrm{V}$};
+              \foreach \x/\lab in {2/0.10,4/0.20,6/0.30,8/0.40}{
+                \draw (\x,0.08)--(\x,-0.08);
+                \node[below=3pt] at (\x,0) {\lab};
+                \draw[gray!35] (\x,0)--(\x,6.15);
+              }
+              \draw[densely dotted, thick] (2,0)--(2,6.25);
+              \draw[thick, smooth] plot coordinates {
+                (2,6) (2.4,5) (3,4) (4,3) (5,2.4) (6,2)
+              };
+              \node[above right=2pt] at (4,3) {P};
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert_eq!(svg.matches("data-chord-math=").count(), 2);
+        assert_eq!(svg.matches("data-chord-text=").count(), 5);
+        assert_eq!(svg.matches("stroke-opacity=\"0.350\"").count(), 4);
+        assert!(svg.contains("stroke-dasharray=\"0.01 1.993\""));
+        assert!(svg.contains(" C "));
+        assert!(svg.contains("data-chord-placement=\"below\""));
+        assert!(svg.contains("data-chord-gap=\"3.487\""));
+        assert!(svg.contains("data-chord-placement=\"above-right\""));
+        assert!(svg.contains("data-chord-gap=\"2.491\""));
+    }
+
+    #[test]
+    fn renders_stem_grid_closed_geometry_and_classic_arcs() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}[>=Latex]
+              \draw[help lines,step=0.5cm] (0,0) grid (2,1);
+              \filldraw[fill=cyan!20,draw=blue,fill opacity=0.6]
+                (0,0)--(2,0)--(1,1)--cycle;
+              \draw[orange,line width=1pt,densely dashed,draw opacity=0.8]
+                (0,0)--(2,1);
+              \draw[-{Stealth},semithick] (1,0) arc (0:120:1);
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert!(svg.contains("M 0.000,-0.000 L 0.000,-28.346"));
+        assert!(svg.contains("<polygon"));
+        assert!(svg.contains("fill-opacity=\"0.120\""));
+        assert!(svg.contains("stroke=\"orange\""));
+        assert!(svg.contains("stroke-width=\"0.996\""));
+        assert!(svg.contains("stroke-dasharray=\"5 2\""));
+        assert!(svg.contains("stroke-opacity=\"0.800\""));
+        assert!(svg.contains(" A "));
+        assert!(svg.contains("data-chord-arrowhead=\"true\""));
+    }
+
+    #[test]
+    fn renders_polar_relative_and_named_coordinates() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}
+              \coordinate (O) at (0,0);
+              \coordinate (P) at (3,2);
+              \draw[->] (O)--(P);
+              \draw[->] (0,0)--(30:2);
+              \draw[->] (0,0)--++(1,-2);
+              \draw (0,-1)--node[midway,above] {$v$} (4,-1);
+              \draw (0,-2)--(4,-2) node[pos=0.75,below] {distance};
+              \node[above] at (P) {$P$};
+              \node[circle,draw,minimum width=1cm] (q1) at (0,-4) {$q_1$};
+              \node[circle,draw,minimum width=1cm] (q2) at (3,-4) {$q_2$};
+              \draw[->] (q1)--(q2);
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert!(svg.contains("85.039,-56.693"));
+        assert!(svg.contains("49.098,-28.346"));
+        assert!(svg.contains("28.346,56.693"));
+        assert_eq!(svg.matches("data-chord-arrowhead=\"true\"").count(), 4);
+        assert!(svg.contains("data-chord-math=\"P\""));
+        assert!(svg.contains("data-chord-math=\"v\""));
+        assert!(svg.contains("data-chord-text=\"distance\""));
+        assert!(svg.contains("data-chord-anchor-x=\"56.693\""), "{svg}");
+        assert!(svg.contains("data-chord-anchor-x=\"85.039\""));
+        assert_eq!(
+            svg.matches("<circle data-chord-node-background=\"true\"").count(),
+            2
+        );
+    }
+
+    #[test]
+    fn rejects_unbounded_grids_before_integer_conversion() {
+        let error = render_svg(
+            r"\begin{tikzpicture}
+              \draw[step=0.000000000000000000000000000001cm] (0,0) grid (1,1);
+            \end{tikzpicture}",
+        )
+        .unwrap_err();
+        assert!(error.contains("1024-line safety limit"));
+    }
+
+    #[test]
+    fn does_not_confuse_a_coordinate_named_grid_with_the_grid_operator() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}
+              \coordinate (grid) at (0,0);
+              \coordinate (P) at (2,1);
+              \draw (grid)--(P);
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert!(svg.contains("<polyline"));
+        assert!(!svg.contains(" L 0.000,-28.346 M "));
+    }
+
+    #[test]
+    fn circular_nodes_circumscribe_their_rectangular_content_box() {
+        let svg = render_svg(
+            r"\begin{tikzpicture}
+              \node[circle,draw,minimum width=3cm,minimum height=4cm] at (0,0) {};
+            \end{tikzpicture}",
+        )
+        .unwrap();
+        assert!(svg.contains("r=\"70.866\""), "{svg}");
     }
 }

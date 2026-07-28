@@ -596,9 +596,207 @@ async function renderSvgMathOverlays(
       content.appendChild(foreignObject);
       anchor.remove();
     }
+    reconcileMeasuredNodeConnectors(content);
   } finally {
     measurementEl.remove();
   }
+}
+
+function reconcileMeasuredNodeConnectors(content: SVGGElement): void {
+  const backgrounds = new Map<string, SVGGraphicsElement>();
+  for (const background of Array.from(
+    content.querySelectorAll<SVGGraphicsElement>(
+      '[data-chord-node-background="true"][data-chord-node-name]',
+    ),
+  )) {
+    const name = background.dataset.chordNodeName;
+    if (name) backgrounds.set(name, background);
+  }
+  for (const connector of Array.from(
+    content.querySelectorAll<SVGGElement>(
+      'g[data-chord-node-connector="true"]',
+    ),
+  )) {
+    const line = connector.querySelector<SVGPolylineElement>("polyline");
+    if (!line) continue;
+    const original = parseTwoPointPolyline(line.getAttribute("points"));
+    if (!original) continue;
+    const startReference = connector.dataset.chordStartReference;
+    const endReference = connector.dataset.chordEndReference;
+    const startGeometry = startReference
+      ? measuredNodeGeometry(startReference, backgrounds)
+      : null;
+    const endGeometry = endReference
+      ? measuredNodeGeometry(endReference, backgrounds)
+      : null;
+    const startTarget = endGeometry?.center ?? original.end;
+    const endTarget = startGeometry?.center ?? original.start;
+    const boundaryStart = startGeometry
+      ? measuredNodeReferencePoint(startGeometry, startTarget)
+      : original.start;
+    const boundaryEnd = endGeometry
+      ? measuredNodeReferencePoint(endGeometry, endTarget)
+      : original.end;
+    const shortenStart = finiteNonNegative(
+      Number(connector.dataset.chordShortenStart),
+    );
+    const shortenEnd = finiteNonNegative(
+      Number(connector.dataset.chordShortenEnd),
+    );
+    const start = pointToward(boundaryStart, boundaryEnd, shortenStart);
+    const end = pointToward(boundaryEnd, boundaryStart, shortenEnd);
+    line.setAttribute("points", `${start.x},${start.y} ${end.x},${end.y}`);
+    repositionConnectorArrow(
+      connector.querySelector<SVGPathElement>(
+        '[data-chord-arrow-position="start"]',
+      ),
+      original.start,
+      start,
+      {
+        x: original.start.x - original.end.x,
+        y: original.start.y - original.end.y,
+      },
+      { x: start.x - end.x, y: start.y - end.y },
+    );
+    repositionConnectorArrow(
+      connector.querySelector<SVGPathElement>(
+        '[data-chord-arrow-position="end"]',
+      ),
+      original.end,
+      end,
+      {
+        x: original.end.x - original.start.x,
+        y: original.end.y - original.start.y,
+      },
+      { x: end.x - start.x, y: end.y - start.y },
+    );
+  }
+}
+
+function finiteNonNegative(value: number): number {
+  return Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+
+function pointToward(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  distance: number,
+): { x: number; y: number } {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.hypot(dx, dy);
+  if (length <= Number.EPSILON || distance <= 0) return from;
+  const boundedDistance = Math.min(distance, length / 2);
+  return {
+    x: from.x + dx / length * boundedDistance,
+    y: from.y + dy / length * boundedDistance,
+  };
+}
+
+interface MeasuredNodeGeometry {
+  center: { x: number; y: number };
+  halfWidth: number;
+  halfHeight: number;
+  circle: boolean;
+  anchor: string;
+}
+
+function measuredNodeGeometry(
+  reference: string,
+  backgrounds: ReadonlyMap<string, SVGGraphicsElement>,
+): MeasuredNodeGeometry | null {
+  const [name, anchor = ""] = reference.split(".", 2);
+  const background = backgrounds.get(name.trim());
+  if (!background || background.hasAttribute("transform")) return null;
+  if (background.localName.toLowerCase() === "circle") {
+    const center = {
+      x: Number(background.getAttribute("cx")),
+      y: Number(background.getAttribute("cy")),
+    };
+    const radius = Number(background.getAttribute("r"));
+    return Number.isFinite(center.x) &&
+        Number.isFinite(center.y) &&
+        Number.isFinite(radius)
+      ? {
+          center,
+          halfWidth: radius,
+          halfHeight: radius,
+          circle: true,
+          anchor,
+        }
+      : null;
+  }
+  const x = Number(background.getAttribute("x"));
+  const y = Number(background.getAttribute("y"));
+  const width = Number(background.getAttribute("width"));
+  const height = Number(background.getAttribute("height"));
+  return [x, y, width, height].every(Number.isFinite)
+    ? {
+        center: { x: x + width / 2, y: y + height / 2 },
+        halfWidth: width / 2,
+        halfHeight: height / 2,
+        circle: false,
+        anchor,
+      }
+    : null;
+}
+
+function measuredNodeReferencePoint(
+  node: MeasuredNodeGeometry,
+  toward: { x: number; y: number },
+): { x: number; y: number } {
+  switch (node.anchor.trim()) {
+    case "north":
+      return { x: node.center.x, y: node.center.y - node.halfHeight };
+    case "south":
+      return { x: node.center.x, y: node.center.y + node.halfHeight };
+    case "east":
+      return { x: node.center.x + node.halfWidth, y: node.center.y };
+    case "west":
+      return { x: node.center.x - node.halfWidth, y: node.center.y };
+  }
+  const dx = toward.x - node.center.x;
+  const dy = toward.y - node.center.y;
+  if (Math.abs(dx) < Number.EPSILON && Math.abs(dy) < Number.EPSILON) {
+    return node.center;
+  }
+  if (node.circle) {
+    const scale = node.halfWidth / Math.hypot(dx, dy);
+    return { x: node.center.x + dx * scale, y: node.center.y + dy * scale };
+  }
+  const scale = Math.min(
+    Math.abs(dx) < Number.EPSILON ? Number.POSITIVE_INFINITY : node.halfWidth / Math.abs(dx),
+    Math.abs(dy) < Number.EPSILON ? Number.POSITIVE_INFINITY : node.halfHeight / Math.abs(dy),
+  );
+  return { x: node.center.x + dx * scale, y: node.center.y + dy * scale };
+}
+
+function parseTwoPointPolyline(
+  value: string | null,
+): { start: { x: number; y: number }; end: { x: number; y: number } } | null {
+  const values = value?.trim().split(/[\s,]+/).map(Number);
+  if (!values || values.length !== 4 || !values.every(Number.isFinite)) return null;
+  return {
+    start: { x: values[0], y: values[1] },
+    end: { x: values[2], y: values[3] },
+  };
+}
+
+function repositionConnectorArrow(
+  arrow: SVGPathElement | null,
+  oldTip: { x: number; y: number },
+  newTip: { x: number; y: number },
+  oldDirection: { x: number; y: number },
+  newDirection: { x: number; y: number },
+): void {
+  if (!arrow) return;
+  const oldAngle = Math.atan2(oldDirection.y, oldDirection.x);
+  const newAngle = Math.atan2(newDirection.y, newDirection.x);
+  const degrees = (newAngle - oldAngle) * 180 / Math.PI;
+  arrow.setAttribute(
+    "transform",
+    `translate(${newTip.x} ${newTip.y}) rotate(${degrees}) translate(${-oldTip.x} ${-oldTip.y})`,
+  );
 }
 
 function finishTikzMathBatch(): Promise<void> {
@@ -654,7 +852,8 @@ function fitNodeBackgroundToOverlay(
 ): void {
   const background = anchor.previousElementSibling;
   if (
-    background?.localName.toLowerCase() !== "rect" ||
+    !background ||
+    !["rect", "circle"].includes(background.localName.toLowerCase()) ||
     background.getAttribute("data-chord-node-background") !== "true"
   ) {
     return;
@@ -667,10 +866,17 @@ function fitNodeBackgroundToOverlay(
     { width: minimumWidth, height: minimumHeight },
     { width: contentWidth, height: contentHeight },
   );
-  background.setAttribute("x", String(box.x));
-  background.setAttribute("y", String(box.y));
-  background.setAttribute("width", String(box.width));
-  background.setAttribute("height", String(box.height));
+  if (background.localName.toLowerCase() === "circle") {
+    const diameter = Math.hypot(box.width, box.height);
+    background.setAttribute("cx", String(centerX));
+    background.setAttribute("cy", String(centerY));
+    background.setAttribute("r", String(diameter / 2));
+  } else {
+    background.setAttribute("x", String(box.x));
+    background.setAttribute("y", String(box.y));
+    background.setAttribute("width", String(box.width));
+    background.setAttribute("height", String(box.height));
+  }
 }
 
 function parseTikzNodeAnchor(value: string | undefined): TikzNodeAnchor | null {

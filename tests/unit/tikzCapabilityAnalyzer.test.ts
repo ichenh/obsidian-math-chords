@@ -125,6 +125,30 @@ describe("TikZ capability analyzer", () => {
     ).toEqual({ tier: "vector", features: [] });
   });
 
+  it("keeps common coordinate graphs on the vector tier", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \begin{tikzpicture}[
+          x=1cm, y=1cm, >=stealth,
+          every node/.style={font=\small},
+          line cap=round
+        ]
+          \draw[->, thick] (0,0)--(8.65,0)
+            node[right] {$r/\mathrm{m}$};
+          \foreach \x/\lab in {2/0.10,4/0.20}{
+            \node[below=3pt] at (\x,0) {\lab};
+            \draw[gray!35] (\x,0)--(\x,6.15);
+          }
+          \draw[densely dotted, thick] (2,0)--(2,6.25);
+          \draw[thick, smooth] plot coordinates {
+            (2,6) (2.4,5) (3,4) (4,3)
+          };
+          \node[above right=2pt] at (4,3) {P};
+        \end{tikzpicture}
+      `),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
   it("routes foreach options outside the bounded subset to compatibility", () => {
     expect(
       analyzeTikzCapabilities(
@@ -238,10 +262,15 @@ describe("TikZ capability analyzer", () => {
     ).toEqual({ tier: "vector", features: [] });
   });
 
-  it("routes arrow-tip families that are not geometrically implemented", () => {
+  it("keeps standard arrow tips and routes unknown families", () => {
     expect(
       analyzeTikzCapabilities(
         String.raw`\begin{tikzpicture}[>=latex]\draw[->] (0,0)--(1,0);\end{tikzpicture}`,
+      ),
+    ).toEqual({ tier: "vector", features: [] });
+    expect(
+      analyzeTikzCapabilities(
+        String.raw`\begin{tikzpicture}[>=Triangle]\draw[->] (0,0)--(1,0);\end{tikzpicture}`,
       ).features,
     ).toContain("unsupported-option");
   });
@@ -309,5 +338,34 @@ describe("TikZ capability analyzer", () => {
         \draw (0,0) circle (1);
       `),
     ).toEqual({ tier: "vector", features: [] });
+  });
+
+  it("routes path semantics that the vector core cannot reproduce faithfully", () => {
+    const sources = [
+      String.raw`\draw (0,0) arc (0:90:1) node[midway] {arc};`,
+      String.raw`\draw[shorten >=2pt] (0,0) .. controls (1,1) and (2,1) .. (3,0);`,
+      String.raw`\draw[smooth] (0,0)--(1,1)--(2,0);`,
+    ];
+    for (const source of sources) {
+      expect(analyzeTikzCapabilities(source).features).toContain("advanced-path");
+    }
+  });
+
+  it("keeps smooth bounded coordinate plots on the vector tier", () => {
+    expect(
+      analyzeTikzCapabilities(
+        String.raw`\draw[thick,smooth] plot coordinates {(0,0) (1,1) (2,0)};`,
+      ),
+    ).toEqual({ tier: "vector", features: [] });
+  });
+
+  it("routes rotated named-node connectors to TeX", () => {
+    expect(
+      analyzeTikzCapabilities(String.raw`
+        \node[draw,rotate=30] (a) at (0,0) {A};
+        \node[draw] (b) at (2,0) {B};
+        \draw[->] (a)--(b);
+      `).features,
+    ).toContain("advanced-node");
   });
 });

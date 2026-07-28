@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.8] - 2026-07-28
+
+### Added
+
+- Expanded the bounded publication WASM renderer with common STEM TikZ vocabulary: tuple `\foreach` variables; polar, relative, and named coordinates; grids and closed polygons; classic and key-value arcs; radius-form circles; inline path labels; circular nodes; standard Stealth and Latex arrow tips; and common line weights, dash patterns, colors, and opacity controls.
+- Added a systematic STEM compatibility corpus with more than 100 focused native-versus-fallback assertions, 39 Rust renderer tests, and 12 compiled-WASM smoke diagrams.
+
+### Changed
+
+- Routes advanced library and path semantics—including `pgfplots`, `circuitikz`, scopes and transforms, calc coordinates, patterns and decorations, matrices and graphs, clipping and shading, 3D coordinates, curved-path labels, and curved-path shortening—to Automatic or local TeX instead of silently approximating them.
+- Documented the built-in renderer's publication subset and its explicit local-TeX fallback boundary in both READMEs.
+
+### Fixed
+
+- Matched common coordinate graphs more closely to TeX, including explicit directional node gaps, dotted grayscale grids, and bounded smooth coordinate plots.
+- Reconciled named-node connector endpoints and arrowheads after final browser and MathJax measurement so Markdown rendering and PDF export use the same completed geometry.
+- Sized circular nodes around the diagonal of their measured content box, distinguished path operators from similarly named coordinates, and rejected adversarial grid steps before integer conversion.
+
 ## [0.5.7] - 2026-07-28
 
 ### Fixed

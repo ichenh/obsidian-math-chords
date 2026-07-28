@@ -16,7 +16,10 @@ export interface TikzCapabilityAnalysis {
 }
 
 const UNSUPPORTED_COMMAND_RE =
-  /\\(?:clip|coordinate|graph|matrix|path|pattern|pic|scope|shade|shadedraw|useasboundingbox)\b/;
+  /\\(?:clip|graph|matrix|path|pattern|pic|scope|shade|shadedraw|useasboundingbox)\b/;
+
+const PATH_STYLE_RE =
+  /^(?:->|<-|<->|-\{(?:Stealth|stealth|Latex|latex)\}|\{(?:Stealth|stealth|Latex|latex)\}-|ultra thin|very thin|thin|semithick|thick|very thick|ultra thick|dashed|densely dashed|loosely dashed|dotted|densely dotted|loosely dotted|help lines)$/;
 
 const SUPPORTED_NODE_FONT_RE =
   /^font\s*=\s*(?:\\(?:bfseries|mdseries|itshape|upshape|tiny|scriptsize|small|normalsize|large|Large)\s*)+$/;
@@ -52,20 +55,30 @@ export function analyzeTikzCapabilities(source: string): TikzCapabilityAnalysis 
     features.add("unsupported-option");
   }
   if (
-    /(?:\+\+|\bto\s*\[|\bdecorate\b|\bparabola\b)/.test(content) ||
-    hasUnsupportedCycles(content)
+    /(?:\bto\s*\[|\bdecorate\b|\bparabola\b|\.\.\s*node\b|\)\s*(?:\|-|-\|)\s*\()/.test(
+      content,
+    ) ||
+    hasUnsupportedPathSemantics(content) ||
+    hasUnsupportedArcs(content) ||
+    hasUnsupportedCircles(content)
   ) {
     features.add("advanced-path");
   }
   if (
     UNSUPPORTED_COMMAND_RE.test(content) ||
+    hasUnsupportedEnvironments(content) ||
+    hasUnsupportedCoordinateCommands(content) ||
     (content.includes("\\foreach") && !hasOnlySimpleForeachLoops(content))
   ) {
     features.add("unsupported-command");
   }
+  if (hasUnsupportedRotatedNodeConnectors(content)) {
+    features.add("advanced-node");
+  }
 
-  for (const match of content.matchAll(/\\node\s*\[([^\]]+)\]/g)) {
-    const options = match[1]
+  for (const match of content.matchAll(/(\\node|\bnode)\s*\[([^\]]+)\]/g)) {
+    const inline = match[1] === "node";
+    const options = match[2]
       .split(",")
       .map((option) => option.trim())
       .filter(Boolean);
@@ -74,21 +87,9 @@ export function analyzeTikzCapabilities(source: string): TikzCapabilityAnalysis 
         (option) =>
           !isSupportedNodeStyleOption(option) &&
           !isSupportedNodeShift(option) &&
-          !supportedNodeStyles.has(option) &&
-          ![
-            "above",
-            "below",
-            "left",
-            "right",
-            "above left",
-            "left above",
-            "above right",
-            "right above",
-            "below left",
-            "left below",
-            "below right",
-            "right below",
-          ].includes(option),
+          !isSupportedNodePlacement(option) &&
+          !(inline && isSupportedPathNodeOption(option)) &&
+          !supportedNodeStyles.has(option),
       )
     ) {
       features.add("advanced-node");
@@ -99,6 +100,101 @@ export function analyzeTikzCapabilities(source: string): TikzCapabilityAnalysis 
     tier: features.size === 0 ? "vector" : "compatibility",
     features: [...features],
   };
+}
+
+function hasUnsupportedRotatedNodeConnectors(source: string): boolean {
+  if (!/\brotate\s*=\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)/.test(source)) {
+    return false;
+  }
+  return /\\(?:draw|fill|filldraw)\b[\s\S]*?\(\s*[A-Za-z@][A-Za-z0-9_:@-]*(?:\.(?:north|south|east|west|center))?\s*\)[\s\S]*?;/.test(
+    source,
+  );
+}
+
+function hasUnsupportedCoordinateCommands(source: string): boolean {
+  let supported = 0;
+  for (const match of source.matchAll(
+    /\\coordinate\s*\([A-Za-z@][A-Za-z0-9_:@-]*\)\s*at\s*\(([^()]*)\)/g,
+  )) {
+    supported++;
+    const value = match[1].trim();
+    const components = splitTopLevel(value, ",");
+    if (
+      components.length === 2 &&
+      components.every((component) =>
+        isSimpleNumericExpression(component.trim())
+      )
+    ) {
+      continue;
+    }
+    const polar = splitTopLevel(value, ":");
+    if (
+      polar.length !== 2 ||
+      !polar.every((component) =>
+        /^(?:up|down|left|right)$/.test(component.trim()) ||
+        isSimpleNumericExpression(component.trim())
+      )
+    ) {
+      return true;
+    }
+  }
+  return countMatches(source, /\\coordinate\b/g) !== supported;
+}
+
+function hasUnsupportedArcs(source: string): boolean {
+  for (const match of source.matchAll(/\barc\s*([([])/g)) {
+    const open = match[1];
+    const start = (match.index ?? 0) + match[0].lastIndexOf(open);
+    const close = open === "[" ? "]" : ")";
+    const body = takeBalancedDelimited(source, start, open, close);
+    if (!body) return true;
+    if (open === "(") {
+      const values = splitTopLevel(body.content, ":").map((value) =>
+        value.trim()
+      );
+      if (
+        values.length !== 3 ||
+        !values.every(isSimpleNumericExpression)
+      ) {
+        return true;
+      }
+      continue;
+    }
+    const options = optionMap(body.content);
+    if (
+      options.size !== 3 ||
+      !["start angle", "end angle", "radius"].every((name) =>
+        options.has(name)
+      ) ||
+      ![...options.values()].every(isSimpleNumericExpression)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function hasUnsupportedCircles(source: string): boolean {
+  for (const match of source.matchAll(/\bcircle\s*([([])/g)) {
+    const open = match[1];
+    const start = (match.index ?? 0) + match[0].lastIndexOf(open);
+    const close = open === "[" ? "]" : ")";
+    const body = takeBalancedDelimited(source, start, open, close);
+    if (!body) return true;
+    if (open === "(") {
+      if (!isSimpleNumericExpression(body.content)) return true;
+      continue;
+    }
+    const options = optionMap(body.content);
+    if (
+      options.size !== 1 ||
+      !options.has("radius") ||
+      !isSimpleNumericExpression(options.get("radius") ?? "")
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function hasUnsupportedPictureOptions(
@@ -120,11 +216,11 @@ function hasUnsupportedPictureOptions(
       const option = raw.trim();
       if (
         !option ||
-        /^(?:thin|thick|very thick|line cap=round|line join=round)$/.test(
+        /^(?:ultra thin|very thin|thin|semithick|thick|very thick|ultra thick|line cap=round|line join=round)$/.test(
           option,
         ) ||
         /^scale\s*=\s*(?:\d+(?:\.\d*)?|\.\d+)$/.test(option) ||
-        /^>=\s*stealth$/.test(option) ||
+        /^>=\s*(?:stealth|Stealth|latex|Latex)$/.test(option) ||
         /^[xy]\s*=\s*1(?:\.0+)?cm$/.test(option) ||
         isSupportedEveryNodeStyle(option) ||
         [...supportedStyles].some((name) =>
@@ -144,15 +240,25 @@ function hasUnsupportedPathOptions(
   supportedStyles: ReadonlySet<string>,
 ): boolean {
   for (const match of source.matchAll(
-    /\\(?:draw|fill|filldraw)\s*\[([^\]]*)\]/g,
+    /\\(?:draw|fill|filldraw)\s*\[([^\]]*)\]([\s\S]*?);/g,
   )) {
     for (const raw of splitTopLevel(match[1], ",")) {
       const option = raw.trim();
       if (
         !option ||
         supportedStyles.has(option) ||
-        /^(?:->|<-|<->|thin|thick|very thick|dashed)$/.test(option) ||
-        /^shorten\s+(?:>=|<=)\s*[0-9.+-]+(?:cm|mm|pt|in)?$/.test(option) ||
+        PATH_STYLE_RE.test(option) ||
+        (
+          option === "smooth" &&
+          /\bplot(?:\s*\[[^\]]*\])?\s+coordinates\b/.test(match[2])
+        ) ||
+        /^(?:line width|step|xstep|ystep)\s*=\s*[0-9.+-]+(?:cm|mm|pt|bp|in)?$/.test(
+          option,
+        ) ||
+        /^(?:opacity|draw opacity|fill opacity)\s*=\s*(?:0(?:\.\d*)?|1(?:\.0*)?|\.\d+)$/.test(
+          option,
+        ) ||
+        /^shorten\s+(?:>=|<=)\s*[0-9.+-]+(?:cm|mm|pt|bp|in)?$/.test(option) ||
         (
           /^(?:draw|fill)\s*=\s*/.test(option) &&
           isSupportedVectorColor(option.replace(/^[^=]+=/, ""))
@@ -167,8 +273,29 @@ function hasUnsupportedPathOptions(
   return false;
 }
 
+function hasUnsupportedPathSemantics(source: string): boolean {
+  for (const match of source.matchAll(
+    /\\(?:draw|fill|filldraw)\b([\s\S]*?);/g,
+  )) {
+    const path = match[1];
+    const curved =
+      /\barc\s*(?:\[|\()/.test(path) ||
+      /\.\.\s*controls\b/.test(path) ||
+      /\bplot\b/.test(path);
+    if (curved && /\bnode(?:\s*\[|\s*\{)/.test(path)) return true;
+    if (curved && /\bshorten\s+(?:>=|<=)/.test(path)) return true;
+    if (
+      /\bsmooth\b/.test(path) &&
+      !/\bplot(?:\s*\[[^\]]*\])?\s+coordinates\b/.test(path)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function isSupportedVectorColor(value: string): boolean {
-  return /^(?:black|white|red|green|blue|cyan|magenta|yellow|gray)(?:!\s*(?:\d+(?:\.\d*)?|\.\d+))?$/.test(
+  return /^(?:black|white|red|green|blue|cyan|magenta|yellow|gray|orange|violet|purple|brown|lime|teal|pink)(?:!\s*(?:\d+(?:\.\d*)?|\.\d+))?$/.test(
     value.trim(),
   );
 }
@@ -225,8 +352,9 @@ function isSupportedEveryNodeStyle(option: string): boolean {
 function isSupportedNodeStyleOption(option: string): boolean {
   return (
     option === "draw" ||
+    option === "circle" ||
     option === "rounded corners" ||
-    /^(?:rounded corners|minimum width|minimum height|text width|inner sep|inner xsep|inner ysep|outer sep)\s*=\s*[0-9.+-]+(?:cm|mm|pt|in)?$/.test(
+    /^(?:rounded corners|minimum width|minimum height|text width|inner sep|inner xsep|inner ysep|outer sep)\s*=\s*[0-9.+-]+(?:cm|mm|pt|bp|in)?$/.test(
       option,
     ) ||
     /^align\s*=\s*(?:center|left)$/.test(option) ||
@@ -264,8 +392,14 @@ function supportedBasicPathStyles(source: string): Set<string> {
         options.length > 0 &&
         options.every((option) =>
           supported.has(option) ||
-          /^(?:->|<-|<->|thin|thick|very thick|dashed)$/.test(option) ||
-          /^shorten\s+(?:>=|<=)\s*[0-9.+-]+(?:cm|mm|pt|in)?$/.test(option) ||
+          PATH_STYLE_RE.test(option) ||
+          /^(?:line width|step|xstep|ystep)\s*=\s*[0-9.+-]+(?:cm|mm|pt|bp|in)?$/.test(
+            option,
+          ) ||
+          /^(?:opacity|draw opacity|fill opacity)\s*=\s*(?:0(?:\.\d*)?|1(?:\.0*)?|\.\d+)$/.test(
+            option,
+          ) ||
+          /^shorten\s+(?:>=|<=)\s*[0-9.+-]+(?:cm|mm|pt|bp|in)?$/.test(option) ||
           (
             /^(?:draw|fill)\s*=\s*/.test(option) &&
             isSupportedVectorColor(option.replace(/^[^=]+=/, ""))
@@ -279,15 +413,6 @@ function supportedBasicPathStyles(source: string): Set<string> {
     }
   }
   return supported;
-}
-
-function hasUnsupportedCycles(source: string): boolean {
-  for (const match of source.matchAll(/--\s*cycle/g)) {
-    const commandStart = source.lastIndexOf(";", match.index) + 1;
-    const command = source.slice(commandStart, match.index);
-    if (!command.includes("plot[")) return true;
-  }
-  return false;
 }
 
 function hasUnsupportedEllipses(source: string): boolean {
@@ -316,6 +441,12 @@ function hasUnsupportedEllipses(source: string): boolean {
     supported++;
   }
   return countMatches(source, /\bellipse\b/g) !== supported;
+}
+
+function hasUnsupportedEnvironments(source: string): boolean {
+  return /\\begin\s*\{\s*(?:scope|axis|semilogxaxis|semilogyaxis|loglogaxis|circuitikz|pgfonlayer|matrix)\s*\}/.test(
+    source,
+  );
 }
 
 function hasUnsupportedParametricPlots(source: string): boolean {
@@ -376,7 +507,19 @@ function hasUnsupportedParametricPlots(source: string): boolean {
 }
 
 function isSupportedNodeShift(option: string): boolean {
-  return /^(?:xshift|yshift)\s*=\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:cm|mm|pt|in)?$/.test(
+  return /^(?:xshift|yshift)\s*=\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:cm|mm|pt|bp|in)?$/.test(
+    option,
+  );
+}
+
+function isSupportedNodePlacement(option: string): boolean {
+  return /^(?:above|below|left|right|above left|left above|above right|right above|below left|left below|below right|right below)(?:\s*=\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:cm|mm|pt|bp|in)?)?$/.test(
+    option,
+  );
+}
+
+function isSupportedPathNodeOption(option: string): boolean {
+  return /^(?:at start|very near start|near start|midway|near end|very near end|at end|pos\s*=\s*(?:0(?:\.\d*)?|1(?:\.0*)?|\.\d+))$/.test(
     option,
   );
 }
@@ -395,6 +538,12 @@ function isBoundedCoordinatePlot(source: string): boolean {
 }
 
 function hasUnsupportedCoordinateExpressions(source: string): boolean {
+  if (
+    /\(\s*\$/.test(source) ||
+    /\([^()]*(?:,[^()]*){2,}\)/.test(source)
+  ) {
+    return true;
+  }
   let cursor = 0;
   while (true) {
     const start = source.indexOf("({", cursor);
@@ -526,15 +675,23 @@ function hasOnlySimpleForeachLoops(source: string): boolean {
     loops++;
     cursor = start + "\\foreach".length;
     cursor = skipWhitespace(source, cursor);
-    const variable = /^\\[A-Za-z@]+/.exec(source.slice(cursor));
-    if (!variable) return false;
-    cursor += variable[0].length;
+    const variables = /^\\[A-Za-z@]+(?:\s*\/\s*\\[A-Za-z@]+)*/.exec(
+      source.slice(cursor),
+    );
+    if (!variables) return false;
+    const variableCount = variables[0].split("/").length;
+    cursor += variables[0].length;
     cursor = skipWhitespace(source, cursor);
     if (!source.startsWith("in", cursor)) return false;
     cursor += 2;
     cursor = skipWhitespace(source, cursor);
     const values = takeBalancedGroup(source, cursor);
-    if (!values || !isSimpleForeachValues(values.content)) return false;
+    if (
+      !values ||
+      !isSimpleForeachValues(values.content, variableCount)
+    ) {
+      return false;
+    }
     cursor = skipWhitespace(source, values.end);
     const body = takeBalancedGroup(source, cursor);
     if (!body) return false;
@@ -543,13 +700,22 @@ function hasOnlySimpleForeachLoops(source: string): boolean {
   return loops > 0;
 }
 
-function isSimpleForeachValues(value: string): boolean {
+function isSimpleForeachValues(value: string, variableCount: number): boolean {
   const items = value.split(",").map((item) => item.trim());
   if (items.length === 0 || items.length > 256) return false;
   const ellipsis = items
     .map((item, index) => (item === "..." ? index : -1))
     .filter((index) => index >= 0);
-  if (ellipsis.length === 0) return items.every(isSimpleForeachAtom);
+  if (ellipsis.length === 0) {
+    return items.every((item) => {
+      const values = item.split("/").map((part) => part.trim());
+      return (
+        values.length === variableCount &&
+        values.every(isSimpleForeachAtom)
+      );
+    });
+  }
+  if (variableCount !== 1) return false;
   const index = ellipsis[0];
   return (
     ellipsis.length === 1 &&

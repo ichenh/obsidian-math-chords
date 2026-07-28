@@ -26,6 +26,8 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
     String.raw`\begin{tikzpicture}[x=1cm,y=1cm,every node/.style={font=\normalsize,outer sep=0pt},year/.style={draw,rounded corners=3pt,fill=gray!10,font=\bfseries\normalsize,minimum width=2.25cm,minimum height=0.84cm,inner xsep=6pt,inner ysep=3pt},event/.style={draw,rounded corners=4pt,align=left,text width=5.75cm,inner xsep=8pt,inner ysep=6pt},timeline/.style={very thick,->,shorten >=1pt,shorten <=1pt}]\node[year] (y1) at (0,0) {1600};\node[year] (y2) at (0,-3) {1800};\draw[timeline] (y1.south)--(y2.north);\node[event,anchor=west] at (2,0) {\textbf{Observation}\\[-1pt]A publication-style paragraph.};\end{tikzpicture}`,
     String.raw`\begin{tikzpicture}[scale=1.0,>=stealth,line cap=round,line join=round,every node/.style={font=\small}]\draw[thick,fill=gray!8] (-2.15,-2.05) rectangle (-1.90,2.05);\foreach \y in {-1.65,-1.10,-0.55,0,0.55,1.10,1.65}{\node at (-1.72,\y) {$+$};\node at (1.72,\y) {$-$};}\draw[->,thick] (-1.78,1.48) .. controls (-0.95,1.82) and (0.95,1.82) .. (1.78,1.48);\node[rotate=90] at (-2.55,0) {positive plate};\node[rotate=90] at (2.55,0) {negative plate};\end{tikzpicture}`,
     String.raw`\begin{tikzpicture}[x=1cm,y=1cm,scale=1.0]\draw[thick] plot[smooth] coordinates {(-2.10,0.58) (-2.90,0.78) (-2.70,1.95) (0,2.55) (2.70,1.95) (2.90,0.78) (2.10,0.58)};\draw[->,thick] (-0.30,2.55)--(0.30,2.55);\end{tikzpicture}`,
+    String.raw`\begin{tikzpicture}[x=1cm,y=1cm,>=stealth,every node/.style={font=\small},line cap=round]\draw[->,thick] (0,0)--(8.65,0) node[right] {$r/\mathrm{m}$};\foreach \x/\lab in {2/0.10,4/0.20,6/0.30,8/0.40}{\draw (\x,0.08)--(\x,-0.08);\node[below=3pt] at (\x,0) {\lab};\draw[gray!35] (\x,0)--(\x,6.15);}\draw[densely dotted,thick] (2,0)--(2,6.25);\node[above right] at (2,6.05) {$r=R$};\draw[thick,smooth] plot coordinates {(2,6) (2.4,5) (3,4) (4,3) (5,2.4) (6,2) (7,1.714) (8,1.5)};\fill (4,3) circle (0.055);\node[above right=2pt] at (4,3) {P};\end{tikzpicture}`,
+    String.raw`\begin{tikzpicture}[>=Latex]\draw[help lines,step=0.5cm] (0,0) grid (3,2);\filldraw[fill=cyan!20,draw=blue] (0,0)--(3,0)--(1.5,2)--cycle;\draw[-{Stealth},semithick] (2,0) arc (0:120:2);\draw[orange,line width=1pt,draw opacity=0.8] (0,0)--(30:3);\draw (0,-1)--node[midway,above] {$v$} ++(4,0);\coordinate (P) at (3,2);\node[above] at (P) {$P$};\node[circle,draw,minimum width=1cm] at (0,-2) {$q$};\end{tikzpicture}`,
   ];
   const startedAt = performance.now();
   const outputs = cases.map(render);
@@ -84,6 +86,8 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
     (outputs[7].match(/<rect/g) ?? []).length !== 3 ||
     !outputs[7].includes('data-chord-text-width="162.992"') ||
     !outputs[7].includes('data-chord-align="left"') ||
+    !outputs[7].includes('data-chord-shorten-start="0.996"') ||
+    !outputs[7].includes('data-chord-shorten-end="0.996"') ||
     !outputs[7].includes('data-chord-arrowhead="true"')
   ) {
     throw new Error("Publication-style timeline smoke test lost node semantics.");
@@ -101,6 +105,30 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
   ) {
     throw new Error("Smooth coordinate-plot smoke test lost cubic geometry.");
   }
+  if (
+    (outputs[10].match(/data-chord-text="0\./g) ?? []).length !== 4 ||
+    (outputs[10].match(/stroke-opacity="0.350"/g) ?? []).length !== 4 ||
+    !outputs[10].includes('stroke-dasharray="0.01 1.993"') ||
+    !outputs[10].includes('data-chord-placement="below"') ||
+    !outputs[10].includes('data-chord-gap="3.487"') ||
+    !outputs[10].includes('data-chord-placement="above-right"') ||
+    !outputs[10].includes('data-chord-gap="2.491"') ||
+    !outputs[10].includes(" C ")
+  ) {
+    throw new Error("Coordinate-graph smoke test lost labels, styles, or smooth geometry.");
+  }
+  if (
+    !outputs[11].includes("<polygon") ||
+    !outputs[11].includes('stroke="orange"') ||
+    !outputs[11].includes('stroke-opacity="0.800"') ||
+    !outputs[11].includes('data-chord-math="v"') ||
+    !outputs[11].includes('data-chord-math="P"') ||
+    !outputs[11].includes('<circle data-chord-node-background="true"') ||
+    !outputs[11].includes(" A ") ||
+    !outputs[11].includes('data-chord-arrowhead="true"')
+  ) {
+    throw new Error("STEM vocabulary smoke test lost vector geometry or labels.");
+  }
   const expectedDimensions = [
     [109.039, 109.039],
     [112.418, 51.895],
@@ -112,6 +140,8 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
     [425.273, 196.316],
     [266.953, 198.331],
     [287.824, 110.681],
+    [424.353, 337.932],
+    [236.598, 247.401],
   ];
   const dimensionMismatches = [];
   outputs.map(svgMetrics).forEach((metrics, index) => {

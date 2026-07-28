@@ -31,7 +31,7 @@ Math remains the primary workflow, but templates are deliberately not limited to
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.5.7.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.5.8.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.7.2+.** Keyboard-heavy; desktop recommended.
 
@@ -387,6 +387,17 @@ ordinary Markdown math.
 - **Built-in WASM (default and recommended):** uses Math Chords' original Rust vector core, starts quickly, requires no TeX installation or runtime download, and renders away from the main editing thread. Its output remains vector SVG in Markdown and print exports. It is the primary renderer and is expanded directly as more TikZ syntax is supported.
 - **Local TeX (advanced compatibility):** slower and desktop-only because it launches an installed TeX toolchain. Keep it for packages such as `pgfplots` or `circuitikz`, document-specific macros and styles, full TeX text boxes, specialized OpenType/CJK font work, and cases where output must match a formal TeX build. Ordinary diagrams prefer the DVI-to-SVG path for crisp Markdown and print output. PDF-producing engines also convert to path-based SVG when the installed `dvisvgm` has PDF support, while retaining the original vector PDF for direct export. Math Chords detects TeX Live, MiKTeX, MacTeX, TinyTeX, Tectonic, and compatible executables through PATH or an override path.
 - **Automatic:** uses the same built-in WASM instance and cache for supported diagrams, then selects local TeX for syntax the capability check cannot reproduce faithfully or when WASM fails. This preserves the fast path without returning a plausible but incorrect diagram.
+
+The built-in publication subset covers the common vocabulary used by STEM
+diagrams: Cartesian and polar coordinates, bounded numeric macros and
+`\foreach` loops, relative and named coordinates, lines and Bézier curves,
+circles, ellipses, rectangles, grids, closed polygons, circular arcs, bounded
+function and coordinate plots, standard line/color/opacity styles,
+Latex/Stealth arrows, inline path labels, and rectangular or circular nodes.
+Specialized libraries and constructs—including `pgfplots`, `circuitikz`,
+matrices, graph drawing, calc coordinates, patterns, decorations, clipping,
+shading, 3D coordinates, and scoped transformations—remain explicit
+Automatic/local-TeX territory instead of being approximated silently.
 
 This division keeps the common path fast and installation-free without removing the
 full TeX ecosystem as an explicit escape hatch. Math Chords does not download an

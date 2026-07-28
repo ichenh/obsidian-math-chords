@@ -109,15 +109,23 @@ fn expand_foreach(
 ) -> Result<(String, usize), String> {
     let mut cursor = "\\foreach".len();
     cursor = skip_whitespace(source, cursor);
-    let (variable, consumed) = take_control_sequence(&source[cursor..])?;
-    if variable == "\\" {
-        return Err("A \\foreach command needs a loop variable.".to_owned());
+    let mut variables = Vec::new();
+    loop {
+        let (variable, consumed) = take_control_sequence(&source[cursor..])?;
+        if variable == "\\" {
+            return Err("A \\foreach command needs a loop variable.".to_owned());
+        }
+        variables.push(variable.to_owned());
+        cursor += consumed;
+        cursor = skip_whitespace(source, cursor);
+        if source.as_bytes().get(cursor) != Some(&b'/') {
+            break;
+        }
+        cursor += 1;
+        cursor = skip_whitespace(source, cursor);
     }
-    cursor += consumed;
     cursor = skip_whitespace(source, cursor);
-    if !source[cursor..].starts_with("in")
-        || !command_boundary(&source[cursor..], "in".len())
-    {
+    if !source[cursor..].starts_with("in") || !command_boundary(&source[cursor..], "in".len()) {
         return Err("A \\foreach command needs 'in' before its values.".to_owned());
     }
     cursor += "in".len();
@@ -128,7 +136,7 @@ fn expand_foreach(
     let (body, consumed) = take_group(source, cursor)?;
     cursor += consumed;
 
-    let values = expand_foreach_values(raw_values, macros)?;
+    let values = expand_foreach_values(raw_values, macros, variables.len() == 1)?;
     if values.is_empty() || values.len() > MAX_FOREACH_ITEMS {
         return Err(format!(
             "A \\foreach loop must contain between 1 and {MAX_FOREACH_ITEMS} values."
@@ -137,8 +145,17 @@ fn expand_foreach(
 
     let mut output = String::new();
     for value in values {
+        let tuple = split_top_level(&value, '/');
+        if tuple.len() != variables.len() {
+            return Err(format!(
+                "A \\foreach item must provide {} value(s) for its loop variables.",
+                variables.len()
+            ));
+        }
         let mut local_macros = macros.clone();
-        local_macros.insert(variable.to_owned(), value);
+        for (variable, value) in variables.iter().zip(tuple) {
+            local_macros.insert(variable.clone(), value.trim().to_owned());
+        }
         let expanded = expand_program(body, &mut local_macros, depth + 1)?;
         push_bounded(&mut output, &expanded)?;
     }
@@ -148,6 +165,7 @@ fn expand_foreach(
 fn expand_foreach_values(
     source: &str,
     macros: &BTreeMap<String, String>,
+    allow_range: bool,
 ) -> Result<Vec<String>, String> {
     let raw_values = split_top_level(source, ',');
     let mut values = raw_values
@@ -157,6 +175,9 @@ fn expand_foreach_values(
     let Some(ellipsis) = values.iter().position(|value| value.trim() == "...") else {
         return Ok(values);
     };
+    if !allow_range {
+        return Err("Tuple \\foreach loops do not support ellipsis ranges.".to_owned());
+    }
     if values.iter().filter(|value| value.trim() == "...").count() != 1
         || !matches!(ellipsis, 1 | 2)
         || ellipsis + 1 != values.len() - 1
@@ -535,6 +556,20 @@ mod tests {
         assert_eq!(expanded.matches(r"\draw[dashed]").count(), 3);
         assert!(expanded.contains("circle (0.8)"));
         assert!(expanded.contains("circle (2.3)"));
+    }
+
+    #[test]
+    fn expands_bounded_foreach_tuples() {
+        let expanded = preprocess(
+            r"\foreach \x/\lab in {2/0.10,4/0.20}{
+                \draw (\x,0)--(\x,1);
+                \node at (\x,0) {\lab};
+            }",
+        )
+        .unwrap();
+        assert_eq!(expanded.matches(r"\draw").count(), 2);
+        assert!(expanded.contains(r"\draw (2,0)--(2,1)"));
+        assert!(expanded.contains(r"\node at (4,0) {0.20}"));
     }
 
     #[test]
