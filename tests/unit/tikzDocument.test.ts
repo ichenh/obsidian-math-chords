@@ -19,6 +19,20 @@ describe("TikZ document preparation", () => {
     );
   });
 
+  it("loads only the compatibility packages requested by the source", () => {
+    const document = createTikzDocument(
+      String.raw`\draw[-Stealth] (0,0)--(1,0) node[right] {\pu{5 m.s-1}};`,
+    );
+    expect(document).toContain("\\usetikzlibrary{arrows.meta}");
+    expect(document).toContain(
+      "\\providecommand{\\pu}[1]{\\ensuremath{\\text{#1}}}",
+    );
+
+    const plainDocument = createTikzDocument("\\draw (0,0)--(1,0);");
+    expect(plainDocument).not.toContain("arrows.meta");
+    expect(plainDocument).not.toContain("\\providecommand{\\pu}");
+  });
+
   it("keeps complete documents unchanged", () => {
     const source = "\\documentclass{standalone}\n\\begin{document}\nX\n\\end{document}";
     expect(createTikzDocument(source)).toBe(source);

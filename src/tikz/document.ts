@@ -18,7 +18,13 @@ export function createTikzDocument(
   const preamble = [
     "\\documentclass[tikz,border=2pt]{standalone}",
     "\\usepackage{amsmath}",
+    ...(/\\pu\s*\{/.test(normalized)
+      ? ["\\providecommand{\\pu}[1]{\\ensuremath{\\text{#1}}}"]
+      : []),
     "\\usepackage{tikz}",
+    ...(/\bStealth\b/.test(normalized)
+      ? ["\\usetikzlibrary{arrows.meta}"]
+      : []),
     ...(options.unicodeEngine && containsLiteralCjk(normalized)
       ? unicodeFontPreamble(
           options.unicodeEngine,

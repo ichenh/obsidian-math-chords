@@ -19,7 +19,7 @@ const UNSUPPORTED_COMMAND_RE =
   /\\(?:clip|graph|matrix|path|pattern|pic|shade|shadedraw|useasboundingbox)\b/;
 
 const PATH_STYLE_RE =
-  /^(?:->|<-|<->|-\{(?:Stealth|stealth|Latex|latex)\}|\{(?:Stealth|stealth|Latex|latex)\}-|ultra thin|very thin|thin|semithick|thick|very thick|ultra thick|dashed|densely dashed|loosely dashed|dotted|densely dotted|loosely dotted|help lines)$/;
+  /^(?:->|<-|<->|ultra thin|very thin|thin|semithick|thick|very thick|ultra thick|dashed|densely dashed|loosely dashed|dotted|densely dotted|loosely dotted|help lines)$/;
 
 const SUPPORTED_NODE_FONT_RE =
   /^font\s*=\s*(?:\\(?:bfseries|mdseries|itshape|upshape|tiny|scriptsize|small|normalsize|large|Large)\s*)+$/;
@@ -255,7 +255,7 @@ function hasUnsupportedPathOptions(
       if (
         !option ||
         supportedStyles.has(option) ||
-        PATH_STYLE_RE.test(option) ||
+        (PATH_STYLE_RE.test(option) || isSupportedArrowStyle(option)) ||
         (
           option === "smooth" &&
           /\bplot(?:\s*\[[^\]]*\])?\s+coordinates\b/.test(match[2])
@@ -401,6 +401,7 @@ function supportedBasicPathStyles(source: string): Set<string> {
         options.every((option) =>
           supported.has(option) ||
           PATH_STYLE_RE.test(option) ||
+          isSupportedArrowStyle(option) ||
           /^(?:line width|step|xstep|ystep)\s*=\s*[0-9.+-]+(?:cm|mm|pt|bp|in)?$/.test(
             option,
           ) ||
@@ -421,6 +422,22 @@ function supportedBasicPathStyles(source: string): Set<string> {
     }
   }
   return supported;
+}
+
+function isSupportedArrowStyle(option: string): boolean {
+  const parseTip = (value: string): string | null => {
+    const match = value.match(/^\{?(Stealth|stealth|Latex|latex)\}?$/);
+    if (!match) return null;
+    if (value.startsWith("{") !== value.endsWith("}")) return null;
+    return match[1].toLowerCase();
+  };
+  if (option.startsWith("-")) return parseTip(option.slice(1)) !== null;
+  if (option.endsWith("-")) return parseTip(option.slice(0, -1)) !== null;
+  const separator = option.indexOf("-");
+  if (separator < 0 || separator !== option.lastIndexOf("-")) return false;
+  const start = parseTip(option.slice(0, separator));
+  const end = parseTip(option.slice(separator + 1));
+  return start !== null && start === end;
 }
 
 function hasUnsupportedEllipses(source: string): boolean {

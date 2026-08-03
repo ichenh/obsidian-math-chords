@@ -150,7 +150,7 @@ struct PictureStyle {
     arrow_tip: ArrowTip,
 }
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
 enum ArrowTip {
     #[default]
     Stealth,
@@ -2390,18 +2390,10 @@ fn apply_path_style_options(
             style.stroke_width = 0.2 * TEX_POINT;
         } else if option == "smooth" {
             style.smooth = true;
-        } else if matches!(option, "-{Stealth}" | "-{stealth}") {
-            style.arrow_end = true;
-            style.arrow_tip = ArrowTip::Stealth;
-        } else if matches!(option, "-{Latex}" | "-{latex}") {
-            style.arrow_end = true;
-            style.arrow_tip = ArrowTip::Latex;
-        } else if matches!(option, "{Stealth}-" | "{stealth}-") {
-            style.arrow_start = true;
-            style.arrow_tip = ArrowTip::Stealth;
-        } else if matches!(option, "{Latex}-" | "{latex}-") {
-            style.arrow_start = true;
-            style.arrow_tip = ArrowTip::Latex;
+        } else if let Some((arrow_start, arrow_end, arrow_tip)) = parse_arrow_style(option) {
+            style.arrow_start = arrow_start;
+            style.arrow_end = arrow_end;
+            style.arrow_tip = arrow_tip;
         } else if let Some(value) = assignment_value(option, "line width") {
             style.stroke_width = parse_length(value)?.max(0.0);
         } else if let Some(value) = assignment_value(option, "opacity") {
@@ -2449,6 +2441,30 @@ fn apply_path_style_options(
         }
     }
     Ok(())
+}
+
+fn parse_arrow_style(option: &str) -> Option<(bool, bool, ArrowTip)> {
+    let parse_tip = |value: &str| {
+        let value = value
+            .strip_prefix('{')
+            .and_then(|value| value.strip_suffix('}'))
+            .unwrap_or(value);
+        match value {
+            "Stealth" | "stealth" => Some(ArrowTip::Stealth),
+            "Latex" | "latex" => Some(ArrowTip::Latex),
+            _ => None,
+        }
+    };
+    if let Some(value) = option.strip_prefix('-') {
+        return parse_tip(value).map(|tip| (false, true, tip));
+    }
+    if let Some(value) = option.strip_suffix('-') {
+        return parse_tip(value).map(|tip| (true, false, tip));
+    }
+    let (start, end) = option.split_once('-')?;
+    let start_tip = parse_tip(start)?;
+    let end_tip = parse_tip(end)?;
+    (start_tip == end_tip).then_some((true, true, end_tip))
 }
 
 fn style_attributes(style: &Style) -> String {
@@ -3313,6 +3329,7 @@ fn latex_text_to_unicode(input: &str) -> String {
                 | "operatorname"
                 | "textbf"
                 | "textit"
+                | "pu"
         ) {
             while index < characters.len() && characters[index].is_whitespace() {
                 index += 1;
@@ -3424,6 +3441,20 @@ mod tests {
         .unwrap();
         assert!(svg.contains("data-chord-placement=\"right\""));
         assert!(svg.contains("data-chord-anchor-x=\"0.000\""));
+    }
+
+    #[test]
+    fn renders_stealth_shorthand_and_preserves_physical_unit_math() {
+        let svg = render_svg(
+            r"\draw[-Stealth] (0,0)--(1,0);
+              \draw[Stealth-] (0,1)--(1,1);
+              \draw[Stealth-Stealth] (0,2)--(1,2);
+              \node at (0,3) {$\pu{5 m.s-1}$};",
+        )
+        .unwrap();
+        assert_eq!(svg.matches("data-chord-arrowhead=\"true\"").count(), 4);
+        assert!(svg.contains("data-chord-math=\"\\pu{5 m.s-1}\""));
+        assert!(svg.contains(">5 m.s-1</text>"));
     }
 
     #[test]

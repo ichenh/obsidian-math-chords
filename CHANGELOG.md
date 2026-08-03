@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.10] - 2026-08-04
+
+### Added
+
+- Accepted MathJax-style `\pu{...}` physical-unit labels in built-in TikZ output and generated local-TeX wrappers, and added the common `-Stealth`, `Stealth-`, and `Stealth-Stealth` arrow-tip shorthands.
+
+### Fixed
+
+- Removed overlapping native browser tooltips from formula-panel controls and items while retaining Obsidian's styled hover hints and accessible labels.
+
 ## [0.5.9] - 2026-07-28
 
 ### Fixed

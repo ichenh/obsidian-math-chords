@@ -1015,6 +1015,22 @@ function appendTikzMixedFragment(
       plainStart = cursor;
       continue;
     }
+    const physicalUnit = source.slice(cursor).match(/^\\pu\s*\{/);
+    if (physicalUnit) {
+      flush(cursor);
+      const open = cursor + physicalUnit[0].length - 1;
+      const close = matchingTextBrace(source, open);
+      if (close < 0) {
+        parent.appendChild(
+          ownerDocument.createTextNode(source.slice(cursor)),
+        );
+        return;
+      }
+      parent.appendChild(renderMath(source.slice(cursor, close + 1), false));
+      cursor = close + 1;
+      plainStart = cursor;
+      continue;
+    }
     const formatting = source
       .slice(cursor)
       .match(/^\\(textbf|textit)\s*\{/);

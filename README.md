@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>A practical math-writing toolkit for Obsidian.</strong><br />
-  Enter LaTeX faster, normalize imported formulas safely, and keep reusable math or Markdown templates one click away.
+  Enter LaTeX faster, reuse math or Markdown templates, and render TikZ with built-in WASM or optional local TeX.
 </p>
 
 <p align="center">
@@ -25,13 +25,14 @@
 - save frequently used equations as titled templates and insert them by click or drag;
 - store any reusable Markdown in the same template tree—definitions, derivations, callouts, tables, or complete document sections are all valid;
 - normalize LaTeX delimiters copied from AI tools, papers, or TeX sources without touching protected Markdown regions;
+- optionally render fenced TikZ with the self-contained WASM backend, including live preview and SVG, PNG, JPEG, or PDF export; use local TeX when broader compatibility is needed;
 - preview inline math, move between brace fields, toggle math wrappers, and wrap display math in environments.
 
 Math remains the primary workflow, but templates are deliberately not limited to formulas. They store raw Markdown in plugin settings and insert that source into the active note, so a template can be a Maxwell equation block, a proof scaffold, a lab-report section, or any other repeatable Markdown content. These templates are an insertion library, not vault files and not a replacement for Obsidian's file-based core Templates feature.
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.5.9.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.5.10.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.7.2+.** Keyboard-heavy; desktop recommended.
 

@@ -201,7 +201,6 @@ export class FormulaPanelView extends ItemView {
       const label = t(collapsed ? "expandGroup" : "collapseGroup");
       bodyEl.toggleClass("is-hidden", collapsed && !this.search.trim());
       buttonEl.setAttrs({
-        title: label,
         "aria-label": label,
         "aria-expanded": String(!collapsed),
       });
@@ -225,7 +224,6 @@ export class FormulaPanelView extends ItemView {
         attr: {
           type: "button",
           draggable: "true",
-          title: t("dragToReorder"),
           "aria-label": t("dragToReorder"),
         },
       });
@@ -244,7 +242,6 @@ export class FormulaPanelView extends ItemView {
           cls: "clickable-icon obsidian-math-chords-formula-panel-group-button",
           attr: {
             type: "button",
-            title: t("addTemplateFolder"),
             "aria-label": t("addTemplateFolder"),
           },
         });
@@ -269,7 +266,6 @@ export class FormulaPanelView extends ItemView {
           cls: "clickable-icon obsidian-math-chords-formula-panel-group-button",
           attr: {
             type: "button",
-            title: t("addTemplate"),
             "aria-label": t("addTemplate"),
           },
         });
@@ -429,7 +425,6 @@ export class FormulaPanelView extends ItemView {
         attr: {
           type: "button",
           draggable: "true",
-          title: t("dragToReorder"),
           "aria-label": t("dragToReorder"),
         },
       });
@@ -449,7 +444,6 @@ export class FormulaPanelView extends ItemView {
         cls: "clickable-icon obsidian-math-chords-formula-panel-group-button",
         attr: {
           type: "button",
-          title: t(collapsed ? "expandGroup" : "collapseGroup"),
           "aria-label": t(collapsed ? "expandGroup" : "collapseGroup"),
           "aria-expanded": String(!collapsed),
         },
@@ -522,7 +516,6 @@ export class FormulaPanelView extends ItemView {
           cls: "obsidian-math-chords-formula-panel-item",
           attr: {
             type: "button",
-            title: `${label} — ${environment.begin}`,
             "aria-label": label,
           },
         });
@@ -566,7 +559,6 @@ export class FormulaPanelView extends ItemView {
           cls: "obsidian-math-chords-formula-panel-item",
           attr: {
             type: "button",
-            title: `${label} — ${shortcut.command}`,
             "aria-label": label,
           },
         });
@@ -650,7 +642,6 @@ export class FormulaPanelView extends ItemView {
           cls: "obsidian-math-chords-template-quick-item",
           attr: {
             type: "button",
-            title: `${label} — ${template.content}`,
             "aria-label": t("insertTemplateNamed", label),
           },
         });
@@ -708,7 +699,6 @@ export class FormulaPanelView extends ItemView {
       group.collapsed = collapsed;
       const label = t(collapsed ? "expandGroup" : "collapseGroup");
       group.collapseButton.setAttrs({
-        title: label,
         "aria-label": label,
         "aria-expanded": String(!collapsed),
       });
@@ -732,7 +722,7 @@ export class FormulaPanelView extends ItemView {
       }
       const allCollapsed = collapseStates.length > 0 && collapseStates.every(Boolean);
       const label = t(allCollapsed ? "expandAllGroups" : "collapseAllGroups");
-      toggleAllButton.setAttrs({ title: label, "aria-label": label });
+      toggleAllButton.setAttrs({ "aria-label": label });
       setIcon(toggleAllButton, allCollapsed ? "chevrons-up-down" : "chevrons-down-up");
       return allCollapsed;
     };

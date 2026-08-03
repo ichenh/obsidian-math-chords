@@ -361,6 +361,13 @@ describe("TikZ capability analyzer", () => {
       ),
     ).toEqual({ tier: "vector", features: [] });
     expect(
+      analyzeTikzCapabilities(String.raw`
+        \draw[-Stealth] (0,0)--(1,0);
+        \draw[Stealth-] (0,1)--(1,1);
+        \draw[Stealth-Stealth] (0,2)--(1,2);
+      `),
+    ).toEqual({ tier: "vector", features: [] });
+    expect(
       analyzeTikzCapabilities(
         String.raw`\begin{tikzpicture}[>=Triangle]\draw[->] (0,0)--(1,0);\end{tikzpicture}`,
       ).features,
