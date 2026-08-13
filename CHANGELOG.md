@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.11] - 2026-08-13
+
+### Fixed
+
+- Let clicks on the editor's empty side area leave the active TikZ code block and
+  render it immediately, including when the block is at the end of the note.
+
 ## [0.5.10] - 2026-08-04
 
 ### Added

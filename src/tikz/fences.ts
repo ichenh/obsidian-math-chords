@@ -49,6 +49,15 @@ export function findTikzFenceBlocks(
   return blocks;
 }
 
+export function findTikzFenceBlockAt(
+  blocks: readonly TikzFenceBlock[],
+  position: number,
+): TikzFenceBlock | undefined {
+  return blocks.find(
+    (block) => position >= block.from && position < block.to,
+  );
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

@@ -6,7 +6,11 @@ import {
 import { Notice, Platform, setIcon } from "obsidian";
 import type { TikzBackendMode } from "../settings";
 import type { TikzRenderCoordinator } from "./coordinator";
-import { findTikzFenceBlocks, type TikzFenceBlock } from "./fences";
+import {
+  findTikzFenceBlockAt,
+  findTikzFenceBlocks,
+  type TikzFenceBlock,
+} from "./fences";
 import { TikzPreviewSurface } from "./previewSurface";
 import type { TikzFontPreferences } from "./fonts";
 import { exportTikzPreview } from "./exportPreview";
@@ -175,10 +179,7 @@ export function createTikzLivePreviewExtension(
         }
 
         const caret = this.view.state.selection.main.head;
-        const nextBlock =
-          this.blocks.find(
-            (block) => caret >= block.from && caret <= block.to,
-          ) ?? null;
+        const nextBlock = findTikzFenceBlockAt(this.blocks, caret) ?? null;
         if (!nextBlock) {
           this.activeBlock = null;
           this.panelEl.hidden = true;
@@ -229,8 +230,18 @@ export function createTikzLivePreviewExtension(
           this.closePanel();
           return;
         }
+        const clickedOutsideContent = !this.view.contentDOM.contains(target);
         this.panelEl.ownerDocument.defaultView?.requestAnimationFrame(() => {
-          if (this.panelEl.isConnected) this.refresh(false);
+          if (!this.panelEl.isConnected) return;
+          if (clickedOutsideContent || !this.view.hasFocus) {
+            const caret = this.view.state.selection.main.head;
+            const activeBlock = findTikzFenceBlockAt(this.blocks, caret);
+            if (activeBlock) {
+              this.view.dispatch({ selection: { anchor: activeBlock.to } });
+              return;
+            }
+          }
+          this.refresh(false);
         });
       };
 

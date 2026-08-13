@@ -1,6 +1,9 @@
 import { EditorState } from "@codemirror/state";
 import { describe, expect, it } from "vitest";
-import { findTikzFenceBlocks } from "../../src/tikz/fences";
+import {
+  findTikzFenceBlockAt,
+  findTikzFenceBlocks,
+} from "../../src/tikz/fences";
 
 describe("TikZ fenced-code discovery", () => {
   it("finds backtick and tilde fences for the configured language", () => {
@@ -26,5 +29,15 @@ describe("TikZ fenced-code discovery", () => {
       doc: "```tikz\n\\draw (0,0);\n```",
     });
     expect(findTikzFenceBlocks(state.doc, "tikz-math-chords")).toEqual([]);
+  });
+
+  it("provides an outside position immediately after a closing fence", () => {
+    const state = EditorState.create({
+      doc: "```tikz\n\\draw (0,0);\n```",
+    });
+    const [block] = findTikzFenceBlocks(state.doc, "tikz");
+
+    expect(findTikzFenceBlockAt([block], block.to - 1)).toBe(block);
+    expect(findTikzFenceBlockAt([block], block.to)).toBeUndefined();
   });
 });
