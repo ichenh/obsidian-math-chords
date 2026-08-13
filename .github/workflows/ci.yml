@@ -22,6 +22,5 @@ jobs:
           node-version: "24"
           cache: npm
 
-      - run: rustup target add wasm32-unknown-unknown
       - run: npm ci
       - run: npm run check

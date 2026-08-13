@@ -26,9 +26,11 @@ jobs:
           node-version: "24"
           cache: npm
 
-      - run: rustup target add wasm32-unknown-unknown
       - run: npm ci
       - run: npm run check
+
+      - name: Build release assets from tagged source
+        run: npm run build
 
       - name: Generate artifact attestations
         uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4

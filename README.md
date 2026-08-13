@@ -32,7 +32,7 @@ Math remains the primary workflow, but templates are deliberately not limited to
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.5.11.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.5.12.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.7.2+.** Keyboard-heavy; desktop recommended.
 
