@@ -7,13 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.5.12] - 2026-08-13
+## [0.5.13] - 2026-08-13
 
 ### Fixed
 
 - Built release bundles from the committed TikZ WASM asset instead of silently
   regenerating it with the CI runner's current Rust toolchain, restoring reproducible
   `main.js` artifacts from tagged source.
+- Ran TikZ WASM smoke checks against that committed embedded asset so clean CI
+  checkouts no longer depend on an untracked Cargo build directory.
 
 ## [0.5.11] - 2026-08-13
 

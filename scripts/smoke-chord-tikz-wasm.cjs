@@ -1,19 +1,29 @@
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { performance } = require("node:perf_hooks");
+const zlib = require("node:zlib");
 
-const wasmPath = path.resolve(
+const generatedAssetPath = path.resolve(
   __dirname,
   "..",
-  "crates",
-  "chord-tikz-core",
-  "target",
-  "wasm32-unknown-unknown",
-  "release",
-  "chord_tikz_core.wasm",
+  "src",
+  "tikz",
+  "wasm",
+  "generatedChordTikzAssets.ts",
 );
+const generatedAsset = fs.readFileSync(generatedAssetPath, "utf8");
+const encodedWasm = readGeneratedConstant("CHORD_TIKZ_WASM_GZIP_BASE64");
+const expectedWasmSha256 = readGeneratedConstant("CHORD_TIKZ_WASM_SHA256");
+const wasm = zlib.gunzipSync(Buffer.from(encodedWasm, "base64"));
+const actualWasmSha256 = crypto.createHash("sha256").update(wasm).digest("hex");
+if (actualWasmSha256 !== expectedWasmSha256) {
+  throw new Error(
+    `Embedded TikZ WASM checksum mismatch (${actualWasmSha256} != ${expectedWasmSha256}).`,
+  );
+}
 
-void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) => {
+void WebAssembly.instantiate(wasm, {}).then(({ instance }) => {
   const engine = instance.exports;
   const cases = [
     String.raw`\draw (0,0) circle (1cm);`,
@@ -221,3 +231,13 @@ void WebAssembly.instantiate(fs.readFileSync(wasmPath), {}).then(({ instance }) 
     return { width, height, viewBox };
   }
 });
+
+function readGeneratedConstant(name) {
+  const match = generatedAsset.match(
+    new RegExp(`export const ${name} = "([^"]+)";`),
+  );
+  if (!match) {
+    throw new Error(`The generated TikZ assets do not define ${name}.`);
+  }
+  return match[1];
+}
