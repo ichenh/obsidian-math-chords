@@ -140,6 +140,101 @@ describe("TikZ render coordinator", () => {
     coordinator.dispose();
   });
 
+  it.each(["scheduled", "rendering"] as const)(
+    "keeps the latest %s request when an older subscription is cancelled",
+    async (phase) => {
+      const result = deferred<TikzRenderArtifact>();
+      const render = vi.fn((_source: string, _signal?: AbortSignal) => result.promise);
+      const backend: TikzRenderBackend = {
+        id: "wasm",
+        isAvailable: async () => true,
+        render,
+        dispose: () => undefined,
+      };
+      const coordinator = new TikzRenderCoordinator({
+        debounceMs: () => 120,
+        selectBackend: async () => backend,
+      });
+      const latestStates: TikzRenderState[] = [];
+      const old = coordinator.request(
+        "editor-1",
+        { source: "old", backend: "wasm", theme: "light" },
+        () => undefined,
+      );
+      coordinator.request(
+        "editor-1",
+        { source: "latest", backend: "wasm", theme: "light" },
+        (state) => latestStates.push(state),
+        phase === "rendering" ? 0 : 120,
+      );
+      await vi.advanceTimersByTimeAsync(0);
+
+      old.cancel();
+      await vi.runAllTimersAsync();
+
+      expect(render).toHaveBeenCalledOnce();
+      expect(render.mock.calls[0]?.[0]).toBe("latest");
+      expect(render.mock.calls[0]?.[1]?.aborted).toBe(false);
+      result.resolve(artifact());
+      await vi.runAllTimersAsync();
+      expect(latestStates.at(-1)?.phase).toBe("ready");
+      coordinator.dispose();
+    },
+  );
+
+  it.each(["backend selection", "persistent cache lookup"] as const)(
+    "skips superseded compilation after awaiting %s",
+    async (stage) => {
+      const gate = deferred<void>();
+      const render = vi.fn(async () => artifact());
+      const backend: TikzRenderBackend = {
+        id: "wasm",
+        isAvailable: async () => true,
+        render,
+        dispose: () => undefined,
+      };
+      const persistentCache: TikzPersistentCache = {
+        get: vi.fn(async () => {
+          if (stage === "persistent cache lookup") await gate.promise;
+          return undefined;
+        }),
+        set: vi.fn(async () => undefined),
+        clear: vi.fn(async () => undefined),
+        close: vi.fn(),
+      };
+      const coordinator = new TikzRenderCoordinator({
+        debounceMs: () => 0,
+        selectBackend: async () => {
+          if (stage === "backend selection") await gate.promise;
+          return backend;
+        },
+        persistentCache,
+      });
+      const staleStates: TikzRenderState[] = [];
+      const latestStates: TikzRenderState[] = [];
+      coordinator.request(
+        "editor-1",
+        { source: "stale", backend: "wasm", theme: "light" },
+        (state) => staleStates.push(state),
+      );
+      await vi.runAllTimersAsync();
+      coordinator.request(
+        "editor-1",
+        { source: "latest", backend: "wasm", theme: "light" },
+        (state) => latestStates.push(state),
+      );
+
+      gate.resolve();
+      await vi.runAllTimersAsync();
+
+      expect(render).toHaveBeenCalledOnce();
+      expect(render).toHaveBeenCalledWith("latest", expect.any(AbortSignal));
+      expect(staleStates.map((state) => state.phase)).toEqual(["scheduled"]);
+      expect(latestStates.at(-1)?.phase).toBe("ready");
+      coordinator.dispose();
+    },
+  );
+
   it("restores persistent artifacts without invoking the backend", async () => {
     const persistentArtifact = artifact();
     const clearPersistentCache = vi.fn(async () => undefined);
@@ -204,4 +299,12 @@ function artifact(): TikzRenderArtifact {
     backend: "wasm",
     durationMs: 1,
   };
+}
+
+function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((complete) => {
+    resolve = complete;
+  });
+  return { promise, resolve };
 }

@@ -71,6 +71,7 @@ export interface ObsidianMathChordsSettings {
   showHintPopup: boolean;
   showInlinePreview: boolean;
   formulaPanelEnabled: boolean;
+  formulaExportEnabled: boolean;
   mathBraceNavEnabled: boolean;
   mathBraceNavNextKey: string;
   mathBraceNavPrevKey: string;
@@ -110,6 +111,7 @@ export const DEFAULT_SETTINGS: ObsidianMathChordsSettings = {
   showHintPopup: true,
   showInlinePreview: true,
   formulaPanelEnabled: true,
+  formulaExportEnabled: false,
   mathBraceNavEnabled: true,
   mathBraceNavNextKey: DEFAULT_MATH_BRACE_NAV_NEXT,
   mathBraceNavPrevKey: DEFAULT_MATH_BRACE_NAV_PREV,
@@ -270,6 +272,7 @@ export function normalizeSettings(data: Record<string, unknown> | null): Obsidia
     showHintPopup: raw.showHintPopup !== false,
     showInlinePreview: raw.showInlinePreview !== false,
     formulaPanelEnabled: raw.formulaPanelEnabled !== false,
+    formulaExportEnabled: raw.formulaExportEnabled === true,
     mathBraceNavEnabled:
       typeof migrated.mathBraceNavEnabled === "boolean"
         ? migrated.mathBraceNavEnabled

@@ -1,12 +1,15 @@
 import {
   MarkdownRenderChild,
+  Platform,
   type MarkdownPostProcessorContext,
 } from "obsidian";
 import type { TikzBackendMode } from "../settings";
+import { t } from "../l10n/locale";
 import type { TikzRenderCoordinator } from "./coordinator";
 import { TikzPreviewSurface } from "./previewSurface";
 import type { TikzFontPreferences } from "./fonts";
 import { isTikzPrintContainer } from "./markdownExport";
+import { TikzBlockExportControls } from "./blockExport";
 
 export interface TikzMarkdownProcessorOptions {
   coordinator: TikzRenderCoordinator;
@@ -40,6 +43,7 @@ class TikzMarkdownRenderChild extends MarkdownRenderChild {
   private surface: TikzPreviewSurface | null = null;
   private sourceEl: HTMLPreElement | null = null;
   private observer: IntersectionObserver | null = null;
+  private exportControls: TikzBlockExportControls | null = null;
   private readonly completion: Promise<void>;
   private settleCompletion: (() => void) | null = null;
 
@@ -62,9 +66,11 @@ class TikzMarkdownRenderChild extends MarkdownRenderChild {
   onload(): void {
     this.sourceEl = this.containerEl.createEl("pre");
     this.sourceEl.className = "obsidian-math-chords-tikz-source";
-    const codeEl = this.sourceEl.createEl("code");
-    codeEl.className = "language-tikz";
-    codeEl.setText(this.source);
+    // Obsidian recreates this child when leaving a source block. Full source
+    // here temporarily reserves one line per source line in the rendered note.
+    this.sourceEl.addClass("is-loading");
+    this.sourceEl.setAttribute("aria-busy", "true");
+    this.sourceEl.setText(`${t("tikzRenderingHeading")}…`);
 
     this.surface = new TikzPreviewSurface(this.containerEl.ownerDocument, {
       coordinator: this.options.coordinator,
@@ -81,9 +87,21 @@ class TikzMarkdownRenderChild extends MarkdownRenderChild {
         this.sourceEl?.remove();
         this.sourceEl = null;
         this.surface.containerEl.hidden = false;
+        if (Platform.isDesktop && !this.renderImmediately && !this.exportControls) {
+          const host = this.containerEl.closest<HTMLElement>(".cm-embed-block") ?? this.containerEl;
+          this.exportControls = new TikzBlockExportControls(host, () => this.surface?.getExportData() ?? null);
+        }
         this.finish();
       },
       onError: () => {
+        if (this.sourceEl) {
+          this.sourceEl.removeClass("is-loading");
+          this.sourceEl.removeAttribute("aria-busy");
+          this.sourceEl.empty();
+          const codeEl = this.sourceEl.createEl("code");
+          codeEl.className = "language-tikz";
+          codeEl.setText(this.source);
+        }
         if (this.surface) this.surface.containerEl.hidden = false;
         this.finish();
       },
@@ -115,6 +133,8 @@ class TikzMarkdownRenderChild extends MarkdownRenderChild {
   onunload(): void {
     this.observer?.disconnect();
     this.observer = null;
+    this.exportControls?.destroy();
+    this.exportControls = null;
     this.surface?.destroy();
     this.surface = null;
     this.sourceEl = null;

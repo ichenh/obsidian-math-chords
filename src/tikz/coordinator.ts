@@ -135,11 +135,10 @@ export class TikzRenderCoordinator {
     consumerKey: string,
     pending: PendingRequest,
   ): void {
-    this.activeControllers.get(consumerKey)?.abort();
     pending.cancelled = true;
-    if (this.pending.get(consumerKey) === pending) {
-      this.pending.delete(consumerKey);
-    }
+    if (this.pending.get(consumerKey) !== pending) return;
+    this.activeControllers.get(consumerKey)?.abort();
+    this.pending.delete(consumerKey);
     const currentTimer = this.timers.get(consumerKey);
     if (currentTimer !== undefined) {
       window.clearTimeout(currentTimer);
@@ -189,6 +188,10 @@ export class TikzRenderCoordinator {
       this.finishRequest(consumerKey, pending);
       return;
     }
+    if (!this.isCurrent(consumerKey, pending)) {
+      this.finishRequest(consumerKey, pending);
+      return;
+    }
     const cacheKey = hashTikzRenderInput(
       `${TIKZ_RENDER_CACHE_VERSION}\0${backend.id}\0${pending.request.theme}\0${pending.request.fontSignature ?? ""}\0${pending.request.source}`,
     );
@@ -209,6 +212,10 @@ export class TikzRenderCoordinator {
       return;
     }
     const persisted = await this.options.persistentCache?.get(cacheKey);
+    if (!this.isCurrent(consumerKey, pending)) {
+      this.finishRequest(consumerKey, pending);
+      return;
+    }
     if (persisted) {
       this.cache.set(cacheKey, persisted);
       this.lastRender = {
@@ -278,14 +285,16 @@ export class TikzRenderCoordinator {
     pending: PendingRequest,
     state: TikzRenderState,
   ): void {
-    if (
-      pending.cancelled ||
-      this.disposed ||
-      this.pending.get(consumerKey) !== pending
-    ) {
-      return;
-    }
+    if (!this.isCurrent(consumerKey, pending)) return;
     pending.listener(state);
+  }
+
+  private isCurrent(consumerKey: string, pending: PendingRequest): boolean {
+    return (
+      !pending.cancelled &&
+      !this.disposed &&
+      this.pending.get(consumerKey) === pending
+    );
   }
 
   private finishRequest(

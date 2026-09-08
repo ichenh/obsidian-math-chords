@@ -750,6 +750,93 @@ body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
   font-variant-numeric: tabular-nums;
 }
 
+.obsidian-math-chords-formula-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-1);
+  margin-block-end: var(--size-4-2);
+}
+
+.obsidian-math-chords-formula-panel-actions > button {
+  font-size: var(--font-ui-smaller);
+}
+
+.obsidian-math-chords-formula-block,
+.obsidian-math-chords-tikz-block {
+  position: relative;
+}
+
+.obsidian-math-chords-formula-block-actions,
+.obsidian-math-chords-tikz-block-actions {
+  position: absolute;
+  top: var(--size-2-2);
+  right: var(--size-2-2);
+  display: flex;
+  z-index: 1;
+}
+
+.obsidian-math-chords-formula-block-actions.has-edit-button,
+.obsidian-math-chords-tikz-block-actions.has-edit-button {
+  right: calc(var(--size-4-8) + var(--size-2-2));
+}
+
+button.obsidian-math-chords-formula-block-action,
+button.obsidian-math-chords-tikz-block-export {
+  --icon-size: var(--icon-s, 16px);
+  height: auto;
+  padding: var(--size-2-2) var(--size-2-3);
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+button.obsidian-math-chords-formula-block-action:hover,
+button.obsidian-math-chords-tikz-block-export:hover,
+button.obsidian-math-chords-formula-block-action[aria-expanded="true"] {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.obsidian-math-chords-formula-block .embed-actions:focus-within,
+.obsidian-math-chords-tikz-block .embed-actions:focus-within {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .obsidian-math-chords-formula-block-actions,
+  .obsidian-math-chords-tikz-block-actions {
+    opacity: 0;
+  }
+
+  .obsidian-math-chords-formula-block:hover > .obsidian-math-chords-formula-block-actions,
+  .obsidian-math-chords-tikz-block:hover > .obsidian-math-chords-tikz-block-actions,
+  .obsidian-math-chords-tikz-block-actions:focus-within,
+  .obsidian-math-chords-formula-block-actions:focus-within {
+    opacity: 1;
+  }
+}
+
+@media print {
+  .obsidian-math-chords-formula-block-actions,
+  .obsidian-math-chords-tikz-block-actions,
+  button.obsidian-math-chords-tikz-block-export,
+  button.obsidian-math-chords-formula-block-action {
+    display: none;
+  }
+}
+
+.obsidian-math-chords-formula-export-host {
+  position: fixed;
+  width: max-content;
+  left: -100000px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  font-size: 16px;
+  color: #000;
+}
+
 .obsidian-math-chords-formula-panel-toggle-all {
   display: inline-flex;
   width: 28px;
@@ -1303,6 +1390,13 @@ body.mod-rtl .obsidian-math-chords-table-wrap.is-scrolled-x
   grid-column: 3;
   grid-row: 1;
 }
+.obsidian-math-chords-tikz-source.is-loading {
+  max-height: 3rem;
+  overflow: hidden;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 .obsidian-math-chords-tikz-preview {
   margin: 0.65rem 0;
   color: var(--text-normal);

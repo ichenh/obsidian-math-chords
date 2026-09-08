@@ -1,5 +1,6 @@
 import { editorLivePreviewField, finishRenderMath, renderMath } from "obsidian";
 import { EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view";
+import type { Text } from "@codemirror/state";
 import {
   extractMathContent,
   findMathRegionAt,
@@ -186,10 +187,11 @@ class InlinePreviewLayer {
   private readonly body: HTMLElement;
   private mathFlushTimer: number | null = null;
   private renderGeneration = 0;
+  private renderedLatex: string | null = null;
   private lastAnchor: DOMRect | null = null;
   private readonly ownerWindow: Window;
 
-  constructor(private readonly ownerDocument: Document) {
+  constructor(ownerDocument: Document) {
     this.ownerWindow = ownerDocument.defaultView ?? window;
     this.host = ownerDocument.body.createDiv({
       cls: "obsidian-math-chords-inline-preview-host is-hidden",
@@ -199,23 +201,37 @@ class InlinePreviewLayer {
   }
 
   destroy(): void {
-    if (this.mathFlushTimer) {
-      this.ownerWindow.clearTimeout(this.mathFlushTimer);
-      this.mathFlushTimer = null;
-    }
+    this.hide();
     this.host.remove();
   }
 
   hide(): void {
+    this.renderGeneration++;
+    this.renderedLatex = null;
+    if (this.mathFlushTimer !== null) {
+      this.ownerWindow.clearTimeout(this.mathFlushTimer);
+      this.mathFlushTimer = null;
+    }
     this.host.addClass("is-hidden");
   }
 
   show(latex: string, anchor: DOMRect): void {
-    const generation = ++this.renderGeneration;
     this.lastAnchor = anchor;
+    const trimmed = latex.trim();
+    // Caret movement, scrolling, and layout changes only move unchanged math.
+    if (trimmed && trimmed === this.renderedLatex) {
+      this.positionHost();
+      this.adaptSize();
+      return;
+    }
+    const generation = ++this.renderGeneration;
+    this.renderedLatex = null;
+    if (this.mathFlushTimer !== null) {
+      this.ownerWindow.clearTimeout(this.mathFlushTimer);
+      this.mathFlushTimer = null;
+    }
     this.body.empty();
 
-    const trimmed = latex.trim();
     if (!trimmed) {
       this.body.createDiv({
         cls: "obsidian-math-chords-inline-preview-placeholder",
@@ -225,6 +241,7 @@ class InlinePreviewLayer {
       this.adaptSize();
     } else {
       if (!this.tryAppendMath(trimmed)) return;
+      this.renderedLatex = trimmed;
       this.positionHost();
       this.adaptSize();
       this.scheduleMathFlush(generation, trimmed);
@@ -303,6 +320,8 @@ class InlinePreviewLayer {
     try {
       await finishRenderMath();
     } catch (error) {
+      if (generation !== this.renderGeneration) return;
+      this.renderedLatex = null;
       logAndNotice(t("noticeCouldNotRenderPreview"), error);
       return;
     }
@@ -321,10 +340,13 @@ class InlinePreviewLayer {
       try {
         await finishRenderMath();
       } catch (error) {
+        if (generation !== this.renderGeneration) return;
+        this.renderedLatex = null;
         logAndNotice(t("noticeCouldNotRenderPreview"), error);
       }
     }
 
+    if (generation !== this.renderGeneration || this.host.hasClass("is-hidden")) return;
     this.adaptSize();
   }
 
@@ -341,6 +363,8 @@ export function createInlineMathPreviewPlugin(ctx: InlinePreviewContext) {
     class {
       private layer: InlinePreviewLayer | null = null;
       private rafId = 0;
+      private cachedDocument: Text | null = null;
+      private cachedText = "";
       private readonly ownerWindow: Window;
 
       constructor(private readonly view: EditorView) {
@@ -388,11 +412,18 @@ export function createInlineMathPreviewPlugin(ctx: InlinePreviewContext) {
           return;
         }
 
-        const text = this.view.state.doc.toString();
-        if (text.length > MAX_DOC_LENGTH) {
+        const doc = this.view.state.doc;
+        if (doc.length > MAX_DOC_LENGTH) {
+          this.cachedDocument = null;
+          this.cachedText = "";
           this.layer.hide();
           return;
         }
+        if (doc !== this.cachedDocument) {
+          this.cachedDocument = doc;
+          this.cachedText = doc.toString();
+        }
+        const text = this.cachedText;
         if (hasUnclosedDisplayMath(text)) {
           this.layer.hide();
           return;

@@ -4,6 +4,7 @@ import { tikzAccessibleName } from "./accessibility";
 import type { TikzRenderCoordinator } from "./coordinator";
 import type {
   TikzRenderArtifact,
+  TikzRenderRequest,
   TikzRenderState,
   TikzRenderSubscription,
 } from "./types";
@@ -11,7 +12,6 @@ import {
   tikzFontSignature,
   type TikzFontPreferences,
 } from "./fonts";
-import { hashTikzRenderInput } from "./hash";
 
 const activeSurfaces = new Set<TikzPreviewSurface>();
 
@@ -36,8 +36,12 @@ export class TikzPreviewSurface {
   private subscription: TikzRenderSubscription | null = null;
   private renderGeneration = 0;
   private source = "";
-  private requestKey = "";
+  private request: TikzRenderRequest | null = null;
+  private locale = "";
+  private renderPending = false;
+  private renderFailed = false;
   private latestArtifact: TikzRenderArtifact | null = null;
+  private pendingOutput: HTMLElement | null = null;
 
   constructor(
     ownerDocument: Document,
@@ -53,26 +57,34 @@ export class TikzPreviewSurface {
   }
 
   render(source: string, immediate = false): void {
+    activeSurfaces.add(this);
     this.source = source;
     const fonts = this.options.getFonts();
-    const requestKey = hashTikzRenderInput([
+    const request: TikzRenderRequest = {
       source,
-      this.options.getBackend(),
-      this.options.getTheme(),
-      tikzFontSignature(fonts),
-    ].join("\0"));
-    if (requestKey === this.requestKey) return;
-    this.requestKey = requestKey;
+      backend: this.options.getBackend(),
+      theme: this.options.getTheme(),
+      fontSignature: tikzFontSignature(fonts),
+    };
+    const locale = this.options.getLocale();
+    if (
+      this.request?.source === request.source &&
+      this.request.backend === request.backend &&
+      this.request.theme === request.theme &&
+      this.request.fontSignature === request.fontSignature &&
+      this.locale === locale
+    ) return;
+    this.request = request;
+    this.locale = locale;
     this.subscription?.cancel();
+    this.subscription = null;
     const generation = ++this.renderGeneration;
+    this.clearPendingOutput();
+    this.renderPending = true;
+    this.renderFailed = false;
     this.subscription = this.options.coordinator.request(
       this.options.consumerKey,
-      {
-        source,
-        backend: this.options.getBackend(),
-        theme: this.options.getTheme(),
-        fontSignature: tikzFontSignature(fonts),
-      },
+      request,
       (state) => {
         void this.applyState(state, generation);
       },
@@ -80,16 +92,30 @@ export class TikzPreviewSurface {
     );
   }
 
+  suspend(): void {
+    activeSurfaces.delete(this);
+    if (!this.renderPending && !this.renderFailed) return;
+    this.subscription?.cancel();
+    this.subscription = null;
+    this.request = null;
+    this.renderPending = false;
+    this.renderGeneration++;
+    this.clearPendingOutput();
+  }
+
   destroy(): void {
     activeSurfaces.delete(this);
     this.subscription?.cancel();
     this.subscription = null;
-    this.requestKey = "";
+    this.request = null;
+    this.renderPending = false;
     this.renderGeneration++;
+    this.clearPendingOutput();
   }
 
   refresh(force = false): void {
-    if (force) this.requestKey = "";
+    if (!activeSurfaces.has(this)) return;
+    if (force) this.request = null;
     if (this.source) this.render(this.source, force);
   }
 
@@ -114,6 +140,8 @@ export class TikzPreviewSurface {
       return;
     }
     if (state.phase === "error") {
+      this.renderPending = false;
+      this.renderFailed = true;
       const error = state.error ?? new Error("Unknown TikZ rendering error.");
       if (!this.latestArtifact) this.showError(error);
       this.options.onError?.(error);
@@ -125,6 +153,7 @@ export class TikzPreviewSurface {
     const renderTarget = this.latestArtifact
       ? this.createStagingOutput(previousOutput)
       : previousOutput;
+    this.pendingOutput = renderTarget;
     try {
       await renderTikzArtifact(
         state.artifact,
@@ -144,14 +173,36 @@ export class TikzPreviewSurface {
         this.outputEl = renderTarget;
       }
       this.latestArtifact = state.artifact;
+      this.pendingOutput = null;
+      this.renderPending = false;
       this.options.onReady?.();
     } catch (error) {
       if (renderTarget !== previousOutput) renderTarget.remove();
       if (generation !== this.renderGeneration) return;
+      this.renderPending = false;
+      this.renderFailed = true;
       const normalized = error instanceof Error ? error : new Error(String(error));
       if (!this.latestArtifact) this.showError(normalized);
       this.options.onError?.(normalized);
+    } finally {
+      if (this.pendingOutput === renderTarget) this.pendingOutput = null;
     }
+  }
+
+  private clearPendingOutput(): void {
+    const pendingOutput = this.pendingOutput;
+    if (!pendingOutput) return;
+    this.pendingOutput = null;
+    // An initial render writes into the visible output. Detach that output
+    // before another generation can use it, including while PDF/MathJax waits.
+    if (pendingOutput === this.outputEl) {
+      const replacement = this.containerEl.createDiv({
+        cls: "obsidian-math-chords-tikz-preview-output",
+      });
+      pendingOutput.replaceWith(replacement);
+      this.outputEl = replacement;
+    }
+    pendingOutput.remove();
   }
 
   private showError(error: Error): void {

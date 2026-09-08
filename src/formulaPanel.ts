@@ -181,6 +181,20 @@ export class FormulaPanelView extends ItemView {
       attr: { type: "button" },
     });
     preserveEditorFocusOnMouseDown(toggleAllButton);
+    if (this.plugin.settings.formulaExportEnabled) {
+      const exportActionsEl = contentEl.createDiv({
+        cls: "obsidian-math-chords-formula-panel-actions",
+      });
+      for (const [format, label] of [
+        ["png", "cmdExportFormulaPng"], ["svg", "cmdExportFormulaSvg"],
+      ] as const) {
+        const button = exportActionsEl.createEl("button", {
+          text: t(label), attr: { type: "button" },
+        });
+        preserveEditorFocusOnMouseDown(button);
+        button.addEventListener("click", () => this.plugin.exportFormula(format));
+      }
+    }
     const sectionsEl = contentEl.createDiv({
       cls: "obsidian-math-chords-formula-panel-sections",
     });

@@ -195,6 +195,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
         t("formulaPanelEnabledDesc"),
         "formulaPanelEnabled",
       ),
+      toggle(t("formulaExportEnabledName"), t("formulaExportEnabledDesc"), "formulaExportEnabled"),
       {
         type: "group",
         items: [
@@ -300,6 +301,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       case "showInlinePreview":
       case "tikzRenderingEnabled":
       case "formulaPanelEnabled":
+      case "formulaExportEnabled":
       case "mathBraceNavEnabled":
       case "wrapOutsideMath":
       case "smartMathToggle":
@@ -320,6 +322,7 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
     ) {
       this.plugin.refreshInteractiveState();
     }
+    if (key === "formulaExportEnabled") this.plugin.refreshFormulaExportState();
     await runWithNotice(() => this.plugin.saveSettings(), t("noticeCouldNotSaveSettings"));
     if (key === "tikzRenderingEnabled") {
       this.plugin.syncTikzRenderingState();
@@ -1619,6 +1622,13 @@ export class ObsidianMathChordsSettingTab extends PluginSettingTab {
       }
       this.configureTikzDiagnostics(new Setting(tikzNestedEl));
     }
+
+    new Setting(containerEl)
+      .setName(t("formulaExportEnabledName"))
+      .setDesc(t("formulaExportEnabledDesc"))
+      .addToggle((toggle) => toggle
+        .setValue(this.plugin.settings.formulaExportEnabled)
+        .onChange((value) => this.setControlValue("formulaExportEnabled", value)));
 
     new Setting(containerEl)
       .setName(t("formulaPanelEnabledName"))

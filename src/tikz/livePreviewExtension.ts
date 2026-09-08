@@ -55,7 +55,6 @@ export function createTikzLivePreviewExtension(
       private language = "";
       private enabled = false;
       private activeBlock: TikzFenceBlock | null = null;
-      private hasRendered = false;
       private requestedSource = "";
       private userPositioned = false;
       private stopDragging: (() => void) | null = null;
@@ -121,7 +120,6 @@ export function createTikzLivePreviewExtension(
               ? "dark"
               : "light",
           onReady: () => {
-            this.hasRendered = true;
             this.exportButtonEl.disabled = false;
             if (this.activeBlock) {
               this.panelEl.hidden = false;
@@ -144,7 +142,19 @@ export function createTikzLivePreviewExtension(
           options.isEnabled() !== this.enabled ||
           options.getLanguage() !== this.language;
         this.view = update.view;
-        this.refresh(update.docChanged || settingsChanged);
+        if (
+          update.docChanged ||
+          update.selectionSet ||
+          settingsChanged ||
+          (update.focusChanged && this.view.hasFocus)
+        ) {
+          this.refresh(update.docChanged || settingsChanged);
+          return;
+        }
+        if (update.geometryChanged && !this.panelEl.hidden) {
+          this.positionPanel();
+        }
+        this.surface.refresh();
       }
 
       destroy(): void {
@@ -170,8 +180,7 @@ export function createTikzLivePreviewExtension(
           this.view.state.doc.length > MAX_LIVE_PREVIEW_DOCUMENT_LENGTH
         ) {
           this.blocks = [];
-          this.activeBlock = null;
-          this.panelEl.hidden = true;
+          this.closePanel();
           return;
         }
         if (reparse) {
@@ -181,8 +190,7 @@ export function createTikzLivePreviewExtension(
         const caret = this.view.state.selection.main.head;
         const nextBlock = findTikzFenceBlockAt(this.blocks, caret) ?? null;
         if (!nextBlock) {
-          this.activeBlock = null;
-          this.panelEl.hidden = true;
+          this.closePanel();
           return;
         }
         const renderImmediately =
@@ -338,6 +346,7 @@ export function createTikzLivePreviewExtension(
       private closePanel(): void {
         this.activeBlock = null;
         this.panelEl.hidden = true;
+        this.surface.suspend();
       }
 
       private async exportPreview(): Promise<void> {

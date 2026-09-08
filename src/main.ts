@@ -29,6 +29,8 @@ import {
   shouldAutoWrapSnippet,
 } from "./math";
 import { openEnvironmentPicker, wrapMathWithEnvironment } from "./mathEnv";
+import { copyFormulaImage, exportFormulaImage, exportSingleFormula, type FormulaExportFormat, type FormulaExportRenderer, type FormulaNativeRenderer } from "./formulaExport";
+import { registerFormulaBlockExport } from "./formulaBlockExport";
 import { runWithNotice } from "./errors";
 import { initLocale, t } from "./l10n/locale";
 import type {
@@ -86,12 +88,19 @@ export default class ObsidianMathChordsPlugin extends Plugin {
   private tikzBackends: TikzBackendRegistry | null = null;
   private tikzCoordinator: TikzRenderCoordinator | null = null;
   private tikzRenderingRegistered = false;
+  private formulaExportRunning = false;
+  private refreshFormulaExportControls: (() => void) | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
     await initLocale(this);
     await runWithNotice(() => this.reloadShortcuts(), t("noticeCouldNotLoadYaml"));
     this.initializeTikzRendering();
+    this.refreshFormulaExportControls = registerFormulaBlockExport(this, (latex, format, document, renderer) => {
+      this.runFormulaExport((render) => exportFormulaImage(latex, true, format, document, render, renderer));
+    }, (latex, document) => {
+      this.runFormulaExport(() => copyFormulaImage(latex, true, document));
+    }, () => this.settings.formulaExportEnabled);
 
     this.registerView(
       FORMULA_PANEL_VIEW_TYPE,
@@ -138,6 +147,16 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       }),
     );
     this.registerEvent(this.app.workspace.on("editor-paste", this.onEditorPaste));
+    this.registerEvent(this.app.workspace.on("editor-menu", (menu, editor) => {
+      if (!this.settings.formulaExportEnabled) return;
+      menu.addSeparator();
+      for (const [format, label] of [
+        ["png", "cmdExportFormulaPng"], ["svg", "cmdExportFormulaSvg"],
+      ] as const) {
+        menu.addItem((item) => item.setTitle(t(label)).setIcon("image")
+          .onClick(() => this.exportFormula(format, editor)));
+      }
+    }));
 
     this.registerEditorExtension([
       createInlineMathPreviewPlugin({
@@ -211,10 +230,25 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       editorCallback: (editor) => this.convertLatexDelimitersInCurrentFile(editor),
     });
 
+    for (const [format, name] of [
+      ["svg", "cmdExportFormulaSvg"],
+      ["png", "cmdExportFormulaPng"],
+    ] as const) {
+      this.addCommand({
+        id: `export-current-formula-${format}`,
+        name: t(name),
+        editorCheckCallback: (checking, editor) => {
+          if (!this.settings.formulaExportEnabled) return false;
+          if (!checking) this.exportFormula(format, editor);
+          return true;
+        },
+      });
+    }
     this.addSettingTab(new ObsidianMathChordsSettingTab(this.app, this));
   }
 
   onunload(): void {
+    this.refreshFormulaExportControls = null;
     this.leaderController?.destroy();
     this.leaderController = null;
     this.tikzCoordinator?.dispose();
@@ -232,7 +266,7 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     }
     this.tikzRenderingRegistered = true;
 
-    this.tikzBackends = new TikzBackendRegistry({
+    this.tikzBackends ??= new TikzBackendRegistry({
       getSettings: () => this.settings,
     });
     this.tikzCoordinator = new TikzRenderCoordinator({
@@ -592,6 +626,28 @@ export default class ObsidianMathChordsPlugin extends Plugin {
     this.recordFormulaTemplateUse(template.id);
   }
 
+  exportFormula(
+    format: FormulaExportFormat, editor = this.resolveFormulaPanelEditor(),
+    renderer: FormulaExportRenderer = format === "svg" ? "tex" : "mathjax",
+  ): void {
+    if (!this.settings.formulaExportEnabled) return;
+    if (!editor) {
+      new Notice(t("noticeOpenMarkdownToInsert"));
+      return;
+    }
+    this.runFormulaExport((render) => exportSingleFormula(this.app, editor, format, render, renderer));
+  }
+
+  private runFormulaExport(exportImage: (render: FormulaNativeRenderer) => Promise<void>): void {
+    if (!this.settings.formulaExportEnabled || this.formulaExportRunning) return;
+    this.formulaExportRunning = true;
+    void runWithNotice(() => exportImage(async (source) => {
+      this.tikzBackends ??= new TikzBackendRegistry({ getSettings: () => this.settings });
+      const backend = await this.tikzBackends.select({ source, backend: "native", theme: "light" });
+      return backend.render(source);
+    }), t("formulaExportFailed")).finally(() => { this.formulaExportRunning = false; });
+  }
+
   private recordFormulaTemplateUse(templateId: string): void {
     const recent = recordRecentFormulaTemplate(
       this.settings.formulaPanelRecentTemplateIds,
@@ -657,6 +713,11 @@ export default class ObsidianMathChordsPlugin extends Plugin {
       if (!(leaf.view instanceof MarkdownView)) return;
       this.getEditorView(leaf.view.editor)?.dispatch({});
     });
+  }
+
+  refreshFormulaExportState(): void {
+    this.refreshFormulaExportControls?.();
+    this.refreshFormulaPanels();
   }
 
   refreshTikzPreviews(): void {

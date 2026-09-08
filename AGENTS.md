@@ -19,7 +19,8 @@ Math Chords is an Obsidian plugin for two related tasks:
    math delimiters without modifying formula contents or protected Markdown regions.
 
 The plugin also provides optional inline preview, brace navigation, smart math
-insertion, and display-math environment wrapping. Do not reintroduce removed overlay
+insertion, display-math environment wrapping, and single-formula image export.
+Do not reintroduce removed overlay
 UI, multi-placeholder tab-stop sessions, or bundled math-rendering libraries without
 an explicit design and compatibility review.
 
@@ -59,6 +60,9 @@ an explicit design and compatibility review.
 | `shortcutPresentation.ts` | Pure shortcut search and safe preview preparation for the settings UI. |
 | `shortcutPreviewRenderer.ts` | Shared lazy MathJax rendering for shortcut previews. |
 | `formulaPanel.ts`, `formulaPanelModel.ts` | Searchable formula sidebar and its pure grouping/filter model. |
+| `formulaExportModel.ts`, `formulaExport.ts` | Single-formula selection, standalone SVG preparation, transparent PNG export, clipboard image copying, and file saving. |
+| `formulaMathJax.ts` | Native MathJax PNG snapshots with embedded host fonts; local TeX remains an explicit export option. |
+| `formulaBlockExport.ts` | Rendered formula copy/download controls in Live Preview and Reading view, with source snapshots and view-scoped cleanup. |
 | `settings.ts`, `settingsTab.ts` | Normalized settings and localized settings UI. |
 | `l10n/` | Language resolution, bundled translations, and optional lazy translations. |
 | `errors.ts`, `hint.ts` | Error reporting and optional shortcut hints. |

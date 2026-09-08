@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.14] - 2026-09-08
+
+### Added
+
+- Added opt-in formula image export and copying, disabled by default. Rendered
+  formula blocks, the formula panel, editor menus, and commands can save images;
+  block actions export the clicked formula without opening its source. Transparent
+  PNG and clipboard images use Obsidian's MathJax, with local TeX available for
+  SVG/PNG export. Controls include explanatory tooltips and translations in the
+  ten primary languages, with English fallback elsewhere.
+- Added desktop download buttons to rendered TikZ blocks beside the Live Preview
+  edit action and at the top right in Reading view. SVG, PNG, JPEG, and PDF export
+  use the current diagram's rendering backend, as in the floating preview.
+
+### Changed
+
+- Reused unchanged inline MathJax previews and document snapshots during caret
+  movement and scrolling. Hidden TikZ previews pause pending work and reuse
+  completed diagrams; formula and TikZ actions avoid unrelated DOM scans.
+- Sized custom formula and TikZ block icons to match small toolbar actions.
+- Enabled TypeScript checks for unused locals and parameters.
+
+### Fixed
+
+- Replaced full-source TikZ loading placeholders with a compact indicator when
+  leaving source editing, preventing temporary source-height gaps. Compilation
+  failures still expose the source and error.
+- Prevented stale asynchronous preview work and cancelled subscriptions from
+  replacing newer diagrams. Previews clean up pending work on close, preserve
+  completed output, retry failures on reopening, and refresh after locale changes.
+- Kept the floating TikZ preview closed after clicks outside the editor and checked
+  the inline-preview document-size limit before copying the full note text.
+- Preserved full multiline formula export bounds and avoided extra boundary
+  paragraphs in native TeX input. Export actions report progress and concrete
+  compilation or file-saving errors.
+- Kept native TeX diagrams in vector form through an installed sibling
+  `pdftocairo` converter when PDF-to-SVG conversion through `dvisvgm` is unavailable.
+
+### Removed
+
+- Removed the unused gzip buffer helper, its test and source-fingerprint entry,
+  and unused preview state fields.
+
 ## [0.5.13] - 2026-08-13
 
 ### Fixed

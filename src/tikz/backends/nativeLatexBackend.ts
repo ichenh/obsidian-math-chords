@@ -68,6 +68,10 @@ export class NativeLatexBackend implements TikzRenderBackend {
     const fs = getDesktopFileSystem();
     const tempDirectory = getDesktopTempDirectory();
     const path = getDesktopPath();
+    const pdftocairoPath = path.join(
+      path.dirname(this.options.engine.executablePath),
+      getDesktopProcess().platform === "win32" ? "pdftocairo.exe" : "pdftocairo",
+    );
     const startedAt = performance.now();
     const workDir = await fs.mkdtemp(
       path.join(tempDirectory, "math-chords-tikz-"),
@@ -120,6 +124,7 @@ export class NativeLatexBackend implements TikzRenderBackend {
           this.pdfToSvgAvailable
             ? this.options.engine.dvisvgmPath
             : undefined,
+          pdftocairoPath,
           workDir,
           this.timeoutMs,
           signal,
@@ -151,6 +156,7 @@ export class NativeLatexBackend implements TikzRenderBackend {
           this.pdfToSvgAvailable
             ? this.options.engine.dvisvgmPath
             : undefined,
+          pdftocairoPath,
           workDir,
           this.timeoutMs,
           signal,
@@ -247,6 +253,7 @@ async function readBestPdfArtifact(
   pdfPath: string,
   svgPath: string,
   dvisvgmPath: string | undefined,
+  pdftocairoPath: string,
   workDir: string,
   timeoutMs: number,
   signal: AbortSignal | undefined,
@@ -256,6 +263,7 @@ async function readBestPdfArtifact(
   vectorFallbackReason: string | undefined,
   onVectorFailure: (reason: string) => void,
 ): Promise<TikzRenderArtifact> {
+  let failureReason = vectorFallbackReason;
   if (dvisvgmPath) {
     try {
       const svgResult = await runProcess(
@@ -285,21 +293,36 @@ async function readBestPdfArtifact(
       }
       const reason = compactFailure(error);
       onVectorFailure(reason);
-      return readPdfArtifact(
-        fs,
-        pdfPath,
-        startedAt,
-        latexResult,
-        reason,
-      );
+      failureReason = reason;
     }
+  }
+  // Recent Ghostscript versions can make dvisvgm's PDF input unavailable.
+  // Reuse the same PDF with an already installed, sibling Poppler converter.
+  try {
+    await fs.access(pdftocairoPath);
+    const svgResult = await runProcess(
+      pdftocairoPath, ["-svg", pdfPath, svgPath], workDir, timeoutMs, signal, cacheDir,
+    );
+    const svg = await readBoundedFile(fs, svgPath);
+    const pdf = await readBoundedFile(fs, pdfPath);
+    return {
+      bytes: new Uint8Array(svg),
+      exportPdfBytes: new Uint8Array(pdf),
+      mediaType: "image/svg+xml",
+      backend: "native",
+      durationMs: performance.now() - startedAt,
+      log: compactLog(latexResult, svgResult),
+    };
+  } catch (error) {
+    if (signal?.aborted || (error instanceof Error && error.name === "AbortError")) throw error;
+    failureReason = [failureReason, compactFailure(error)].filter(Boolean).join("; ");
   }
   return readPdfArtifact(
     fs,
     pdfPath,
     startedAt,
     latexResult,
-    vectorFallbackReason,
+    failureReason,
   );
 }
 

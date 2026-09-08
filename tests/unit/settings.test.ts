@@ -14,6 +14,13 @@ import {
 } from "../../src/settings";
 
 describe("settings normalization", () => {
+  it("keeps formula image actions opt-in and accepts only explicit boolean enabling", () => {
+    expect(DEFAULT_SETTINGS.formulaExportEnabled).toBe(false);
+    for (const value of [undefined, null, false, "true", 1]) {
+      expect(normalizeSettings({ formulaExportEnabled: value }).formulaExportEnabled).toBe(false);
+    }
+    expect(normalizeSettings({ formulaExportEnabled: true }).formulaExportEnabled).toBe(true);
+  });
   it("assigns the current schema to old or missing settings", () => {
     expect(normalizeSettings(null).schemaVersion).toBe(SETTINGS_SCHEMA_VERSION);
     expect(normalizeSettings(null).formulaPanelEnabled).toBe(true);

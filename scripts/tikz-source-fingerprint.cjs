@@ -11,7 +11,6 @@ const EXACT_FILES = [
   "crates/chord-tikz-core/Cargo.lock",
   "crates/chord-tikz-core/Cargo.toml",
   "src/tikz/wasm/chordTikzWorker.ts",
-  "src/tikz/wasm/gzip.ts",
 ];
 const RECURSIVE_DIRECTORIES = ["crates/chord-tikz-core/src"];
 

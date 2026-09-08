@@ -32,7 +32,7 @@ Math remains the primary workflow, but templates are deliberately not limited to
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.5.13.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.5.14.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.7.2+.** Keyboard-heavy; desktop recommended.
 
@@ -50,6 +50,7 @@ Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings
 - [Display-math environment wrap](#display-math-environment-wrap)
 - [Configuration](#configuration)
 - [LaTeX delimiter conversion](#latex-delimiter-conversion)
+- [Exporting a formula](#exporting-a-formula)
 - [TikZ rendering](#tikz-rendering)
 - [Settings](#settings)
 - [Updating shortcuts](#updating-shortcuts)
@@ -73,6 +74,7 @@ local TeX installation remain available where their broader compatibility matter
 | :--- | :--- |
 | **Structured input** | Press a configurable leader key, then a key sequence to insert common LaTeX structures and symbols. |
 | **Formula and template panel** | Browse shortcuts or organize an unlimited tree of reusable math and Markdown templates, then click or drag content into a note. |
+| **Single-formula export** | Save the selected or current formula as a vector SVG or transparent PNG. |
 | **Caret placeholder** | `$$` in a command template marks where the cursor (or selection) is placed, e.g. `\frac{$$}{}`. |
 | **Auto `$…$` wrap** | Optional: when inserting outside math, wrap the snippet in inline math delimiters. |
 | **Inline live preview** | While the caret is inside `$…$`, a floating panel above the formula renders with Obsidian's native **MathJax** (on by default). |
@@ -350,6 +352,61 @@ Enable **Automatically convert pasted LaTeX math delimiters** to apply the same 
 
 ---
 
+## Exporting a formula
+
+Enable **Formula export and copying** in the plugin settings first (off by default).
+Turning it off immediately removes the block and panel actions and hides the export
+commands and editor-menu entries.
+
+| Control | What it does |
+| :--- | :--- |
+| Copy image (left) | Copies a transparent PNG to the clipboard, with no save dialog. |
+| Download (middle) | Opens a format menu, then a save dialog for the chosen SVG or PNG. |
+| Edit source (right, Live Preview) | Obsidian's native button for editing the formula source. |
+
+Hover over either image action for an explanation, or focus it with the keyboard
+and activate it with Enter or Space. Actions always target that formula block.
+
+Hover over a rendered display-math block and click the download icon at the top
+right. In Live Preview it sits immediately to the left of the native edit-source
+button; Reading view provides the same menu.
+
+The copy-image button to the left of download copies a transparent PNG using
+MathJax. Paste it into PowerPoint or another image-capable application with
+Ctrl+V (Cmd+V on macOS), without saving a file or installing TeX.
+
+- **Export current formula as transparent PNG** uses Obsidian's built-in MathJax.
+  It needs no TeX installation and produces a transparent image at 3× scale, ready
+  to insert into PowerPoint and other documents.
+- **Export SVG with local TeX (higher quality)** is an optional vector export for
+  resizing in presentations. It requires an existing local TeX installation and
+  an SVG converter (dvisvgm or pdftocairo).
+- **Export PNG with local TeX (higher quality)** uses the same optional TeX renderer.
+
+MathJax is the default. The plugin only invokes local TeX when you explicitly
+choose a local TeX action; it does not install tools. TeX fonts and supported
+commands may differ from the MathJax preview.
+
+Images use black formulas on a transparent background, regardless of the note's
+theme. PNG is suitable for quick copying and insertion; SVG keeps vector paths
+when resized. Copying currently provides PNG only. For an SVG, use Download.
+
+If clipboard access fails, download a PNG and insert the file instead. Cancelling
+the save dialog does not export a file. If local TeX fails, the notice includes the
+available compiler diagnostic and source context; MathJax PNG remains a separate
+option. Neither copying nor downloading changes the note.
+
+The formula panel, editor context menu, and commands also provide PNG (MathJax)
+and SVG (local TeX) export. Command IDs remain `export-current-formula-png` and
+`export-current-formula-svg`. For these commands, select one formula or place a
+single caret inside Markdown math. A selection takes precedence. The block button
+always exports the clicked formula, without moving the caret or changing the note.
+
+Export excludes protected code, frontmatter, and HTML regions. For notes over
+100,000 characters, use an explicit selection or the block button. PNG output is
+limited to 8,192 pixels per side and 16 megapixels in total. Rendering and saving
+errors are reported without writing an incomplete image.
+
 ## TikZ rendering
 
 TikZ rendering is optional and disabled by default to avoid taking over code blocks
@@ -384,6 +441,12 @@ TikZ is part of the same source-first workflow as formula input: the fenced sour
 remains ordinary Markdown, and changing the backend does not rewrite the note. Math
 inside built-in-renderer nodes is typeset by Obsidian's MathJax, so formulas match
 ordinary Markdown math.
+
+On desktop, hover over a rendered TikZ block to download SVG, PNG, JPEG, or PDF
+from its top-right download button. In Live Preview the button sits beside the
+native edit action; it is also available in Reading view and the floating preview.
+Downloading exports the clicked diagram without opening its source. These controls
+are hidden in print output.
 
 - **Built-in WASM (default and recommended):** uses Math Chords' original Rust vector core, starts quickly, requires no TeX installation or runtime download, and renders away from the main editing thread. Its output remains vector SVG in Markdown and print exports. It is the primary renderer and is expanded directly as more TikZ syntax is supported.
 - **Local TeX (advanced compatibility):** slower and desktop-only because it launches an installed TeX toolchain. Keep it for packages such as `pgfplots` or `circuitikz`, document-specific macros and styles, full TeX text boxes, specialized OpenType/CJK font work, and cases where output must match a formal TeX build. Ordinary diagrams prefer the DVI-to-SVG path for crisp Markdown and print output. PDF-producing engines also convert to path-based SVG when the installed `dvisvgm` has PDF support, while retaining the original vector PDF for direct export. Math Chords detects TeX Live, MiKTeX, MacTeX, TinyTeX, Tectonic, and compatible executables through PATH or an override path.
@@ -452,7 +515,7 @@ a reviewed translation is not yet available.
 | Environment wrap keys | `Shift+E` | Keys after the leader for the picker. |
 | Math environments | 4 built-ins | Editable list for the picker. |
 
-**Built-in commands** (assign or reassign under **Settings → Hotkeys**): **Open formula panel**, **Insert inline math**, **Insert display math**, **Wrap display math with environment**, **Convert LaTeX Delimiters in Selection**, **Convert LaTeX Delimiters in Current File**.
+**Built-in commands** (assign or reassign under **Settings → Hotkeys**): **Open formula panel**, **Insert inline math**, **Insert display math**, **Wrap display math with environment**, **Convert LaTeX Delimiters in Selection**, **Convert LaTeX Delimiters in Current File**, **Export SVG with local TeX (higher quality)**, **Export current formula as transparent PNG**.
 
 No built-in command registers a default hotkey. Assign any desired bindings under **Settings → Hotkeys**.
 
