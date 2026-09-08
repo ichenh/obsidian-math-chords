@@ -478,7 +478,11 @@ On desktop, choosing local TeX allows Math Chords to inspect configured and comm
 TeX executable paths, create bounded work files under the system temporary directory,
 and launch the selected executable directly without a command shell. Export writes
 only to the path selected in the system save dialog. Clipboard access is limited to
-user paste events and the explicit copy-diagnostics action.
+text supplied by user paste events and explicit actions to copy formula images or
+diagnostic reports. Formula-image copying requires the opt-in **Formula export and
+copying** setting. The plugin does not read or monitor clipboard contents in the
+background. Review tools may report **Clipboard Access** because these copy actions
+write to the system clipboard.
 
 For screen readers, add a concise first-line description such as
 `% alt: Gravitational field around a point mass`. The comment remains valid TikZ source

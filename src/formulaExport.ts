@@ -259,7 +259,8 @@ async function transparentPng(blob: Blob, width: number, height: number, ownerDo
       Math.ceil(width * PNG_SCALE) * Math.ceil(height * PNG_SCALE) > MAX_PIXELS) {
     throw new FormulaExportError("formulaExportTooLarge");
   }
-  const canvas = ownerDocument.createDocumentFragment().createEl("canvas");
+  const canvas = ownerDocument.body.createEl("canvas");
+  canvas.detach();
   canvas.width = Math.ceil(width * PNG_SCALE);
   canvas.height = Math.ceil(height * PNG_SCALE);
   const context = canvas.getContext("2d");

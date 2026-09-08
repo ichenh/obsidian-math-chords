@@ -100,7 +100,8 @@ export class FormulaBlockExportControls {
   }
 
   private createButton(block: HTMLElement, className: string, title: string, icon: string): HTMLButtonElement {
-    const button = block.ownerDocument.createDocumentFragment().createEl("button");
+    const button = block.createEl("button");
+    button.detach();
     button.type = "button";
     button.className = `${className} obsidian-math-chords-formula-block-action clickable-icon embed-action interactive-child`;
     button.setAttribute("aria-label", title);

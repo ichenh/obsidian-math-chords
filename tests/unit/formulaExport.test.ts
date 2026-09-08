@@ -33,6 +33,10 @@ class ElementFixture {
   style = { cssText: "" };
   private values = new Map<string, string>();
   constructor(public ownerDocument: DocumentFixture, public localName: string, public namespaceURI = SVG_NS) {}
+  createEl(name: string) {
+    if (name === "canvas") return this.ownerDocument.canvas;
+    return this.appendChild(new ElementFixture(this.ownerDocument, name, "html"));
+  }
   createDiv(options: { cls: string }) {
     const child = this.appendChild(new ElementFixture(this.ownerDocument, "div", "html"));
     child.setAttribute("class", options.cls);
@@ -87,7 +91,7 @@ class DocumentFixture {
   documentElement = this.body;
   imageFails = false;
   context = { clearRect: vi.fn(), drawImage: vi.fn(), fillRect: vi.fn() };
-  canvas = { width: 0, height: 0, getContext: () => this.context, toBlob: (callback: (blob: Blob) => void) => callback(new Blob(["PNG"], { type: "image/png" })) };
+  canvas = { width: 0, height: 0, detach: vi.fn(), getContext: () => this.context, toBlob: (callback: (blob: Blob) => void) => callback(new Blob(["PNG"], { type: "image/png" })) };
   defaultView = {
     navigator: { clipboard: { write: vi.fn(async (_items: ClipboardItemFixture[]) => {}) } },
     ClipboardItem: ClipboardItemFixture as typeof ClipboardItemFixture | undefined,
@@ -106,7 +110,6 @@ class DocumentFixture {
     };
   }
   createElement(name: string): ElementFixture | typeof this.canvas { return name === "canvas" ? this.canvas : new ElementFixture(this, name, "html"); }
-  createDocumentFragment() { return { createEl: (name: string) => this.createElement(name) }; }
   createElementNS(namespace: string, name: string): ElementFixture { return new ElementFixture(this, name, namespace); }
   getElementById(id: string): ElementFixture | null { return this.body.querySelectorAll("[id]").find((element) => element.id === id) ?? null; }
   querySelector(selector: string): ElementFixture | null { return this.body.querySelector(selector); }

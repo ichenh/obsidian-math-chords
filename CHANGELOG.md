@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Removed remaining native document-fragment creation from formula and TikZ
+  export controls and canvases. A local lint guard now also covers owner-document
+  expressions missed by the upstream DOM-helper rule.
+- Corrected both READMEs' clipboard-access disclosure to include opt-in formula
+  image copying alongside user paste events and explicit diagnostic-report copying.
+
 ## [0.5.15] - 2026-09-08
 
 ### Changed

@@ -48,8 +48,8 @@ format selection, clipboard/file output, and limits; `formulaMathJax.ts` prepare
 PNG snapshots using Obsidian's MathJax and host fonts. Local TeX is an explicit
 SVG/PNG option, separate from TikZ backend selection.
 
-DOM helpers use the originating document, including detached fragments for buttons
-and canvases. Export controls follow their view's lifecycle; temporary image-export
+DOM helpers use the originating document. Buttons and canvases are detached
+immediately after creation. Export controls follow their view's lifecycle; temporary image-export
 containers are removed when each export finishes or fails.
 
 ## TikZ backends

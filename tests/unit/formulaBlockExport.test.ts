@@ -54,6 +54,7 @@ class ElementFixture {
   };
   constructor(readonly ownerDocument: DocumentFixture) {}
   createEl() { return this.appendChild(this.ownerDocument.createElement()); }
+  detach() { this.remove(); }
   createDiv(options: { cls: string }) {
     const child = this.createEl();
     child.className = options.cls;
@@ -100,7 +101,6 @@ class DocumentFixture {
     };
   }
   createElement() { return new ElementFixture(this); }
-  createDocumentFragment() { return new ElementFixture(this); }
 }
 
 function mutation(target: ElementFixture, added: ElementFixture[] = [], removed: ElementFixture[] = []): MutationRecord[] {

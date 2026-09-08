@@ -36,6 +36,19 @@ export default defineConfig(
   },
   ...obsidianmd.configs.recommended,
   {
+    files: ["src/formulaBlockExport.ts", "src/formulaExport.ts", "src/tikz/blockExport.ts"],
+    rules: {
+      // prefer-create-el does not recognize every ownerDocument expression.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "CallExpression[callee.type='MemberExpression'][callee.property.name=/^(createElement|createDocumentFragment)$/]",
+          message: "Use the originating node's Obsidian DOM helpers instead of native HTML or fragment creation.",
+        },
+      ],
+    },
+  },
+  {
     files: ["*.config.{mts,ts,mjs}", "scripts/**/*.cjs"],
     languageOptions: {
       globals: {
