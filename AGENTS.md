@@ -64,7 +64,7 @@ an explicit design and compatibility review.
 | `formulaMathJax.ts` | Native MathJax PNG snapshots with embedded host fonts; local TeX remains an explicit export option. |
 | `formulaBlockExport.ts` | Rendered formula copy/download controls in Live Preview and Reading view, with source snapshots and view-scoped cleanup. |
 | `settings.ts`, `settingsTab.ts` | Normalized settings and localized settings UI. |
-| `l10n/` | Language resolution, bundled translations, and optional lazy translations. |
+| `l10n/` | Language resolution and bundled translations. |
 | `errors.ts`, `hint.ts` | Error reporting and optional shortcut hints. |
 | `tests/unit/` | Vitest unit and regression tests, kept outside production source. |
 
@@ -104,7 +104,7 @@ Avoid circular dependencies.
   Obsidian editor abstraction.
 - Keep `PluginSettingTab.getSettingDefinitions()` as the Obsidian 1.13+ settings-search
   source while retaining `display()` as the imperative fallback for the declared
-  Obsidian 1.5.0 minimum. Do not call 1.13-only runtime APIs from the fallback path.
+  Obsidian 1.7.2 minimum. Do not call 1.13-only runtime APIs from the fallback path.
 
 ## Development and verification
 

@@ -32,7 +32,7 @@ Math remains the primary workflow, but templates are deliberately not limited to
 
 Default shortcuts are inspired by [LyX](https://www.lyx.org/) math-mode bindings.
 
-**Current release: v0.5.14.** See [CHANGELOG](CHANGELOG.md).
+**Current release: v0.5.15.** See [CHANGELOG](CHANGELOG.md).
 
 **Requires Obsidian 1.7.2+.** Keyboard-heavy; desktop recommended.
 
@@ -414,8 +414,10 @@ already handled by another plugin. Enabling it immediately registers fenced bloc
 using the configured identifier (default: `tikz`) in Reading view. The separately
 opt-in editor preview never replaces or inserts content into CodeMirror layout:
 clicking a TikZ block opens an independent draggable and resizable live-render
-window, while clicking elsewhere closes it. Source remains visible until the first
-diagram is ready, and the previous successful frame remains in place during edits.
+window, while clicking elsewhere closes it. The floating preview shows source until
+its first diagram is ready and retains the previous successful frame during edits.
+Rendered blocks in the note use a compact loading indicator; source is shown there
+only when the initial render fails.
 The floating diagram fits its window without scrollbars, while Reading-view diagrams
 follow their SVG content height without creating an internal scrolling region. On
 desktop, the export button opens the system save dialog directly; the chosen
@@ -445,11 +447,12 @@ ordinary Markdown math.
 On desktop, hover over a rendered TikZ block to download SVG, PNG, JPEG, or PDF
 from its top-right download button. In Live Preview the button sits beside the
 native edit action; it is also available in Reading view and the floating preview.
-Downloading exports the clicked diagram without opening its source. These controls
-are hidden in print output.
+Downloading exports the clicked diagram without opening its source. It saves the
+current rendered result, using whichever backend produced that diagram, without
+switching engines or recompiling for export. These controls are hidden in print output.
 
 - **Built-in WASM (default and recommended):** uses Math Chords' original Rust vector core, starts quickly, requires no TeX installation or runtime download, and renders away from the main editing thread. Its output remains vector SVG in Markdown and print exports. It is the primary renderer and is expanded directly as more TikZ syntax is supported.
-- **Local TeX (advanced compatibility):** slower and desktop-only because it launches an installed TeX toolchain. Keep it for packages such as `pgfplots` or `circuitikz`, document-specific macros and styles, full TeX text boxes, specialized OpenType/CJK font work, and cases where output must match a formal TeX build. Ordinary diagrams prefer the DVI-to-SVG path for crisp Markdown and print output. PDF-producing engines also convert to path-based SVG when the installed `dvisvgm` has PDF support, while retaining the original vector PDF for direct export. Math Chords detects TeX Live, MiKTeX, MacTeX, TinyTeX, Tectonic, and compatible executables through PATH or an override path.
+- **Local TeX (advanced compatibility):** slower and desktop-only because it launches an installed TeX toolchain. Keep it for packages such as `pgfplots` or `circuitikz`, document-specific macros and styles, full TeX text boxes, specialized OpenType/CJK font work, and cases where output must match a formal TeX build. Ordinary diagrams prefer the DVI-to-SVG path for crisp Markdown and print output. PDF-producing engines also convert to path-based SVG when installed `dvisvgm` or a sibling `pdftocairo` can convert the PDF, while retaining the original vector PDF for direct export. Math Chords detects TeX Live, MiKTeX, MacTeX, TinyTeX, Tectonic, and compatible executables through PATH or an override path.
 - **Automatic:** uses the same built-in WASM instance and cache for supported diagrams, then selects local TeX for syntax the capability check cannot reproduce faithfully or when WASM fails. This preserves the fast path without returning a plausible but incorrect diagram.
 
 The built-in publication subset covers the common vocabulary used by STEM

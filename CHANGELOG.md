@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.15] - 2026-09-08
+
+### Changed
+
+- Clarified TikZ loading and export behavior in both READMEs, documented formula
+  image export in both architecture guides, and corrected the maintainer guide's
+  minimum Obsidian version to 1.7.2.
+
 ### Fixed
 
 - Used Obsidian DOM creation helpers for formula and TikZ export controls and

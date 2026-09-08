@@ -24,6 +24,9 @@ Obsidian lifecycle and settings
 │   ├── formula and template panel
 │   ├── math toggle, brace navigation, and environment planner
 │   └── protected delimiter conversion
+├── Optional formula images
+│   ├── protected formula selection and block actions
+│   └── native MathJax PNG/copy and optional local TeX SVG/PNG
 └── Optional TikZ rendering
     ├── fence processor and editor preview
     ├── render coordinator and bounded caches
@@ -35,6 +38,19 @@ Obsidian lifecycle and settings
 `src/main.ts` owns registration and orchestration. Pure operations live in focused
 modules; UI and editor adapters call them without moving parsing rules into the entry
 point.
+
+## Formula image export
+
+Formula export and copying are opt-in. `formulaExportModel.ts` resolves a single
+formula without changing the note; `formulaBlockExport.ts` owns view-scoped controls
+and captures the clicked formula before opening a menu. `formulaExport.ts` handles
+format selection, clipboard/file output, and limits; `formulaMathJax.ts` prepares
+PNG snapshots using Obsidian's MathJax and host fonts. Local TeX is an explicit
+SVG/PNG option, separate from TikZ backend selection.
+
+DOM helpers use the originating document, including detached fragments for buttons
+and canvases. Export controls follow their view's lifecycle; temporary image-export
+containers are removed when each export finishes or fails.
 
 ## TikZ backends
 
@@ -68,7 +84,8 @@ atomically, leaving the previous successful frame visible during edits.
 SVG uses element and attribute allowlists. Scripts, event handlers, external links,
 external paint URLs, unsafe raw specials, and non-local marker, mask, or clip
 references are rejected. Desktop export uses the system save dialog for SVG, PNG,
-JPEG, and PDF.
+JPEG, and PDF. Both floating-preview and rendered-block download buttons use the
+completed artifact and displayed output; exporting does not change the TikZ backend.
 
 The latest-request-wins coordinator aborts stale work. Memory and IndexedDB caches are
 bounded by count and bytes. Persistent-cache metadata is separate from artifact
