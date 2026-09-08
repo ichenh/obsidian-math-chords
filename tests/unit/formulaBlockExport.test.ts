@@ -53,6 +53,12 @@ class ElementFixture {
     toggle: (name: string, enabled: boolean) => enabled ? this.classList.add(name) : this.classList.remove(name),
   };
   constructor(readonly ownerDocument: DocumentFixture) {}
+  createEl() { return this.appendChild(this.ownerDocument.createElement()); }
+  createDiv(options: { cls: string }) {
+    const child = this.createEl();
+    child.className = options.cls;
+    return child;
+  }
   appendChild(child: ElementFixture) { child.remove(); child.parentElement = this; this.children.push(child); return child; }
   insertBefore(child: ElementFixture, reference: ElementFixture) {
     child.remove(); child.parentElement = this; this.children.splice(this.children.indexOf(reference), 0, child);
@@ -94,6 +100,7 @@ class DocumentFixture {
     };
   }
   createElement() { return new ElementFixture(this); }
+  createDocumentFragment() { return new ElementFixture(this); }
 }
 
 function mutation(target: ElementFixture, added: ElementFixture[] = [], removed: ElementFixture[] = []): MutationRecord[] {

@@ -33,6 +33,11 @@ class ElementFixture {
   style = { cssText: "" };
   private values = new Map<string, string>();
   constructor(public ownerDocument: DocumentFixture, public localName: string, public namespaceURI = SVG_NS) {}
+  createDiv(options: { cls: string }) {
+    const child = this.appendChild(new ElementFixture(this.ownerDocument, "div", "html"));
+    child.setAttribute("class", options.cls);
+    return child;
+  }
   get id(): string { return this.getAttribute("id") ?? ""; }
   get firstChild(): ElementFixture | null { return this.children[0] ?? null; }
   get attributes(): { name: string; localName: string; value: string }[] {
@@ -101,6 +106,7 @@ class DocumentFixture {
     };
   }
   createElement(name: string): ElementFixture | typeof this.canvas { return name === "canvas" ? this.canvas : new ElementFixture(this, name, "html"); }
+  createDocumentFragment() { return { createEl: (name: string) => this.createElement(name) }; }
   createElementNS(namespace: string, name: string): ElementFixture { return new ElementFixture(this, name, namespace); }
   getElementById(id: string): ElementFixture | null { return this.body.querySelectorAll("[id]").find((element) => element.id === id) ?? null; }
   querySelector(selector: string): ElementFixture | null { return this.body.querySelector(selector); }

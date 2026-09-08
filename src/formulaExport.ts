@@ -108,9 +108,7 @@ async function createFormulaImage(
   latex: string, display: boolean, format: FormulaExportFormat, ownerDocument: Document,
   nativeRenderer?: FormulaNativeRenderer, renderer: FormulaExportRenderer = "mathjax",
 ): Promise<Blob> {
-  const host = ownerDocument.createElement("div");
-  host.className = "obsidian-math-chords-formula-export-host";
-  ownerDocument.body.appendChild(host);
+  const host = ownerDocument.body.createDiv({ cls: "obsidian-math-chords-formula-export-host" });
   try {
     let snapshot: { source: string; width: number; height: number };
     let containsHtml = false;
@@ -261,7 +259,7 @@ async function transparentPng(blob: Blob, width: number, height: number, ownerDo
       Math.ceil(width * PNG_SCALE) * Math.ceil(height * PNG_SCALE) > MAX_PIXELS) {
     throw new FormulaExportError("formulaExportTooLarge");
   }
-  const canvas = ownerDocument.createElement("canvas");
+  const canvas = ownerDocument.createDocumentFragment().createEl("canvas");
   canvas.width = Math.ceil(width * PNG_SCALE);
   canvas.height = Math.ceil(height * PNG_SCALE);
   const context = canvas.getContext("2d");

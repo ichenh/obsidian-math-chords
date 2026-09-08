@@ -41,6 +41,7 @@ class ElementFixture {
     child.className = options.cls;
     return child;
   }
+  createEl() { return this.appendChild(this.ownerDocument.createElement()); }
   remove() {
     if (this.parentElement) this.parentElement.children = this.parentElement.children.filter((child) => child !== this);
     this.parentElement = null;
@@ -90,6 +91,7 @@ class DocumentFixture {
     };
   }
   createElement() { return new ElementFixture(this); }
+  createDocumentFragment() { return new ElementFixture(this); }
 }
 
 const active: TikzBlockExportControls[] = [];

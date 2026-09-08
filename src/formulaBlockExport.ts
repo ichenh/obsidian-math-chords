@@ -75,11 +75,9 @@ export class FormulaBlockExportControls {
       const edit = block.querySelector<HTMLElement>(".edit-block-button");
       if (this.livePreview && (!block.classList.contains("cm-embed-block") || !edit)) continue;
       const nativeToolbar = edit?.parentElement;
-      const toolbar = nativeToolbar?.classList.contains("embed-actions") ? null : block.ownerDocument.createElement("div");
+      const toolbar = nativeToolbar?.classList.contains("embed-actions") ? null : block.createDiv({ cls: "obsidian-math-chords-formula-block-actions" });
       if (toolbar) {
-        toolbar.className = "obsidian-math-chords-formula-block-actions";
         toolbar.classList.toggle("has-edit-button", Boolean(edit));
-        block.appendChild(toolbar);
       }
       const button = this.createButton(block, BUTTON_CLASS, t("formulaExportTitle"), "download");
       button.setAttribute("title", t("formulaExportButtonDesc"));
@@ -102,7 +100,7 @@ export class FormulaBlockExportControls {
   }
 
   private createButton(block: HTMLElement, className: string, title: string, icon: string): HTMLButtonElement {
-    const button = block.ownerDocument.createElement("button");
+    const button = block.ownerDocument.createDocumentFragment().createEl("button");
     button.type = "button";
     button.className = `${className} obsidian-math-chords-formula-block-action clickable-icon embed-action interactive-child`;
     button.setAttribute("aria-label", title);

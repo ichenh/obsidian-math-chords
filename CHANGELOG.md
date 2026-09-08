@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Used Obsidian DOM creation helpers for formula and TikZ export controls and
+  image generation while retaining the originating window and detached elements.
+
 ## [0.5.14] - 2026-09-08
 
 ### Added

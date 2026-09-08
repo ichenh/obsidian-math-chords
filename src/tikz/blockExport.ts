@@ -12,7 +12,7 @@ export class TikzBlockExportControls {
     private readonly host: HTMLElement,
     private readonly getExportData: () => TikzExportRequest | null,
   ) {
-    this.button = host.ownerDocument.createElement("button");
+    this.button = host.ownerDocument.createDocumentFragment().createEl("button");
     this.button.type = "button";
     this.button.className =
       "obsidian-math-chords-tikz-block-export clickable-icon embed-action interactive-child";
